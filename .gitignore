@@ -1,0 +1,10 @@
+cmake-build-*/
+.idea/
+*.swp
+*.swo
+build/
+.ccls-cache/
+compile_commands.json
+build-*/
+build_*/
+.daq_pm/status/

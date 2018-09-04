@@ -1,0 +1,12 @@
+[submodule "third_party/benchmark"]
+	path = third_party/benchmark
+	url = https://github.com/google/benchmark
+[submodule "third_party/onnx"]
+	path = third_party/onnx
+	url = https://github.com/onnx/onnx
+[submodule "third_party/glog"]
+	path = third_party/glog
+	url = https://github.com/google/glog
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://github.com/daquexian/googletest

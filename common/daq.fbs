@@ -1,0 +1,144 @@
+namespace flatbnn;
+
+enum DataType:byte { Float32 = 0, Bit }
+enum LayerType:byte { FpConv2D = 0, AvePool, MaxPool, Relu, Softmax, FC, Add, Concat,
+    BinConv2D, Affine, Binarize, Split, Shuffle}
+
+table Tensor {
+    data_type:DataType;
+    bin_data: [uint64];
+    float32_data: [float32];
+    shape: [uint32];
+    name: string;
+}
+
+table Input {
+    shape:[uint32];
+    name:string;
+}
+
+table Binarize {
+    input:string;
+    output:string;
+}
+
+table BinConv2D {
+    input:string;
+    weight:string;
+    bias:string;
+    /// the order is top, right, bottom, left
+    pads:[int];
+    /// the order is stride_h, stride_w
+    strides:[int];
+    /// the order is dilation_h, dilation_w
+    dilations:[int];
+    output:string;
+}
+
+table FpConv2D {
+    input:string;
+    weight:string;
+    bias:string;
+    /// the order is top, right, bottom, left
+    pads:[int];
+    /// the order is stride_h, stride_w
+    strides:[int];
+    /// the order is dilation_h, dilation_w
+    dilations:[int];
+    output:string;
+}
+
+table AvePool {
+    input:string;
+    /// the order is kernel_h, kernel_w
+    kernel_shape:[int];
+    /// the order is top, right, bottom, left
+    pads:[int];
+    /// the order is stride_h, stride_w
+    strides:[int];
+    output:string;
+}
+
+table MaxPool {
+    input:string;
+    /// the order is kernel_h, kernel_w
+    kernel_shape:[int];
+    /// the order is top, right, bottom, left
+    pads:[int];
+    /// the order is stride_h, stride_w
+    strides:[int];
+    output:string;
+}
+
+table Relu {
+    input:string;
+    output:string;
+}
+
+table Softmax {
+    input:string;
+    output:string;
+}
+
+table FC {
+    input:string;
+    weight:string;
+    bias:string;
+    output:string;
+}
+
+table Add {
+    input1:string;
+    input2:string;
+    output:string;
+}
+
+table Concat {
+    inputs:[string];
+    axis:int;
+    output:string;
+}
+
+table Shuffle {
+    input:string;
+    output:string;
+}
+
+table Split {
+    input:string;
+    outputs:[string];
+}
+
+table Affine {
+    input:string;
+    a:string;
+    b:string;
+    output:string;
+}
+
+table Layer {
+    type:LayerType;
+    fp_conv2d_param:FpConv2D;
+    bin_conv2d_param:BinConv2D;
+    avepool_param:AvePool;
+    maxpool_param:MaxPool;
+    relu_param:Relu;
+    softmax_param:Softmax;
+    fc_param:FC;
+    add_param:Add;
+    concat_param:Concat;
+    affine_param:Affine;
+    binarize_param:Binarize;
+    split_param:Split;
+    shuffle_param:Shuffle;
+    name:string;
+}
+
+table Model {
+    layers:[Layer];
+    initializers:[Tensor];
+    inputs:[Input];
+    version:uint32;
+}
+
+root_type Model;

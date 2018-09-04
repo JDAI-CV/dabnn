@@ -1,0 +1,5 @@
+name binary-nn
+type cpp
+build_dir build_x86
+cmake_options -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+binary tools/onnx2bnn/onnx2bnn ~/repos/bnn.pytorch/model_imagenet_24g2.onnx br24g2.daq && adb push br24g2.daq /data/local/tmp

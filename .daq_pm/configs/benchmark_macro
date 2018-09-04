@@ -1,0 +1,7 @@
+name binary-nn
+type cpp
+build_dir build_benchmark_macro
+build_type Release
+target run
+cmake_options -DCMAKE_TOOLCHAIN_FILE=~/Android/Sdk/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=android-28 -DANDROID_ABI=arm64-v8a -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DBNN_NET_BENCHMARK=ON
+binary ~/adb_push_and_run.sh binaries/run /data/local/tmp/model_imagenet.daq 188 && adb pull /data/local/tmp/mat.txt
