@@ -1,3 +1,4 @@
+# It is a configuration file for [project_manager.vim](https://github.com/daquexian/project_manager.vim)
 name binary-nn
 type cpp
 build_dir build_arm64_no_test
