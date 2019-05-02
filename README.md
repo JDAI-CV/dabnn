@@ -5,7 +5,7 @@
 
 *Enjoy binary neural networks on mobile!*
 
-[中文](README_CN.md)
+[English](README.md) [中文](README_CN.md)
 
 QQ Group (Chinese): 1021964010, answer: nndab
 
@@ -37,7 +37,7 @@ BM_bireal18_imagenet        61809506 ns   61056865 ns         10       <--- Bi-r
 BM_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- Bi-real Net 18 with stem module (The network structure will be described in detail in the coming paper), 56.4% top-1 on ImageNet
 ```
 
-Comparison on Google Pixel 1 with [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). We surprisingly observe that BMXNet is even slower the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited before dabnn.
+The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). We surprisingly observe that BMXNet is even slower the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
 
 ![Comparison](images/comparison.png)
 
