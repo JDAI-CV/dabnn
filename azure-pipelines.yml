@@ -1,0 +1,11 @@
+pool:
+    vmImage: 'macOS-10.14'
+steps:
+- bash: brew install watch
+- bash: ci/build.sh
+- bash: ci/start_android_emulator.sh
+- task: Bash@3
+  inputs:
+      targetType: inline
+      script: $ANDROID_HOME/platform-tools/adb shell echo "hello world"
+- bash: ci/adb_push_and_run.sh build/tests/bconv_test
