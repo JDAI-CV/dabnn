@@ -1,5 +1,6 @@
 # dabnn
 
+[![Build Status](https://dev.azure.com/daquexian/dabnn/_apis/build/status/JDAI-CV.dabnn?branchName=master)](https://dev.azure.com/daquexian/dabnn/_build/latest?definitionId=2&branchName=master)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/JDAI-CV/dabnn/pulls)
 
