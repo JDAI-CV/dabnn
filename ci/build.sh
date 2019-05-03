@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -e
 
 echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install 'ndk-bundle'
 
