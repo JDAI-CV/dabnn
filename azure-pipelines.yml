@@ -13,6 +13,7 @@ steps:
   displayName: Binary Conv Test
 - bash: ci/adb_push_and_run.sh build/tests/bgemm_test
   displayName: Binary Gemm Test
-  # macos wget understands -o but not -O
-- bash: wget https://drive.google.com/uc?export=download&id=1FYqF5BvYO2kl13bn28sheKtgverkbbQN -o model_imagenet.daq && adb push model_imagenet.daq /data/local/tmp && wget https://drive.google.com/uc?export=download&id=1frtRL1O0zhtJvPFbhE8COFl1-WWHIaOW -o model_imagenet_stem.daq && adb push model_imagenet_stem.daq /data/local/tmp/ && ci/adb_push_and_run.sh build/tests/net_test
-  displayName: Net Test
+- bash: ci/download_models.sh
+  displayName: Download Models
+- bash: ci/adb_push_and_run.sh build/tests/net_test
+  displayName: Model Test
