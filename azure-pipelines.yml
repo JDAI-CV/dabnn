@@ -1,6 +1,8 @@
 pool:
     vmImage: 'macOS-10.14'
 steps:
+- checkout: self
+  submodules: true
 - bash: brew install watch
 - bash: ci/build.sh
 - bash: ci/start_android_emulator.sh
