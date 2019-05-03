@@ -61,7 +61,7 @@ static void BM_bconv_float_3x3_128(benchmark::State &state) {
     SETUP_BCONV_FLOAT(30, 3, 128);
     for (auto _ : state) {
         pack_mat_128(a, a_binary);
-        bnn::bconv_3x3_128(a_binary, b, c);
+        bnn::bconv_3x3(a_binary, b, c);
     }
 }
 
@@ -150,14 +150,14 @@ static void BM_bnn_bconv_1x1_512(benchmark::State &state) {
 static void BM_bnn_bconv_3x3_64(benchmark::State &state) {
     SETUP_BCONV(58, 3, 64, 1);
     for (auto _ : state) {
-        bnn::bconv_3x3_64(a, b, c);
+        bnn::bconv_3x3(a, b, c);
     }
 }
 
 static void BM_bnn_bconv_3x3_128(benchmark::State &state) {
     SETUP_BCONV(30, 3, 128, 1);
     for (auto _ : state) {
-        bnn::bconv_3x3_128(a, b, c);
+        bnn::bconv_3x3(a, b, c);
     }
 }
 
