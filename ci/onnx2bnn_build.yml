@@ -23,6 +23,8 @@ steps:
     repositoryName: '$(Build.Repository.Name)'
     action: 'create'
     target: '$(Build.SourceVersion)'
+    tagSource: 'manual'
+    tag: 'Latest'
     assets: '$(Build.ArtifactStagingDirectory)/onnx2bnn.AppImage'
     isDraft: true
     isPreRelease: true
