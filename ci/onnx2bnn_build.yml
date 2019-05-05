@@ -3,6 +3,26 @@ pool:
 steps:
 - checkout: self
   submodules: true
+- script: sudo apt install -y protobuf-compiler libprotobuf-dev
+  displayName: Install protobuf
 - bash: ci/build_onnx2bnn.sh
   displayName: Build
-
+- bash: ci/build_appimage.sh
+  displayName: Build AppImage
+- task: CopyFiles@2
+  inputs:
+      contents: 'onnx2bnn.AppImage'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: onnx2bnn AppImage
+- task: GitHubRelease@0
+  inputs:
+    gitHubConnection: JDAI-CV
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    assets: '$(Build.ArtifactStagingDirectory)/onnx2bnn.AppImage'
+    isDraft: true
+    isPreRelease: true
