@@ -34,8 +34,8 @@ BM_bnn_bconv_3x3_128          988757 ns     981547 ns        721       <--- inpu
 BM_bnn_bconv_3x3_256         1018918 ns    1008007 ns        689       <--- input: 14*14*256, kernel: 256*3*3*256, output: 14*14*256, padding: 1
 BM_bnn_bconv_3x3_256_s2       269234 ns     268085 ns       2613       <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
 BM_bnn_bconv_3x3_512         1226245 ns    1203749 ns        579       <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
-BM_bireal18_imagenet        61809506 ns   61056865 ns         10       <--- Bi-real Net 18, ImageNet top-1 为 56.4%
-BM_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- 带有 stem 模块的 Bi-real Net 18 (将在论文中描述), ImageNet top-1 为 56.4%
+BM_bireal18_imagenet        61809506 ns   61056865 ns         10       <--- Bi-Real Net 18, ImageNet top-1 为 56.4%
+BM_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- 带有 stem 模块的 Bi-Real Net 18 (将在论文中描述), ImageNet top-1 为 56.4%
 ```
 
 在 Google Pixel 1 上与 [Caffe](http://caffe.berkeleyvision.org)（全精度）, [TensorFlow Lite](https://www.tensorflow.org/lite)（全精度）和 [BMXNet](https://github.com/hpi-xnor/BMXNet)（二值）的对比如下，其中 Conv 64、Conv 128、Conv 256 和 Conv 512 和上面的 benchmark 中的含义相同。我们很惊讶的发现现有的二值 inference 框架 BMXNet 甚至比全精度的 TensorFlow Lite 还要慢，这表明，直到 dabnn 推出之前，二值网络的潜力都远远没有被挖掘出来。
