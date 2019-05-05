@@ -25,17 +25,17 @@ Benchmark result on Google Pixel 1:
 Running data/local/tmp/dabnn_benchmark
 Run on (4 X 1593.6 MHz CPU s)
 ***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
------------------------------------------------------------------
-Benchmark                          Time           CPU Iterations
------------------------------------------------------------------
-dabnn_5x5_256             3658193 ns    3636875 ns        192       <--- input: 14*14*256, kernel: 256*5*5*256, output: 14*14*256, padding: 2
-dabnn_3x3_64          1285949 ns    1261826 ns        552       <--- input: 56*56*64,  kernel: 64*3*3*64, output: 56*56*64, padding: 1
-dabnn_3x3_128          988757 ns     981547 ns        721       <--- input: 28*28*128, kernel: 128*3*3*128, output: 28*28*128, padding: 1
-dabnn_3x3_256         1018918 ns    1008007 ns        689       <--- input: 14*14*256, kernel: 256*3*3*256, output: 14*14*256, padding: 1
-dabnn_3x3_256_s2       269234 ns     268085 ns       2613       <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
-dabnn_3x3_512         1226245 ns    1203749 ns        579       <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
-dabnn_bireal18_imagenet        61809506 ns   61056865 ns         10       <--- Bi-Real Net 18, 56.4% top-1 on ImageNet
-dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- Bi-Real Net 18 with stem module (The network structure will be described in detail in the coming paper), 56.4% top-1 on ImageNet
+--------------------------------------------------------------------
+Benchmark                             Time           CPU Iterations
+--------------------------------------------------------------------
+dabnn_5x5_256                   3658193 ns    3636875 ns        192     <--- input: 14*14*256, kernel: 256*5*5*256, output: 14*14*256, padding: 2
+dabnn_3x3_64                    1285949 ns    1261826 ns        552     <--- input: 56*56*64,  kernel: 64*3*3*64, output: 56*56*64, padding: 1
+dabnn_3x3_128                    988757 ns     981547 ns        721     <--- input: 28*28*128, kernel: 128*3*3*128, output: 28*28*128, padding: 1
+dabnn_3x3_256                   1018918 ns    1008007 ns        689     <--- input: 14*14*256, kernel: 256*3*3*256, output: 14*14*256, padding: 1
+dabnn_3x3_256_s2                 269234 ns     268085 ns       2613     <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
+dabnn_3x3_512                   1226245 ns    1203749 ns        579     <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
+dabnn_bireal18_imagenet        61809506 ns   61056865 ns         10     <--- Bi-Real Net 18, 56.4% top-1 on ImageNet
+dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14     <--- Bi-Real Net 18 with stem module (The network structure will be described in detail in the coming paper), 56.4% top-1 on ImageNet
 ```
 
 The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). Note that "Conv 64", "Conv 128", "Conv 256" and "Conv 512" have the same meaning as in the above benchmark. We surprisingly observe that BMXNet is even slower the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
