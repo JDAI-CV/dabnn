@@ -50,7 +50,7 @@ Android app demo: https://github.com/JDAI-CV/dabnn-example
 
 我们提供模型转换工具 onnx2bnn 将 ONNX 模型转换为 dabnn 格式的模型。用本地编译工具链（而不是 arm 交叉编译工具链）编译这个项目就可以编译出 onnx2dnn。对 Linux 用户我们提供可以在 Linux 下无需编译直接运行的 AppImage，从 [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases) 下载即可。AppImage 的使用方法和其它相关信息请参考 https://appimage.org/。
 
-注意：虽然 ONNX 有 Sign operator，但我们暂时还不支持（不过很快将支持）。所以在导出 ONNX 模型时，请暂时去掉里面的 sign 操作，我们会根据卷积的权重自动判断某个卷积是不是二值卷积。
+注意：因为二值卷积是一种自定义操作，所以 ONNX 模型是否与 dabnn 兼容极大程度上依赖于训练代码中二值卷积的实现。我们很快会提供一个与 dabnn 兼容的二值卷积 PyTorch 实现。
 
 ## 预训练模型
 
