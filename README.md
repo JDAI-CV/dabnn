@@ -38,7 +38,7 @@ BM_bireal18_imagenet        61809506 ns   61056865 ns         10       <--- Bi-r
 BM_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- Bi-real Net 18 with stem module (The network structure will be described in detail in the coming paper), 56.4% top-1 on ImageNet
 ```
 
-The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). We surprisingly observe that BMXNet is even slower the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
+The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). Note that "Conv 64", "Conv 128", "Conv 256" and "Conv 512" have the same meaning as in the above benchmark. We surprisingly observe that BMXNet is even slower the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
 
 ![Comparison](images/comparison_en.png)
 
