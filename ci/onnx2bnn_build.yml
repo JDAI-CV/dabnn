@@ -24,8 +24,7 @@ steps:
     action: 'create'
     target: '$(Build.SourceVersion)'
     assets: '$(Build.ArtifactStagingDirectory)/onnx2bnn.AppImage'
-    isDraft: true
-    isPreRelease: true
+    isPreRelease: false
 - task: GitHubRelease@0
   inputs:
     gitHubConnection: 'dabnn release'
@@ -38,5 +37,4 @@ steps:
     releaseNotesSource: 'input'
     releaseNotes: 'Prebuilt AppImage of the latest commit, which may be not so stable'
     assets: '$(Build.ArtifactStagingDirectory)/onnx2bnn.AppImage'
-    isDraft: true
     isPreRelease: true
