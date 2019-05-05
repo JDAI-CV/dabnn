@@ -48,7 +48,7 @@ Android app demo: https://github.com/JDAI-CV/dabnn-example
 
 ## Convert ONNX Model
 
-We provide a conversion tool, named onnx2dab, to convert an ONNX model to a dabnn model. To get the conversion tool, just build the project using the native toolchain (instead of arm cross-compiling toolchain). A prebuild AppImage for Linux users is coming soon.
+We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabnn model. To get the conversion tool, just build the project using the native toolchain (instead of arm cross-compiling toolchain). For Linux users, we provide pre-built onnx2bnn AppImage. Linux users can download it from [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases). For the usage and other information about AppImage, please check out https://appimage.org .
 
 Note: Even though ONNX has the Sign operator, we haven't supported it for now (It will be supported soon). Please remove the sign operation when exporting the ONNX model. We will automatically find which one is binary convolution according to the weight.
 
