@@ -57,93 +57,23 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
         layers_.push_back(layer);
     }
 
-    if (group != 1) {
-        BNN_ASSERT(group == 2, "");
-        css shuffle_output = output_name + "_shuffle";
-        vector<string> split_outputs;
-        vector<string> group_conv_weights;
-        vector<string> group_conv_outputs;
-        FORZ(g, group) {
-            split_outputs.push_back(output_name + "_split_" +
-                                    std::to_string(g));
-            group_conv_weights.push_back(weight_name + "_group_" +
-                                         std::to_string(g));
-            group_conv_outputs.push_back(output_name + "_group_" +
-                                         std::to_string(g));
-        }
-
-        {
-            const auto param = flatbnn::CreateShuffleDirect(
-                builder_, bin_name.c_str(), shuffle_output.c_str());
-            const auto layer =
-                flatbnn::CreateLayer(builder_, flatbnn::LayerType::Shuffle, 0,
-                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, param);
-            layers_.push_back(layer);
-        }
-
-        LOG(INFO) << "Shuffle added";
-
-        {
-            const auto fbs_outputs = pack_str_vec(split_outputs, builder_);
-
-            const auto param = flatbnn::CreateSplitDirect(
-                builder_, shuffle_output.c_str(), &fbs_outputs);
-            const auto layer =
-                flatbnn::CreateLayer(builder_, flatbnn::LayerType::Split, 0, 0,
-                                     0, 0, 0, 0, 0, 0, 0, 0, 0, param);
-            layers_.push_back(layer);
-        }
-
-        LOG(INFO) << "Split added";
-
-        {
-            const auto weights = split(bin_weight, group);
-            FORZ(g, group) {
-                const auto param = flatbnn::CreateBinConv2DDirect(
-                    builder_, split_outputs[g].c_str(),
-                    group_conv_weights[g].c_str(), nullptr, &pads, &strides,
-                    &dilations, group_conv_outputs[g].c_str());
-                const auto layer = flatbnn::CreateLayer(
-                    builder_, flatbnn::LayerType::BinConv2D, 0, param);
-                const auto flat_tensor = flatbnn::CreateTensorDirect(
-                    builder_, flatbnn::DataType::Bit, &weights[g].data, nullptr,
-                    &weights[g].shape, group_conv_weights[g].c_str());
-                tensors_.push_back(flat_tensor);
-                layers_.push_back(layer);
-            }
-        }
-
-        LOG(INFO) << "Conv added";
-
-        {
-            const auto fbs_inputs = pack_str_vec(group_conv_outputs, builder_);
-            const auto param = flatbnn::CreateConcatDirect(
-                builder_, &fbs_inputs, 3, output_name.c_str());
-            const auto layer =
-                flatbnn::CreateLayer(builder_, flatbnn::LayerType::Concat, 0, 0,
-                                     0, 0, 0, 0, 0, 0, param);
-            layers_.push_back(layer);
-        }
-
-        LOG(INFO) << "Concat added";
-    } else {
-        const auto param = flatbnn::CreateBinConv2DDirect(
-            builder_, bin_name.c_str(), weight_name.c_str(), nullptr, &pads,
-            &strides, &dilations, output_name.c_str());
-        const auto layer = flatbnn::CreateLayer(
-            builder_, flatbnn::LayerType::BinConv2D, 0, param);
-        const auto flat_tensor = flatbnn::CreateTensorDirect(
-            builder_, flatbnn::DataType::Bit, &bin_weight.data, nullptr,
-            &bin_weight.shape, weight_name.c_str());
-        tensors_.push_back(flat_tensor);
-        layers_.push_back(layer);
-    }
+    BNN_ASSERT(group == 1, "Group != 1 is not supported");
+    const auto param = flatbnn::CreateBinConv2DDirect(
+        builder_, bin_name.c_str(), weight_name.c_str(), nullptr, &pads,
+        &strides, &dilations, output_name.c_str());
+    const auto layer = flatbnn::CreateLayer(
+        builder_, flatbnn::LayerType::BinConv2D, 0, param);
+    const auto flat_tensor = flatbnn::CreateTensorDirect(
+        builder_, flatbnn::DataType::Bit, &bin_weight.data, nullptr,
+        &bin_weight.shape, weight_name.c_str());
+    tensors_.push_back(flat_tensor);
+    layers_.push_back(layer);
 }
 
 void OnnxConverter::AddFloatConv(
     const string &input_name, const std::vector<int> &strides,
     const std::vector<int> &pads, const std::vector<int> &dilations, int group,
-    const string &weight_name, const std::optional<std::string> &bias_name,
+    const string &weight_name, const nonstd::optional<std::string> &bias_name,
     const string &output_name, FTensor float_weight) {
     flatbuffers::Offset<flatbnn::Layer> layer;
     flatbuffers::Offset<flatbnn::Tensor> flat_tensor;
@@ -153,7 +83,6 @@ void OnnxConverter::AddFloatConv(
         throw std::invalid_argument("group != 1 is not supported");
     }
 
-    LOG(INFO) << "Vanilla conv" + weight_name;
     bnn_tensors_[weight_name] = float_weight;
 
     auto param = flatbnn::CreateFpConv2DDirect(
@@ -173,7 +102,7 @@ void OnnxConverter::AddConv(const string &input_name,
                             const std::vector<int> &pads,
                             const std::vector<int> &dilations, int group,
                             const string &ori_weight_name,
-                            const std::optional<std::string> &bias_name,
+                            const nonstd::optional<std::string> &bias_name,
                             const string &output_name) {
     flatbuffers::Offset<flatbnn::Layer> layer;
 
@@ -190,7 +119,7 @@ void OnnxConverter::AddConv(const string &input_name,
                      bias_name, output_name, bnn_float_tensor);
     } else {
         // binary conv
-        LOG(INFO) << "Binary conv" + weight_name;
+        VLOG(5) << "Binary conv" + weight_name;
         BTensor weight_tensor = bitpack(bnn_float_tensor);
         AddBinConv(input_name, strides, pads, dilations, group, weight_name,
                    output_name, weight_tensor);
@@ -307,7 +236,7 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
         }
         operands_.push_back(tensor.name());
     }
-    LOG(INFO) << "We get " << onnx_bin_tensors_.size() << " binary weight and "
+    VLOG(5) << "We get " << onnx_bin_tensors_.size() << " binary weight and "
               << onnx_float_tensors_.size() << " float weight";
 
     vector<flatbuffers::Offset<flatbnn::Input>> inputs;
@@ -343,9 +272,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
         }
         NodeAttrHelper helper(node);
         const auto &op = node.op_type();
-        LOG(INFO) << "Node " << node.name();
+        VLOG(5) << "Node " << node.name();
         if (op == "Conv") {
-            LOG(INFO) << "Start converting Conv";
+            VLOG(5) << "Start converting Conv";
             auto strides = helper.get("strides", vector<int>{1, 1});
             auto pads = helper.get("pads", vector<int>{0, 0, 0, 0});
             auto dilations = helper.get("dilations", vector<int>{1, 1});
@@ -353,7 +282,7 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             CHECK_EQ(strides.size(), 2ul);
             CHECK_EQ(dilations.size(), 2ul);
             auto group = helper.get("group", 1);
-            std::optional<string> bias_name;
+            nonstd::optional<string> bias_name;
             if (node.input_size() >= 3) {
                 auto ori_bias_name = m(node.input(2));
                 bias_name = ori_bias_name + "_conv_b";
@@ -370,10 +299,10 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             auto ori_weight_name = m(node.input(1));
             AddConv(m(node.input(0)), strides, pads, dilations, group,
                     ori_weight_name, bias_name, m(node.output(0)));
-            LOG(INFO) << "Converting Conv completed";
+            VLOG(5) << "Converting Conv completed";
         } else if (op == "AveragePool" || op == "MaxPool" ||
                    op == "GlobalAveragePool" || op == "GlobalMaxPool") {
-            LOG(INFO) << "Start converting Pool";
+            VLOG(5) << "Start converting Pool";
             auto input_name = m(node.input(0));
             auto output_name = m(node.output(0));
             vector<int> strides, pads, kernel_shape;
@@ -420,9 +349,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                     builder_, flatbnn::LayerType::MaxPool, 0, 0, 0, param);
             }
             layers_.push_back(layer);
-            LOG(INFO) << "Converting Pool completed";
+            VLOG(5) << "Converting Pool completed";
         } else if (op == "Relu") {
-            LOG(INFO) << "Start converting Relu";
+            VLOG(5) << "Start converting Relu";
             auto input_name = m(node.input(0));
             auto output_name = m(node.output(0));
             shaper_.Relu(input_name, output_name);
@@ -431,9 +360,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             auto layer = flatbnn::CreateLayer(
                 builder_, flatbnn::LayerType::Relu, 0, 0, 0, 0, param);
             layers_.push_back(layer);
-            LOG(INFO) << "Converting Relu completed";
+            VLOG(5) << "Converting Relu completed";
         } else if (op == "Add") {
-            LOG(INFO) << "Start converting Add";
+            VLOG(5) << "Start converting Add";
             auto input1_name = m(node.input(0));
             auto input2_name = m(node.input(1));
             auto output_name = m(node.output(0));
@@ -444,9 +373,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             auto layer = flatbnn::CreateLayer(builder_, flatbnn::LayerType::Add,
                                               0, 0, 0, 0, 0, 0, 0, param);
             layers_.push_back(layer);
-            LOG(INFO) << "Converting Add completed";
+            VLOG(5) << "Converting Add completed";
         } else if (op == "Gemm") {
-            LOG(INFO) << "Start converting Gemm";
+            VLOG(5) << "Start converting Gemm";
             auto transA = helper.get("transA", 0);
             auto transB = helper.get("transB", 0);
             auto alpha = helper.get("alpha", 1.0f);
@@ -491,9 +420,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                     "Only transA == 0, transB == 1, alpha == 1.0 and beta == "
                     "1.0 is supported.");
             }
-            LOG(INFO) << "Converting Gemm completed";
+            VLOG(5) << "Converting Gemm completed";
         } else if (op == "Softmax") {
-            LOG(INFO) << "Start converting Softmax";
+            VLOG(5) << "Start converting Softmax";
             auto input_name = m(node.input(0));
             auto output_name = m(node.output(0));
             shaper_.Softmax(input_name, output_name);
@@ -505,9 +434,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             auto layer = flatbnn::CreateLayer(
                 builder_, flatbnn::LayerType::Softmax, 0, 0, 0, 0, 0, param);
             layers_.push_back(layer);
-            LOG(INFO) << "Converting Softmax completed";
+            VLOG(5) << "Converting Softmax completed";
         } else if (op == "Concat") {
-            LOG(INFO) << "Start converting Concat";
+            VLOG(5) << "Start converting Concat";
             vector<std::string> concat_inputs_str;
             for (const auto &onnx_input : node.input()) {
                 concat_inputs_str.push_back(m(onnx_input));
@@ -525,18 +454,18 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                 flatbnn::CreateLayer(builder_, flatbnn::LayerType::Concat, 0, 0,
                                      0, 0, 0, 0, 0, 0, param);
             layers_.push_back(layer);
-            LOG(INFO) << "Converting Concat completed";
+            VLOG(5) << "Converting Concat completed";
         } else if (op == "Dropout") {
-            LOG(INFO) << "Start converting Dropout";
+            VLOG(5) << "Start converting Dropout";
             // Dropout does nothing, so the output is the same as the input
             name_map_[node.output(0)] = m(node.input(0));
-            LOG(INFO) << "Converting Dropout completed";
+            VLOG(5) << "Converting Dropout completed";
         } else if (op == "Reshape") {
-            LOG(INFO) << "Start converting Reshape";
+            VLOG(5) << "Start converting Reshape";
             has_reshape = true;
-            LOG(INFO) << "Converting Reshape completed";
+            VLOG(5) << "Converting Reshape completed";
         } else if (op == "BatchNormalization") {
-            LOG(INFO) << "Start converting BatchNormalization";
+            VLOG(5) << "Start converting BatchNormalization";
             const auto &input_name = node.input(0);
             const auto &output_name = node.output(0);
 
@@ -564,7 +493,7 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                 &onnx_float_tensors_[coeff_b_name].shape, coeff_b_name.c_str());
             tensors_.push_back(a_tensor);
             tensors_.push_back(b_tensor);
-            LOG(INFO) << "Converting BatchNormalization completed";
+            VLOG(5) << "Converting BatchNormalization completed";
         } else {
             throw std::invalid_argument("Unsupported operator " + op);
         }
@@ -577,8 +506,8 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
 
     builder_.Finish(flat_model);
 
-    LOG(INFO) << "Shapes: ";
-    LOG(INFO) << shaper_;
+    VLOG(3) << "Shapes: ";
+    VLOG(3) << shaper_;
 
     std::ofstream ofs(filepath);
     ofs.write(reinterpret_cast<char *>(builder_.GetBufferPointer()),
@@ -611,7 +540,6 @@ void OnnxConverter::CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
         if (node2.op_type() == "Conv" && node2.output(0) == node.input(0)) {
             const auto &weight = onnx_float_tensors_[node2.input(1)];
             if (is_binary_weight(weight.data.data(), weight.shape)) {
-                LOG(INFO) << "I found!";
                 {
                     int channels = Shaper::onnx_kc(weight.shape);
                     int width = Shaper::onnx_kw(weight.shape);

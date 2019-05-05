@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=onnx2bnn
+Exec=onnx2bnn
+Icon=onnx2bnn
+Type=Application
+Terminal=true
+Categories=Development;

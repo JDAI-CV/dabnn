@@ -3,6 +3,8 @@
 #ifndef BNN_ONNXCONVERTER_H
 #define BNN_ONNXCONVERTER_H
 
+#include "optional.h"
+
 #include <common/Shaper.h>
 #include <common/StrKeyMap.h>
 #include <common/daq_generated.h>
@@ -73,14 +75,14 @@ class OnnxConverter {
                       const std::vector<int> &pads,
                       const std::vector<int> &dilations, int group,
                       const std::string &weight_name,
-                      const std::optional<std::string> &bias_name,
+                      const nonstd::optional<std::string> &bias_name,
                       const std::string &output_name, FTensor float_weight);
 
     void AddConv(const std::string &input_name, const std::vector<int> &strides,
                  const std::vector<int> &pads,
                  const std::vector<int> &dilations, int group,
                  const std::string &ori_weight_name,
-                 const std::optional<std::string> &bias_name,
+                 const nonstd::optional<std::string> &bias_name,
                  const std::string &output_name);
 
     void CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
