@@ -46,11 +46,18 @@ BM_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- 带�
 
 Android app demo: https://github.com/JDAI-CV/dabnn-example
 
-## 转换 ONNX 模型
+## 如何转换 ONNX 模型
 
 我们提供模型转换工具 onnx2bnn 将 ONNX 模型转换为 dabnn 格式的模型。用本地编译工具链（而不是 arm 交叉编译工具链）编译这个项目就可以编译出 onnx2dnn。对 Linux 用户我们提供可以在 Linux 下无需编译直接运行的 AppImage，从 [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases) 下载即可。AppImage 的使用方法和其它相关信息请参考 https://appimage.org/。
 
 注意：虽然 ONNX 有 Sign operator，但我们暂时还不支持（不过很快将支持）。所以在导出 ONNX 模型时，请暂时去掉里面的 sign 操作，我们会根据卷积的权重自动判断某个卷积是不是二值卷积。
+
+## 预训练模型
+
+我们提供两个在 ImageNet 上训练的、基于 [Bi-Real Net](https://arxiv.org/abs/1808.00278) 的二值网络模型，将来还会有其它的模型发布。
+
+[Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 61.8ms/image.
+[Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image.
 
 ## 技术细节
 
