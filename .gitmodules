@@ -9,4 +9,4 @@
 	url = https://github.com/google/glog
 [submodule "third_party/googletest"]
 	path = third_party/googletest
-	url = https://github.com/daquexian/googletest
+	url = https://github.com/google/googletest
