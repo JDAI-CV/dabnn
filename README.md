@@ -40,7 +40,7 @@ BM_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- Bi-r
 
 The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). We surprisingly observe that BMXNet is even slower the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
 
-![Comparison](images/comparison.png)
+![Comparison](images/comparison_en.png)
 
 ## Example project
 

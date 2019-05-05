@@ -40,7 +40,7 @@ BM_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- 带�
 
 在 Google Pixel 1 上与 [Caffe](http://caffe.berkeleyvision.org)（全精度）, [TensorFlow Lite](https://www.tensorflow.org/lite)（全精度）和 [BMXNet](https://github.com/hpi-xnor/BMXNet)（二值）的对比如下。我们很惊讶的发现现有的二值 inference 框架 BMXNet 甚至比全精度的 TensorFlow Lite 还要慢，这表明，直到 dabnn 推出之前，二值网络的潜力都远远没有被挖掘出来。
 
-![Comparison](images/comparison.png)
+![Comparison](images/comparison_cn.png)
 
 ## 示例工程
 
