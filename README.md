@@ -57,6 +57,7 @@ Note: Even though ONNX has the Sign operator, we haven't supported it for now (I
 We publish two pretrained binary neural network models based on [Bi-Real Net](https://arxiv.org/abs/1808.00278) on ImageNet. More pretrained models will be published in the future.
 
 [Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), 56.4% top-1 on ImageNet, 61.8ms/image on Google Pixel 1
+
 [Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), 56.4% top-1 on ImageNet, 43.2ms/image on Google Pixel 1
 
 ## Implementation Details
