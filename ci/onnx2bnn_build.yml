@@ -30,7 +30,7 @@ steps:
   inputs:
     gitHubConnection: 'dabnn release'
     repositoryName: '$(Build.Repository.Name)'
-    action: 'create'
+    action: 'edit'
     target: '$(Build.SourceVersion)'
     tagSource: 'manual'
     tag: 'Latest'
