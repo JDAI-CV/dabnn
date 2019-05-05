@@ -52,16 +52,16 @@ We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabn
 
 Note: Even though ONNX has the Sign operator, we haven't supported it for now (It will be supported soon). Please remove the sign operation when exporting the ONNX model. We will automatically find which one is binary convolution according to the weight.
 
-## Details
-
-We plan to participate the [ACM Multimedia 2019 Open Source Software Competition](https://www.acmmm.org/2019/call-for-open-source-software-competition/). Our implementation details will be presented in a 4-page short paper soon.
-
 ## Pretrained Models
 
 We publish two pretrained binary neural network models based on [Bi-Real Net](https://arxiv.org/abs/1808.00278) on ImageNet. More pretrained models will be published in the future.
 
 [Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), 56.4% top-1 on ImageNet, 61.8ms/image on Google Pixel 1
 [Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), 56.4% top-1 on ImageNet, 43.2ms/image on Google Pixel 1
+
+## Implementation Details
+
+We plan to participate the [ACM Multimedia 2019 Open Source Software Competition](https://www.acmmm.org/2019/call-for-open-source-software-competition/). Our implementation details will be presented in a 4-page short paper soon.
 
 ## License
 
