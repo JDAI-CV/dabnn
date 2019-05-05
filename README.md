@@ -14,7 +14,7 @@ QQ Group (Chinese): 1021964010, answer: nndab
 
 Binary neural networks have great potential on edge devices since they replace float operations by efficient bit-wise operations. However, to leverage the efficiency of bit-wise operations, the reimplmentation of convolution layer and also other layers is needed. 
 
-To our best knowledge, dabnn is the first highly-optimized binary neural networks inference framework for mobile platform. We implemented binary convolutions with armv8 assembly. On Google Pixel 1, our dabnn is **700%~2300% faster** than [BMXNet](https://github.com/hpi-xnor/BMXNet) on a single binary convolution, and about **600% faster** than it on binarized ResNet-18.
+To our best knowledge, dabnn is the first highly-optimized binary neural networks inference framework for mobile platform. We implemented binary convolutions with armv8 assembly. On Google Pixel 1, our dabnn is as **800%~2400% faster** as [BMXNet](https://github.com/hpi-xnor/BMXNet) on a single binary convolution, and as about **700% faster** as it on binarized ResNet-18.
 
 ## Benchmark and Comparison
 
