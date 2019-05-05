@@ -56,9 +56,9 @@ Android app demo: https://github.com/JDAI-CV/dabnn-example
 
 我们提供两个在 ImageNet 上训练的、基于 [Bi-Real Net](https://arxiv.org/abs/1808.00278) 的二值网络模型，将来还会有其它的模型发布。
 
-[Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 61.8ms/image.
+* [Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 61.8ms/image。
 
-[Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image.
+* [Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image。详细的网络结构将在论文中描述。
 
 ## 技术细节
 
