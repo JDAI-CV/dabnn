@@ -1,0 +1,8 @@
+pool:
+    vmImage: 'ubuntu-16.04'
+steps:
+- checkout: self
+  submodules: true
+- bash: ci/build_onnx2bnn.sh
+  displayName: Build
+

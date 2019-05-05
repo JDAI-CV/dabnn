@@ -3,8 +3,6 @@
 cmake_minimum_required(VERSION 3.6)
 project(dabnn CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     message("No build type, set to Release")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -39,6 +37,8 @@ if (${BNN_NET_BENCHMARK})
 endif()
 
 if (${BNN_BUILD_ANDROID})
+    set(CMAKE_CXX_STANDARD 17)
+
     if (${BNN_BUILD_TEST})
         include(cmake/gtest.cmake)
         configure_gtest()
@@ -58,6 +58,8 @@ if (${BNN_BUILD_ANDROID})
     endif()
 
 else()
+    set(CMAKE_CXX_STANDARD 11)
+
     include(cmake/onnx.cmake)
     configure_onnx()
     add_subdirectory(tools)

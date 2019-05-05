@@ -1,5 +1,3 @@
-// Copyright 2019 JD.com Inc. JD AI
-
 //
 // Created by daquexian on 8/20/18.
 //
@@ -18,10 +16,13 @@
 template <typename V>
 class StrKeyMap {
    private:
-    std::map<std::string, V> map_;
+    using map_t = std::map<std::string, V>;
+    map_t map_;
 
    public:
-    inline V &operator[](const std::string &key) { return map_[key]; }
+    inline V &operator[](const std::string &key) {
+        return map_[key];
+    }
     inline const V &at(const std::string &key) const {
         try {
             return map_.at(key);
@@ -29,11 +30,29 @@ class StrKeyMap {
             throw std::out_of_range("Key " + key + " not found.");
         }
     }
-    auto begin() const { return map_.begin(); }
-    auto end() const { return map_.end(); }
-    auto clear() { return map_.clear(); }
-    auto find(const std::string &key) { return map_.find(key); }
-    auto size() const { return map_.size(); }
+    // This is "const decltype(as_const(map_).begin()) begin() const"
+    const typename map_t::const_iterator begin() const {
+        return map_.begin();
+    }
+    const typename map_t::const_iterator end() const {
+        return map_.end();
+    }
+    void clear() {
+        map_.clear();
+    }
+    const typename map_t::const_iterator find(const std::string &key) const {
+        return map_.find(key);
+    }
+    size_t size() const {
+        return map_.size();
+    }
+    bool has(const std::string &key) const {
+        return map_.find(key) != map_.end();
+    }
+
+    void insert(const std::pair<std::string, V> &p) {
+        map_.insert(p);
+    }
 };
 
 #endif  // DNNLIBRARY_DNN_MAP_H

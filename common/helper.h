@@ -140,7 +140,7 @@ std::string binrep(const T &a, const size_t size) {
 template <typename T>
 T Product(const std::vector<T> &v) {
     return static_cast<T>(
-        accumulate(v.begin(), v.end(), 1, std::multiplies<>()));
+        accumulate(v.begin(), v.end(), 1, std::multiplies<T>()));
 }
 
 namespace bnn {

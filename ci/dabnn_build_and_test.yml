@@ -5,15 +5,15 @@ steps:
   submodules: true
 - bash: brew install watch
   displayName: Install watch
-- bash: ci/build.sh
+- bash: ci/build_dabnn.sh
   displayName: Build
 - bash: ci/start_android_emulator.sh
   displayName: Start Android Emulator
-- bash: ci/adb_push_and_run.sh build/tests/bconv_test
+- bash: ci/adb_push_and_run.sh build_dabnn/tests/bconv_test
   displayName: Binary Conv Test
-- bash: ci/adb_push_and_run.sh build/tests/bgemm_test
+- bash: ci/adb_push_and_run.sh build_dabnn/tests/bgemm_test
   displayName: Binary Gemm Test
 - bash: ci/download_models.sh
   displayName: Download Models
-- bash: ci/adb_push_and_run.sh build/tests/net_test
+- bash: ci/adb_push_and_run.sh build_dabnn/tests/net_test
   displayName: Model Test

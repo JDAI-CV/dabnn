@@ -73,7 +73,7 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
 void OnnxConverter::AddFloatConv(
     const string &input_name, const std::vector<int> &strides,
     const std::vector<int> &pads, const std::vector<int> &dilations, int group,
-    const string &weight_name, const std::optional<std::string> &bias_name,
+    const string &weight_name, const nonstd::optional<std::string> &bias_name,
     const string &output_name, FTensor float_weight) {
     flatbuffers::Offset<flatbnn::Layer> layer;
     flatbuffers::Offset<flatbnn::Tensor> flat_tensor;
@@ -103,7 +103,7 @@ void OnnxConverter::AddConv(const string &input_name,
                             const std::vector<int> &pads,
                             const std::vector<int> &dilations, int group,
                             const string &ori_weight_name,
-                            const std::optional<std::string> &bias_name,
+                            const nonstd::optional<std::string> &bias_name,
                             const string &output_name) {
     flatbuffers::Offset<flatbnn::Layer> layer;
 
@@ -283,7 +283,7 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             CHECK_EQ(strides.size(), 2ul);
             CHECK_EQ(dilations.size(), 2ul);
             auto group = helper.get("group", 1);
-            std::optional<string> bias_name;
+            nonstd::optional<string> bias_name;
             if (node.input_size() >= 3) {
                 auto ori_bias_name = m(node.input(2));
                 bias_name = ori_bias_name + "_conv_b";
