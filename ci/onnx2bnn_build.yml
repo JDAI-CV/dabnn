@@ -29,10 +29,10 @@ steps:
   inputs:
     gitHubConnection: 'dabnn release'
     repositoryName: '$(Build.Repository.Name)'
-    action: 'edit'
+    action: 'create'
     target: '$(Build.SourceVersion)'
     tagSource: 'manual'
-    tag: 'Latest'
+    tag: 'dummy_tag_for_latest_build'
     title: 'Latest Build'
     releaseNotesSource: 'input'
     releaseNotes: 'Prebuilt AppImage of the latest commit, which may be not so stable'
