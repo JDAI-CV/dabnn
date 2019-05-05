@@ -14,11 +14,15 @@
 using std::string;
 using std::vector;
 
+void usage(const std::string &filename) {
+    std::cout << "Usage: " << filename << " onnx_model output_filename" << std::endl;
+}
+
 int main(int argc, char **argv) {
     google::InitGoogleLogging(argv[0]);
     FLAGS_alsologtostderr = true;
     if (argc != 3) {
-        std::cerr << "argc must be 3" << std::endl;
+        usage(argv[0]);
         return -1;
     }
     ONNX_NAMESPACE::ModelProto model_proto;
