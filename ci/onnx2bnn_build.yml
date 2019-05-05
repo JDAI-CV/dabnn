@@ -19,7 +19,7 @@ steps:
     artifactName: onnx2bnn AppImage
 - task: GitHubRelease@0
   inputs:
-    gitHubConnection: JDAI-CV
+    gitHubConnection: 'dabnn release'
     repositoryName: '$(Build.Repository.Name)'
     action: 'create'
     target: '$(Build.SourceVersion)'
