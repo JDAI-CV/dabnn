@@ -57,87 +57,17 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
         layers_.push_back(layer);
     }
 
-    if (group != 1) {
-        BNN_ASSERT(group == 2, "");
-        css shuffle_output = output_name + "_shuffle";
-        vector<string> split_outputs;
-        vector<string> group_conv_weights;
-        vector<string> group_conv_outputs;
-        FORZ(g, group) {
-            split_outputs.push_back(output_name + "_split_" +
-                                    std::to_string(g));
-            group_conv_weights.push_back(weight_name + "_group_" +
-                                         std::to_string(g));
-            group_conv_outputs.push_back(output_name + "_group_" +
-                                         std::to_string(g));
-        }
-
-        {
-            const auto param = flatbnn::CreateShuffleDirect(
-                builder_, bin_name.c_str(), shuffle_output.c_str());
-            const auto layer =
-                flatbnn::CreateLayer(builder_, flatbnn::LayerType::Shuffle, 0,
-                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, param);
-            layers_.push_back(layer);
-        }
-
-        LOG(INFO) << "Shuffle added";
-
-        {
-            const auto fbs_outputs = pack_str_vec(split_outputs, builder_);
-
-            const auto param = flatbnn::CreateSplitDirect(
-                builder_, shuffle_output.c_str(), &fbs_outputs);
-            const auto layer =
-                flatbnn::CreateLayer(builder_, flatbnn::LayerType::Split, 0, 0,
-                                     0, 0, 0, 0, 0, 0, 0, 0, 0, param);
-            layers_.push_back(layer);
-        }
-
-        LOG(INFO) << "Split added";
-
-        {
-            const auto weights = split(bin_weight, group);
-            FORZ(g, group) {
-                const auto param = flatbnn::CreateBinConv2DDirect(
-                    builder_, split_outputs[g].c_str(),
-                    group_conv_weights[g].c_str(), nullptr, &pads, &strides,
-                    &dilations, group_conv_outputs[g].c_str());
-                const auto layer = flatbnn::CreateLayer(
-                    builder_, flatbnn::LayerType::BinConv2D, 0, param);
-                const auto flat_tensor = flatbnn::CreateTensorDirect(
-                    builder_, flatbnn::DataType::Bit, &weights[g].data, nullptr,
-                    &weights[g].shape, group_conv_weights[g].c_str());
-                tensors_.push_back(flat_tensor);
-                layers_.push_back(layer);
-            }
-        }
-
-        LOG(INFO) << "Conv added";
-
-        {
-            const auto fbs_inputs = pack_str_vec(group_conv_outputs, builder_);
-            const auto param = flatbnn::CreateConcatDirect(
-                builder_, &fbs_inputs, 3, output_name.c_str());
-            const auto layer =
-                flatbnn::CreateLayer(builder_, flatbnn::LayerType::Concat, 0, 0,
-                                     0, 0, 0, 0, 0, 0, param);
-            layers_.push_back(layer);
-        }
-
-        LOG(INFO) << "Concat added";
-    } else {
-        const auto param = flatbnn::CreateBinConv2DDirect(
-            builder_, bin_name.c_str(), weight_name.c_str(), nullptr, &pads,
-            &strides, &dilations, output_name.c_str());
-        const auto layer = flatbnn::CreateLayer(
-            builder_, flatbnn::LayerType::BinConv2D, 0, param);
-        const auto flat_tensor = flatbnn::CreateTensorDirect(
-            builder_, flatbnn::DataType::Bit, &bin_weight.data, nullptr,
-            &bin_weight.shape, weight_name.c_str());
-        tensors_.push_back(flat_tensor);
-        layers_.push_back(layer);
-    }
+    BNN_ASSERT(group == 1, "Group != 1 is not supported");
+    const auto param = flatbnn::CreateBinConv2DDirect(
+        builder_, bin_name.c_str(), weight_name.c_str(), nullptr, &pads,
+        &strides, &dilations, output_name.c_str());
+    const auto layer = flatbnn::CreateLayer(
+        builder_, flatbnn::LayerType::BinConv2D, 0, param);
+    const auto flat_tensor = flatbnn::CreateTensorDirect(
+        builder_, flatbnn::DataType::Bit, &bin_weight.data, nullptr,
+        &bin_weight.shape, weight_name.c_str());
+    tensors_.push_back(flat_tensor);
+    layers_.push_back(layer);
 }
 
 void OnnxConverter::AddFloatConv(
