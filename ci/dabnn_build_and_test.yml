@@ -17,3 +17,7 @@ steps:
   displayName: Download Models
 - bash: ci/adb_push_and_run.sh build_dabnn/tests/net_test
   displayName: Model Test
+- bash: ci/build_aar.sh
+  env: 
+    BINTRAY_KEY: $(bintrayKey)
+  displayName: Build and Publish AAR package

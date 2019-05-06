@@ -1,6 +1,6 @@
 # Copyright 2019 JD.com Inc. JD AI
 
-add_library(dabnn_jni
+add_library(dabnn-jni
     SHARED
     jni_handle.h
     net_for_jni.h
@@ -14,9 +14,9 @@ find_library(
     )
 
 target_link_libraries(
-    dabnn_jni
+    dabnn-jni
     dabnn
     ${android-lib}
     )
 
-treat_warnings_as_errors(dabnn_jni)
+treat_warnings_as_errors(dabnn-jni)
