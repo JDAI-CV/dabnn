@@ -18,5 +18,6 @@ steps:
 - bash: ci/adb_push_and_run.sh build_dabnn/tests/net_test
   displayName: Model Test
 - bash: ci/build_aar.sh test
-  env: BINTRAY_KEY: $(BINTRAY_KEY)
+  env: 
+    BINTRAY_KEY: $(BintrayKey)
   displayName: Build and Publish AAR package
