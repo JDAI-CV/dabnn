@@ -19,7 +19,7 @@ To our best knowledge, dabnn is the first highly-optimized binary neural network
 
 ## Benchmark and Comparison
 
-Benchmark result on Google Pixel 1:
+Benchmark result on Google Pixel 1 (single thread):
 
 ```
 2019-05-02 18:00:29
@@ -39,7 +39,7 @@ dabnn_bireal18_imagenet        61809506 ns   61056865 ns         10     <--- Bi-
 dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14     <--- Bi-Real Net 18 with stem module (The network structure will be described in detail in the coming paper), 56.4% top-1 on ImageNet
 ```
 
-The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). Note that "Conv 64", "Conv 128", "Conv 256" and "Conv 512" have the same meaning as in the above benchmark. We surprisingly observe that BMXNet is even slower the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
+The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). Note that "Conv 64", "Conv 128", "Conv 256" and "Conv 512" have the same meaning as in the above benchmark. We surprisingly observe that BMXNet is even slower than the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
 
 ![Comparison](images/comparison_en.png)
 
@@ -57,9 +57,9 @@ Note: Binary convolution is a custom operator, so whether the ONNX model is dabn
 
 We publish two pretrained binary neural network models based on [Bi-Real Net](https://arxiv.org/abs/1808.00278) on ImageNet. More pretrained models will be published in the future.
 
-* [Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), 56.4% top-1 on ImageNet, 61.8ms/image on Google Pixel 1.
+* [Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), 56.4% top-1 on ImageNet, 61.8ms/image on Google Pixel 1 (single thread).
 
-* [Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), 56.4% top-1 on ImageNet, 43.2ms/image on Google Pixel 1. The detailed network structure will be described in the coming paper.
+* [Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), 56.4% top-1 on ImageNet, 43.2ms/image on Google Pixel 1 (single thread). The detailed network structure will be described in the coming paper.
 
 ## Implementation Details
 
