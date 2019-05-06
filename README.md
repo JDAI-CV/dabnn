@@ -2,11 +2,14 @@
 
 [![Build Status](https://dev.azure.com/daquexian/dabnn/_apis/build/status/Android%20Build%20%26%20Test?branchName=master)](https://dev.azure.com/daquexian/dabnn/_build/latest?definitionId=2&branchName=master)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE) 
+[![Gitter Chat](https://badges.gitter.im/dabnn/dabnn.png)](https://gitter.im/dabnn/dabnn)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/JDAI-CV/dabnn/pulls)
 
 *Enjoy binary neural networks on mobile!*
 
 [English](README.md) [中文](README_CN.md)
+
+Gitter (English): [dabnn/dabnn](https://gitter.im/dabnn/dabnn)
 
 QQ Group (Chinese): 1021964010, answer: nndab
 
