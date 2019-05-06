@@ -25,6 +25,7 @@ if (($# == 0)); then
 elif (( $# == 1 )); then
     ver=$1
 fi
+echo "ver=$ver"
 
 sed -i -E "s/versionName .+/versionName \"v$ver\"/" ci/android_aar/dabnn/build.gradle
 sed -i -E "s/publishVersion = .+/publishVersion = \'$ver\'/" ci/android_aar/dabnn/build.gradle
@@ -37,6 +38,6 @@ if [[ -z $BINTRAY_KEY ]]; then
     echo "BINTRAY_KEY is not set, skip bintray upload"
 else
 	echo "Publishing.."
-	ANDROID_HOME=$MY_ANDROID_HOME ./gradlew bintrayUpload -PbintrayUser=daquexian566 -PbintrayKey=$BINTRAY_KEY -PdryRun=true
+	ANDROID_HOME=$MY_ANDROID_HOME ./gradlew bintrayUpload -PbintrayUser=daquexian566 -PbintrayKey=$BINTRAY_KEY
 fi
 popd
