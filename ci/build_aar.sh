@@ -13,19 +13,30 @@ mkdir -p ci/android_aar/dabnn/src/main/jniLibs/arm64-v8a
 cp ${JNI_BUILD_DIR}/dabnn/jni/libdabnn-jni.so ci/android_aar/dabnn/src/main/jniLibs/arm64-v8a/
 
 # Increase version code and update version name
-if (( $# >= 1 )); then
-    NEW_VER_NUM=`sed -nE 's/versionCode ([0-9]+)/\1+1/p' ci/android_aar/dabnn/build.gradle | bc`
-    sed -i -E "s/versionCode [0-9]+/versionCode $NEW_VER_NUM/" ci/android_aar/dabnn/build.gradle
-    sed -i -E "s/versionName .+/versionName \"v$1\"/" ci/android_aar/dabnn/build.gradle
-    sed -i -E "s/publishVersion = .+/publishVersion = \'$1\'/" ci/android_aar/dabnn/build.gradle
+
+if (($# == 0)); then
+    ret=0; tag=`git describe --exact-match --tags` || ret=$?
+    if [ $ret != 0 ]; then
+        echo "HEAD is not tagged, skip deploy aar"
+        exit 0
+    fi
+    # tag is expected to be something like "v0.2", so remove the leading "v"
+    ver=`echo $tag | cut -c 2-10`
+elif (( $# == 1 )); then
+    ver=$1
 fi
+
+sed -i -E "s/versionName .+/versionName \"v$ver\"/" ci/android_aar/dabnn/build.gradle
+sed -i -E "s/publishVersion = .+/publishVersion = \'$ver\'/" ci/android_aar/dabnn/build.gradle
 
 pushd ci/android_aar
 ANDROID_HOME=$MY_ANDROID_HOME ./gradlew clean build
 
 # Publishing is only for myself
-if (( $# == 2 )); then
+if [[ -z $BINTRAY_KEY ]]; then
 	echo "Publishing.."
-	ANDROID_HOME=$MY_ANDROID_HOME ./gradlew bintrayUpload -PbintrayUser=daquexian566 -PbintrayKey=$2 -PdryRun=false
+	ANDROID_HOME=$MY_ANDROID_HOME ./gradlew bintrayUpload -PbintrayUser=daquexian566 -PbintrayKey=$BINTRAY_KEY -PdryRun=true
+else
+    echo "BINTRAY_KEY is not set, skip bintray upload"
 fi
 popd
