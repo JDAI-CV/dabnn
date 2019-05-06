@@ -1,6 +1,6 @@
 # Copyright 2019 JD.com Inc. JD AI
 
-find_package(Protobuf)
+find_package(Protobuf REQUIRED)
 
 add_executable(onnx2bnn
     ${CMAKE_CURRENT_SOURCE_DIR}/onnx2bnn.cpp
@@ -15,7 +15,6 @@ add_executable(onnx2bnn
 
 target_link_libraries(onnx2bnn
     glog::glog
-    protobuf::libprotobuf
     onnx
     )
 
@@ -24,5 +23,16 @@ target_include_directories(onnx2bnn
     ${PROJECT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     )
+
+if(${CMAKE_VERSION} VERSION_GREATER "3.10.0") 
+    target_link_libraries(onnx2bnn
+        protobuf::libprotobuf)
+else()
+    target_link_libraries(onnx2bnn
+        ${Protobuf_LIBRARIES})
+    target_include_directories(onnx2bnn
+        PRIVATE
+        ${Protobuf_INCLUDE_DIRS})
+endif()
 
 treat_warnings_as_errors(onnx2bnn)

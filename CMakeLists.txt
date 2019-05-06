@@ -1,7 +1,9 @@
 # Copyright 2019 JD.com Inc. JD AI
 
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 project(dabnn CXX)
+
+message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     message("No build type, set to Release")
