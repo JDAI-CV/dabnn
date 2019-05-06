@@ -34,9 +34,9 @@ ANDROID_HOME=$MY_ANDROID_HOME ./gradlew clean build
 
 # Publishing is only for myself
 if [[ -z $BINTRAY_KEY ]]; then
+    echo "BINTRAY_KEY is not set, skip bintray upload"
+else
 	echo "Publishing.."
 	ANDROID_HOME=$MY_ANDROID_HOME ./gradlew bintrayUpload -PbintrayUser=daquexian566 -PbintrayKey=$BINTRAY_KEY -PdryRun=true
-else
-    echo "BINTRAY_KEY is not set, skip bintray upload"
 fi
 popd
