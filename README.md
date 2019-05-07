@@ -2,6 +2,7 @@
 
 [![Build Status](https://dev.azure.com/daquexian/dabnn/_apis/build/status/Android%20Build%20%26%20Test?branchName=master)](https://dev.azure.com/daquexian/dabnn/_build/latest?definitionId=2&branchName=master)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE) 
+[![jcenter](https://img.shields.io/badge/dynamic/json.svg?label=jcenter&query=name&url=https%3A%2F%2Fapi.bintray.com%2Fpackages%2Fdaquexian566%2Fmaven%2Fdabnn%2Fversions%2F_latest)](https://bintray.com/daquexian566/maven/dabnn/_latestVersion)
 [![Gitter Chat](https://img.shields.io/gitter/room/dabnn/dabnn.svg)](https://gitter.im/dabnn/dabnn)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/JDAI-CV/dabnn/pulls)
 
@@ -43,15 +44,13 @@ The following is the comparison between our dabnn and [Caffe](http://caffe.berke
 
 ![Comparison](images/comparison_en.png)
 
-## Example project
-
-Android app demo: https://github.com/JDAI-CV/dabnn-example
-
 ## Convert ONNX Model
 
 We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabnn model. To get the conversion tool, just build the project using the native toolchain (instead of arm cross-compiling toolchain). For Linux users, we provide pre-built onnx2bnn AppImage. Linux users can download it from [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases). For the usage and other information about AppImage, please check out https://appimage.org .
 
 Note: Binary convolution is a custom operator, so whether the ONNX model is dabnn-comptabile heavily depends on the implementation of the binary convolution in the training code. We will soon provide an dabnn-comptabile PyTorch implementation of binary convolution.
+
+After conversion, the generated dabnn model can be deployed on armv8 devices. For Android developer, we have provided Android AAR package and published it on [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion), for the usage please check out [example project](https://github.com/JDAI-CV/dabnn-example).
 
 ## Pretrained Models
 
@@ -64,6 +63,10 @@ We publish two pretrained binary neural network models based on [Bi-Real Net](ht
 ## Implementation Details
 
 We plan to participate the [ACM Multimedia 2019 Open Source Software Competition](https://www.acmmm.org/2019/call-for-open-source-software-competition/). Our implementation details will be presented in a 4-page short paper soon.
+
+## Example project
+
+Android app demo: https://github.com/JDAI-CV/dabnn-example
 
 ## License
 

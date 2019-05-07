@@ -2,6 +2,7 @@
 
 [![Build Status](https://dev.azure.com/daquexian/dabnn/_apis/build/status/Android%20Build%20%26%20Test?branchName=master)](https://dev.azure.com/daquexian/dabnn/_build/latest?definitionId=2&branchName=master)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE) 
+[![jcenter](https://img.shields.io/badge/dynamic/json.svg?label=jcenter&query=name&url=https%3A%2F%2Fapi.bintray.com%2Fpackages%2Fdaquexian566%2Fmaven%2Fdabnn%2Fversions%2F_latest)](https://bintray.com/daquexian566/maven/dabnn/_latestVersion)
 [![Gitter Chat](https://img.shields.io/gitter/room/dabnn/dabnn.svg)](https://gitter.im/dabnn/dabnn)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/JDAI-CV/dabnn/pulls)
 
@@ -45,15 +46,13 @@ dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- �
 
 ![Comparison](images/comparison_cn.png)
 
-## 示例工程
-
-Android app demo: https://github.com/JDAI-CV/dabnn-example
-
 ## 如何转换 ONNX 模型
 
 我们提供模型转换工具 onnx2bnn 将 ONNX 模型转换为 dabnn 格式的模型。用本地编译工具链（而不是 arm 交叉编译工具链）编译这个项目就可以编译出 onnx2dnn。对 Linux 用户我们提供可以在 Linux 下无需编译直接运行的 AppImage，从 [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases) 下载即可。AppImage 的使用方法和其它相关信息请参考 https://appimage.org/。
 
 注意：因为二值卷积是一种自定义操作，所以 ONNX 模型是否与 dabnn 兼容极大程度上依赖于训练代码中二值卷积的实现。我们很快会提供一个与 dabnn 兼容的二值卷积 PyTorch 实现。
+
+转换完成后得到的 dabnn 模型就可以在 armv8 设备上使用。对 Android 开发者我们已经把 Android AAR 包上传到了 [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion)，使用方法请看[示例工程](https://github.com/JDAI-CV/dabnn-example)。
 
 ## 预训练模型
 
@@ -66,6 +65,10 @@ Android app demo: https://github.com/JDAI-CV/dabnn-example
 ## 技术细节
 
 我们计划参加 [ACM Multimedia 2019 Open Source Software Competition](https://www.acmmm.org/2019/call-for-open-source-software-competition/). dabnn 的技术细节很快会在一篇四页的短论文中描述。
+
+## 示例工程
+
+Android app demo: https://github.com/JDAI-CV/dabnn-example
 
 ## 开源许可
 
