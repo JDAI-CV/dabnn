@@ -35,6 +35,64 @@ inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     }
 }
 
+inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
+    size_t nn_size = size >> 7;
+
+    asm volatile(
+        "0:     \n"
+        "prfm   pldl1keep, [%0]     \n"
+        "ld1    {v0.4s, v1.4s, v2.4s, v3.4s}, [%0], #64    \n"
+        "sri    v0.4s, v1.4s, #1    \n"
+        "sri    v0.4s, v2.4s, #2    \n"
+        "sri    v0.4s, v3.4s, #3    \n"
+        "ld1    {v4.4s, v5.4s, v6.4s, v7.4s}, [%0], #64    \n"
+        "sri    v0.4s, v4.4s, #4    \n"
+        "sri    v0.4s, v5.4s, #5    \n"
+        "sri    v0.4s, v6.4s, #6    \n"
+        "sri    v0.4s, v7.4s, #7    \n"
+        "ld1    {v1.4s, v2.4s, v3.4s, v4.4s}, [%0], #64    \n"
+        "prfm   pldl1keep, [%0, #64]     \n"
+        "sri    v0.4s, v1.4s, #8    \n"
+        "sri    v0.4s, v2.4s, #9    \n"
+        "sri    v0.4s, v3.4s, #10    \n"
+        "sri    v0.4s, v4.4s, #11    \n"
+        "ld1    {v5.4s, v6.4s, v7.4s, v8.4s}, [%0], #64    \n"
+        "sri    v0.4s, v5.4s, #12    \n"
+        "sri    v0.4s, v6.4s, #13    \n"
+        "sri    v0.4s, v7.4s, #14    \n"
+        "sri    v0.4s, v8.4s, #15    \n"
+        "subs   %2, %2, #1          \n"
+        "ld1    {v1.4s, v2.4s, v3.4s, v4.4s}, [%0], #64    \n"
+        "prfm   pldl1keep, [%0, #64]     \n"
+        "sri    v0.4s, v1.4s, #16    \n"
+        "sri    v0.4s, v2.4s, #17    \n"
+        "sri    v0.4s, v3.4s, #18    \n"
+        "sri    v0.4s, v4.4s, #19    \n"
+        "ld1    {v5.4s, v6.4s, v7.4s, v8.4s}, [%0], #64    \n"
+        "sri    v0.4s, v5.4s, #20    \n"
+        "sri    v0.4s, v6.4s, #21    \n"
+        "sri    v0.4s, v7.4s, #22    \n"
+        "sri    v0.4s, v8.4s, #23    \n"
+        "ld1    {v1.4s, v2.4s, v3.4s, v4.4s}, [%0], #64    \n"
+        "prfm   pldl1keep, [%0, #64]     \n"
+        "sri    v0.4s, v1.4s, #24    \n"
+        "sri    v0.4s, v2.4s, #25    \n"
+        "sri    v0.4s, v3.4s, #26    \n"
+        "sri    v0.4s, v4.4s, #27    \n"
+        "ld1    {v5.4s, v6.4s, v7.4s, v8.4s}, [%0], #64    \n"
+        "sri    v0.4s, v5.4s, #28    \n"
+        "sri    v0.4s, v6.4s, #29    \n"
+        "sri    v0.4s, v7.4s, #30    \n"
+        "sri    v0.4s, v8.4s, #31    \n"
+        "st1    {v0.4s}, [%1], #16         \n"
+        "bne    0b                  \n"
+        : "+r"(float_ptr),   // %0
+          "+r"(binary_ptr),  // %1
+          "+r"(nn_size)      // %2
+        :
+        : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8",
+          "x0");
+}
 inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
 
