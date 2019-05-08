@@ -1,6 +1,10 @@
 # Copyright 2019 JD.com Inc. JD AI
 
 find_package(Protobuf REQUIRED)
+if (${CMAKE_VERSION} VERSION_LESS "3.6.0")
+    set(Protobuf_LIBRARIES ${PROTOBUF_LIBRARIES})
+    set(Protobuf_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS})
+endif()
 
 add_executable(onnx2bnn
     ${CMAKE_CURRENT_SOURCE_DIR}/onnx2bnn.cpp
