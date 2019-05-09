@@ -39,6 +39,8 @@ echo "ver=$ver"
 sed -i -E "s/versionName .+/versionName \"v$ver\"/" ci/android_aar/dabnn/build.gradle
 sed -i -E "s/publishVersion = .+/publishVersion = \'$ver\'/" ci/android_aar/dabnn/build.gradle
 
+cat ci/android_aar/dabnn/build.gradle
+
 pushd ci/android_aar
 ANDROID_HOME=$MY_ANDROID_HOME ./gradlew clean build
 
