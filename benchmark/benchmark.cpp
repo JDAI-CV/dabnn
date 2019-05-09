@@ -14,16 +14,16 @@
 #include <dabnn/net.h>
 
 static void BM_pack_mat_64(benchmark::State &state) {
-    const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float, 0);
-    bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit, 0);
+    const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float);
+    bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit);
     for (auto _ : state) {
         pack_mat_64(a, b);
     }
 }
 
 static void BM_pack_mat_128(benchmark::State &state) {
-    const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float, 0);
-    bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit, 0);
+    const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float);
+    bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit);
     for (auto _ : state) {
         pack_mat_128(a, b);
     }
