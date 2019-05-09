@@ -254,7 +254,7 @@ inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
     if (require_align) {
         hstep = ncnn::alignSize(w * c * elemsize, 16) / elemsize;
     } else {
-        hstep = w * c * elemsize;
+        hstep = w * c;
     }
     BNN_ASSERT(hstep > 0, hstep);
 
@@ -523,7 +523,7 @@ inline void Mat::create(int _n, int _w, int _h, int _c, DataType _data_type,
     if (require_align) {
         hstep = ncnn::alignSize(w * c * elemsize, 16) / elemsize;
     } else {
-        hstep = w * c * elemsize;
+        hstep = w * c;
     }
     BNN_ASSERT(hstep > 0, hstep);
 
