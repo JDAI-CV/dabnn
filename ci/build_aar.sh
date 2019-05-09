@@ -20,8 +20,17 @@ if (($# == 0)); then
         echo "HEAD is not tagged, skip deploy aar"
         exit 0
     fi
+    if [[ `git rev-parse --abbrev-ref HEAD` != "master" ]]; then
+        echo "HEAD is not master, skip deploy aar"
+        exit 0
+    fi
     # tag is expected to be something like "v0.2", so remove the leading "v"
-    ver=`echo $tag | cut -c 2-10`
+    if [[ `echo $tag | cut -c -1` == "v" ]]; then
+        ver=`echo $tag | cut -c 2-10`
+    else
+        echo "HEAD is not tagged as a version, skip deploy aar"
+        exit 0
+    fi
 elif (( $# == 1 )); then
     ver=$1
 fi
@@ -38,6 +47,6 @@ if [[ -z $BINTRAY_KEY ]]; then
     echo "BINTRAY_KEY is not set, skip bintray upload"
 else
 	echo "Publishing.."
-	ANDROID_HOME=$MY_ANDROID_HOME ./gradlew bintrayUpload -PbintrayUser=daquexian566 -PbintrayKey=$BINTRAY_KEY
+	ANDROID_HOME=$MY_ANDROID_HOME ./gradlew bintrayUpload -PbintrayUser=daquexian566 -PbintrayKey=$BINTRAY_KEY -PdryRun=false
 fi
 popd
