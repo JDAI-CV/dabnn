@@ -267,7 +267,7 @@ static void BM_bgemm_256_s2(benchmark::State &state) {
 static void BM_bgemm_512(benchmark::State &state) {
     SETUP_BGEMM;
     for (auto _ : state) {
-        bgemm(512, 7 * 7, 72, a, 512, b, 64, c, 512);
+        bgemm(512, 7 * 7, 72, a, 512, b, 72, c, 512);
     }
 }
 
