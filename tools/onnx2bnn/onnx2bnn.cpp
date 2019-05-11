@@ -9,6 +9,7 @@
 #include <glog/logging.h>
 #include "NodeAttrHelper.h"
 #include "OnnxConverter.h"
+#include <common/argh.h>
 #include "common/log_helper.h"
 
 using std::string;
@@ -19,21 +20,22 @@ void usage(const std::string &filename) {
 }
 
 int main(int argc, char **argv) {
-    google::InitGoogleLogging(argv[0]);
+    argh::parser cmdl(argv);
+    google::InitGoogleLogging(cmdl[0].c_str());
     FLAGS_alsologtostderr = true;
-    if (argc != 3) {
+    if (argc < 3) {
         usage(argv[0]);
         return -1;
     }
     ONNX_NAMESPACE::ModelProto model_proto;
     {
-        std::ifstream ifs(argv[1], std::ios::in | std::ios::binary);
+        std::ifstream ifs(cmdl[1], std::ios::in | std::ios::binary);
         model_proto.ParseFromIstream(&ifs);
         ifs.close();
     }
 
     bnn::OnnxConverter converter;
-    converter.Convert(model_proto, argv[2]);
+    converter.Convert(model_proto, cmdl[2], cmdl["strict"]);
 
     google::protobuf::ShutdownProtobufLibrary();
     return 0;

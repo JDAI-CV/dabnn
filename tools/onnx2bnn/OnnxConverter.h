@@ -3,6 +3,7 @@
 #ifndef BNN_ONNXCONVERTER_H
 #define BNN_ONNXCONVERTER_H
 
+#include <set>
 #include "optional.h"
 
 #include <common/Shaper.h>
@@ -55,6 +56,8 @@ class OnnxConverter {
     StrKeyMap<BTensor> bnn_bin_tensors_;
     StrKeyMap<FTensor> onnx_float_tensors_;
     StrKeyMap<BTensor> onnx_bin_tensors_;
+    std::set<std::string> bin_tensor_names_;
+    std::set<std::string> blobs_gen_by_bconv_;
     std::vector<flatbuffers::Offset<flatbnn::Layer>> layers_;
 
     std::vector<flatbuffers::Offset<flatbnn::Tensor>> tensors_;
@@ -83,11 +86,14 @@ class OnnxConverter {
                  const std::vector<int> &dilations, int group,
                  const std::string &ori_weight_name,
                  const nonstd::optional<std::string> &bias_name,
-                 const std::string &output_name);
+                 const std::string &output_name,
+                 const bool strict=false);
 
     void CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
                         const std::string &coeff_a_name,
                         const std::string &coeff_b_name);
+
+    void GetBinTensors();
 
     /**
      * onnx: [filter_out_channel, filter_in_channel / group, height, width]
@@ -147,7 +153,8 @@ class OnnxConverter {
 
    public:
     void Convert(const ONNX_NAMESPACE::ModelProto &model,
-                 const std::string &filepath);
+                 const std::string &filepath,
+                 const bool strict=false);
 };
 
 template <>
