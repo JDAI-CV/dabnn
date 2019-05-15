@@ -213,7 +213,7 @@ vector<bin_t> bitpack(const float *data, Shape shape) {
 
 void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                             const std::string &filepath,
-                            const bool strict) {
+                            const OnnxConverter::Level level) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     // We recognize binary convolutions in our custom ONNX optimizers.
@@ -223,8 +223,11 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
     // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes/dabnn_bconv_strict.h
     // for details.
     vector<string> optimizers{"eliminate_nop_pad", "dabnn_bconv_strict"};
-    if (!strict) {
+    if (level == Level::kSoft || level == Level::kExtremeSoft) {
         optimizers.push_back("dabnn_bconv_soft");
+    }
+    if (level == Level::kExtremeSoft) {
+        optimizers.push_back("dabnn_bconv_extreme_soft");
     }
     // model_proto is only used here. Please use the member variable model_proto_
     // in the following code
