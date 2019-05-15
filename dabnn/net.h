@@ -7,7 +7,7 @@
 #include <memory>
 
 #include <common/Shaper.h>
-#include <common/daq_generated.h>
+#include <common/dab_generated.h>
 #include <common/helper.h>
 #include <dabnn/layers/Add.h>
 #include <dabnn/layers/Affine.h>

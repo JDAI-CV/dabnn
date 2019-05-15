@@ -15,7 +15,7 @@ TEST(net, bireal18cifar) {
     const std::string blob_name = "187";
     {
     auto net1 = bnn::Net::create();
-    net1->read("/data/local/tmp/model_cifar100.daq");
+    net1->read("/data/local/tmp/model_cifar100.dab");
     net1->optimize = true;
     net1->run(input);
     const auto &blob1 = net1->get_blob(blob_name);
@@ -34,14 +34,14 @@ TEST(net, bireal18imagenet_comparison) {
     std::shared_ptr<bnn::Mat> blob1, blob2;
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet.daq");
+        net->read("/data/local/tmp/model_imagenet.dab");
         net->optimize = false;
         net->run(input);
         blob1 = net->get_blob(blob_name);
     }
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet.daq");
+        net->read("/data/local/tmp/model_imagenet.dab");
         net->optimize = true;
         net->run(input);
         blob2 = net->get_blob(blob_name);
@@ -56,7 +56,7 @@ TEST(net, bireal18imagenet) {
     const std::string blob_name = "188";
     {
         auto net1 = bnn::Net::create();
-        net1->read("/data/local/tmp/model_imagenet.daq");
+        net1->read("/data/local/tmp/model_imagenet.dab");
         net1->optimize = true;
         net1->run(input);
         const auto blob1 = net1->get_blob(blob_name);
@@ -74,14 +74,14 @@ TEST(net, bireal18imagenetstem_comparison) {
     std::shared_ptr<bnn::Mat> blob1, blob2;
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet_stem.daq");
+        net->read("/data/local/tmp/model_imagenet_stem.dab");
         net->optimize = false;
         net->run(input);
         blob1 = net->get_blob(blob_name);
     }
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet_stem.daq");
+        net->read("/data/local/tmp/model_imagenet_stem.dab");
         net->optimize = true;
         net->run(input);
         blob2 = net->get_blob(blob_name);
@@ -96,7 +96,7 @@ TEST(net, bireal18imagenetstem) {
     const std::string blob_name = "216";
     {
         auto net1 = bnn::Net::create();
-        net1->read("/data/local/tmp/model_imagenet_stem.daq");
+        net1->read("/data/local/tmp/model_imagenet_stem.dab");
         net1->optimize = true;
         net1->run(input);
         const auto &blob1 = net1->get_blob(blob_name);
