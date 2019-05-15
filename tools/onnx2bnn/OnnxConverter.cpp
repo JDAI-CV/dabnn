@@ -216,6 +216,12 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                             const bool strict) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+    // We recognize binary convolutions in our custom ONNX optimizers.
+    // Please check out 
+    // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes/dabnn_bconv_soft.h
+    // and
+    // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes/dabnn_bconv_strict.h
+    // for details.
     vector<string> optimizers{"eliminate_nop_pad", "dabnn_bconv_strict"};
     if (!strict) {
         optimizers.push_back("dabnn_bconv_soft");
