@@ -150,12 +150,12 @@ class OnnxConverter {
    public:
     enum class Level {
         kStrict,
-        kSoft,
-        kExtremeSoft,
+        kModerate,
+        kAggressive,
     };
     void Convert(const ONNX_NAMESPACE::ModelProto &model,
                  const std::string &filepath,
-                 const Level level=Level::kSoft);
+                 const Level level=Level::kModerate);
 };
 
 template <>

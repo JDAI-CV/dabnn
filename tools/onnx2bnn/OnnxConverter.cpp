@@ -223,11 +223,11 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
     // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes/dabnn_bconv_strict.h
     // for details.
     vector<string> optimizers{"eliminate_nop_pad", "dabnn_bconv_strict"};
-    if (level == Level::kSoft || level == Level::kExtremeSoft) {
-        optimizers.push_back("dabnn_bconv_soft");
+    if (level == Level::kModerate || level == Level::kAggressive) {
+        optimizers.push_back("dabnn_bconv_moderate");
     }
-    if (level == Level::kExtremeSoft) {
-        optimizers.push_back("dabnn_bconv_extreme_soft");
+    if (level == Level::kAggressive) {
+        optimizers.push_back("dabnn_bconv_aggressive");
     }
     // model_proto is only used here. Please use the member variable model_proto_
     // in the following code

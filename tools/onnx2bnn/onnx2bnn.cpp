@@ -27,12 +27,12 @@ int main(int argc, char **argv) {
         usage(cmdl[0]);
         return -1;
     }
-    bnn::OnnxConverter::Level opt_level = bnn::OnnxConverter::Level::kSoft;
+    bnn::OnnxConverter::Level opt_level = bnn::OnnxConverter::Level::kModerate;
     if (cmdl["strict"]) {
         opt_level = bnn::OnnxConverter::Level::kStrict;
     }
-    if (cmdl["extremesoft"]) {
-        opt_level = bnn::OnnxConverter::Level::kExtremeSoft;
+    if (cmdl["aggresive"]) {
+        opt_level = bnn::OnnxConverter::Level::kAggressive;
     }
 
     ONNX_NAMESPACE::ModelProto model_proto;
