@@ -241,8 +241,6 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
         }
         operands_.push_back(tensor.name());
     }
-    VLOG(5) << "We get " << onnx_bin_tensors_.size() << " binary weight and "
-              << onnx_float_tensors_.size() << " float weight";
 
     vector<flatbuffers::Offset<flatbnn::Input>> inputs;
     for (const auto &input : model_proto_.graph().input()) {
