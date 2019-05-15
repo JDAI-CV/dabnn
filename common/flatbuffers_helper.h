@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include <common/daq_generated.h>
+#include <common/dab_generated.h>
 #include <flatbuffers/flatbuffers.h>
 
 #include <common/helper.h>

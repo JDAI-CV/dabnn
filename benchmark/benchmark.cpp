@@ -289,7 +289,7 @@ static void BM_bireal18_cifar(benchmark::State &state) {
     float input[3 * 32 * 32];
 
     auto net = bnn::Net::create();
-    net->read("/data/local/tmp/model_cifar.daq");
+    net->read("/data/local/tmp/model_cifar.dab");
     for (auto _ : state) {
         net->run(input);
     }
@@ -299,7 +299,7 @@ static void BM_bireal18_imagenet(benchmark::State &state) {
     float input[3 * 224 * 224];
 
     auto net = bnn::Net::create();
-    net->read("/data/local/tmp/model_imagenet.daq");
+    net->read("/data/local/tmp/model_imagenet.dab");
     for (auto _ : state) {
         net->run(input);
     }
@@ -309,7 +309,7 @@ static void BM_bireal18_imagenet_stem(benchmark::State &state) {
     float input[3 * 224 * 224];
 
     auto net = bnn::Net::create();
-    net->read("/data/local/tmp/model_imagenet_stem.daq");
+    net->read("/data/local/tmp/model_imagenet_stem.dab");
     for (auto _ : state) {
         net->run(input);
     }
@@ -321,7 +321,7 @@ static void BM_bireal18_cifar_wo_fconv(benchmark::State &state) {
     auto net = bnn::Net::create();
     net->run_fconv = false;
     net->strict = false;
-    net->read("/data/local/tmp/model_cifar.daq");
+    net->read("/data/local/tmp/model_cifar.dab");
     for (auto _ : state) {
         net->run(input);
     }
@@ -333,7 +333,7 @@ static void BM_bireal18_imagenet_wo_fconv(benchmark::State &state) {
     auto net = bnn::Net::create();
     net->run_fconv = false;
     net->strict = false;
-    net->read("/data/local/tmp/model_imagenet.daq");
+    net->read("/data/local/tmp/model_imagenet.dab");
     for (auto _ : state) {
         net->run(input);
     }
