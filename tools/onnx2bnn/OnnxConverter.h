@@ -53,11 +53,7 @@ class OnnxConverter {
 
     std::vector<std::string> operands_;
     StrKeyMap<FTensor> bnn_tensors_;
-    StrKeyMap<BTensor> bnn_bin_tensors_;
     StrKeyMap<FTensor> onnx_float_tensors_;
-    StrKeyMap<BTensor> onnx_bin_tensors_;
-    std::set<std::string> bin_tensor_names_;
-    std::set<std::string> blobs_gen_by_bconv_;
     std::vector<flatbuffers::Offset<flatbnn::Layer>> layers_;
 
     std::vector<flatbuffers::Offset<flatbnn::Tensor>> tensors_;
@@ -87,7 +83,7 @@ class OnnxConverter {
                  const std::string &ori_weight_name,
                  const nonstd::optional<std::string> &bias_name,
                  const std::string &output_name,
-                 const bool strict=false);
+                 const bool binary);
 
     void CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
                         const std::string &coeff_a_name,

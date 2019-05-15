@@ -44,8 +44,6 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
                                const std::string &weight_name,
                                const std::string &output_name,
                                BTensor bin_weight) {
-    bnn_bin_tensors_[weight_name] = bin_weight;
-
     css bin_name = input_name + "_bin";
 
     {
@@ -103,7 +101,7 @@ void OnnxConverter::AddConv(const string &input_name,
                             const std::vector<int> &dilations, int group,
                             const string &ori_weight_name,
                             const nonstd::optional<std::string> &bias_name,
-                            const string &output_name, const bool strict) {
+                            const string &output_name, const bool binary) {
     flatbuffers::Offset<flatbnn::Layer> layer;
 
     flatbuffers::Offset<flatbnn::Tensor> flat_tensor;
@@ -114,21 +112,12 @@ void OnnxConverter::AddConv(const string &input_name,
     shaper_.AddShape(weight_name, bnn_float_tensor.shape);
     shaper_.Conv(input_name, strides[1], strides[0], 1, 1, pads[2], pads[3],
                  pads[0], pads[1], weight_name, output_name);
-    bool binary_conv;
-    if (strict) {
-        binary_conv =
-            bin_tensor_names_.find(input_name) != bin_tensor_names_.end() &&
-            bin_tensor_names_.find(ori_weight_name) != bin_tensor_names_.end();
-    } else {
-        binary_conv =
-            bin_tensor_names_.find(ori_weight_name) != bin_tensor_names_.end();
-    }
-    if (binary_conv) {
+
+    if (binary) {
         VLOG(5) << "Binary conv" + weight_name;
         BTensor weight_tensor = bitpack(bnn_float_tensor);
         AddBinConv(input_name, strides, pads, dilations, group, weight_name,
                    output_name, weight_tensor);
-        blobs_gen_by_bconv_.insert(output_name);
     } else {
         AddFloatConv(input_name, strides, pads, dilations, group, weight_name,
                      bias_name, output_name, bnn_float_tensor);
@@ -222,38 +211,19 @@ vector<bin_t> bitpack(const float *data, Shape shape) {
     return packed;
 }
 
-void OnnxConverter::GetBinTensors() {
-    for (const auto &node : model_proto_.graph().node()) {
-        NodeAttrHelper helper(node);
-        if (node.op_type() == "Sign") {
-            bin_tensor_names_.insert(node.output(0));
-        } else {
-            if (node.op_type() == "Pad" &&
-                bin_tensor_names_.find(node.input(0)) !=
-                    bin_tensor_names_.end() &&
-                helper.get("mode", "constant") == "constant" &&
-                helper.get("value", 0.f) == -1.f) {
-                bin_tensor_names_.insert(node.output(0));
-            }
-        }
-    }
-
-    for (const auto &tensor : onnx_float_tensors_) {
-        if (is_binary_weight(tensor.second.data.data(), tensor.second.shape)) {
-            bin_tensor_names_.insert(tensor.first);
-        }
-    }
-}
-
 void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                             const std::string &filepath,
                             const bool strict) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+    vector<string> optimizers{"eliminate_nop_pad", "dabnn_bconv_strict"};
+    if (!strict) {
+        optimizers.push_back("dabnn_bconv_soft");
+    }
     // model_proto is only used here. Please use the member variable model_proto_
     // in the following code
     model_proto_ = ONNX_NAMESPACE::optimization::Optimize(
-        model_proto, vector<string>{"eliminate_nop_pad"});
+        model_proto, optimizers);
 
     for (const auto &tensor : model_proto_.graph().initializer()) {
         if (tensor.data_type() == ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
@@ -332,8 +302,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             }
 
             auto ori_weight_name = m(node.input(1));
+            const bool binary_conv = (node.domain() == "dabnn");
             AddConv(m(node.input(0)), strides, pads, dilations, group,
-                    ori_weight_name, bias_name, m(node.output(0)), strict);
+                    ori_weight_name, bias_name, m(node.output(0)), binary_conv);
             VLOG(5) << "Converting Conv completed";
         } else if (op == "AveragePool" || op == "MaxPool" ||
                    op == "GlobalAveragePool" || op == "GlobalMaxPool") {
@@ -570,29 +541,26 @@ void OnnxConverter::CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
         coeff_a_data.push_back(scale.data[i] / tmp);
         coeff_b_data.push_back(b.data[i] - scale.data[i] * mean.data[i] / tmp);
     }
+    for (const auto &node2 : model_proto_.graph().node()) {
+        if (node2.domain() == "dabnn" && node2.op_type() == "Conv" 
+                && node2.output(0) == node.input(0)) {
+            const auto &weight = onnx_float_tensors_[node2.input(1)];
+            {
+                int channels = Shaper::onnx_kc(weight.shape);
+                int width = Shaper::onnx_kw(weight.shape);
+                int height = Shaper::onnx_kh(weight.shape);
 
-    if (blobs_gen_by_bconv_.find(node.input(0)) != blobs_gen_by_bconv_.end()) {
-        FTensor weight;
-        for (const auto &node2 : model_proto_.graph().node()) {
-            if (node2.op_type() == "Conv" && node2.output(0) == node.input(0)) {
-                weight = onnx_float_tensors_[node2.input(1)];
+                FORZ(i, coeff_b_data.size()) {
+                    coeff_b_data[i] = coeff_b_data[i] + channels * width *
+                                                            height *
+                                                            coeff_a_data[i];
+                }
             }
-        }
-        {
-            int channels = Shaper::onnx_kc(weight.shape);
-            int width = Shaper::onnx_kw(weight.shape);
-            int height = Shaper::onnx_kh(weight.shape);
-
-            FORZ(i, coeff_b_data.size()) {
-                coeff_b_data[i] = coeff_b_data[i] +
-                                  channels * width * height * coeff_a_data[i];
+            {
+                FORZ(i, coeff_a_data.size()) { coeff_a_data[i] *= -2; }
             }
-        }
-        {
-            FORZ(i, coeff_a_data.size()) { coeff_a_data[i] *= -2; }
         }
     }
-
 
     FTensor coeff_a;
     coeff_a.data = coeff_a_data;
