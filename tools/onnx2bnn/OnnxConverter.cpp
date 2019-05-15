@@ -44,8 +44,6 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
                                const std::string &weight_name,
                                const std::string &output_name,
                                BTensor bin_weight) {
-    bnn_bin_tensors_[weight_name] = bin_weight;
-
     css bin_name = input_name + "_bin";
 
     {
@@ -103,7 +101,7 @@ void OnnxConverter::AddConv(const string &input_name,
                             const std::vector<int> &dilations, int group,
                             const string &ori_weight_name,
                             const nonstd::optional<std::string> &bias_name,
-                            const string &output_name) {
+                            const string &output_name, const bool binary) {
     flatbuffers::Offset<flatbnn::Layer> layer;
 
     flatbuffers::Offset<flatbnn::Tensor> flat_tensor;
@@ -114,15 +112,15 @@ void OnnxConverter::AddConv(const string &input_name,
     shaper_.AddShape(weight_name, bnn_float_tensor.shape);
     shaper_.Conv(input_name, strides[1], strides[0], 1, 1, pads[2], pads[3],
                  pads[0], pads[1], weight_name, output_name);
-    if (!is_binary_weight(onnx_weight.data.data(), onnx_weight.shape)) {
-        AddFloatConv(input_name, strides, pads, dilations, group, weight_name,
-                     bias_name, output_name, bnn_float_tensor);
-    } else {
-        // binary conv
+
+    if (binary) {
         VLOG(5) << "Binary conv" + weight_name;
         BTensor weight_tensor = bitpack(bnn_float_tensor);
         AddBinConv(input_name, strides, pads, dilations, group, weight_name,
                    output_name, weight_tensor);
+    } else {
+        AddFloatConv(input_name, strides, pads, dilations, group, weight_name,
+                     bias_name, output_name, bnn_float_tensor);
     }
 }
 
@@ -214,11 +212,27 @@ vector<bin_t> bitpack(const float *data, Shape shape) {
 }
 
 void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
-                            const std::string &filepath) {
+                            const std::string &filepath,
+                            const OnnxConverter::Level level) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+    // We recognize binary convolutions in our custom ONNX optimizers.
+    // Please check out 
+    // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes/dabnn_bconv_soft.h
+    // and
+    // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes/dabnn_bconv_strict.h
+    // for details.
+    vector<string> optimizers{"eliminate_nop_pad", "dabnn_bconv_strict"};
+    if (level == Level::kModerate || level == Level::kAggressive) {
+        optimizers.push_back("dabnn_bconv_moderate");
+    }
+    if (level == Level::kAggressive) {
+        optimizers.push_back("dabnn_bconv_aggressive");
+    }
+    // model_proto is only used here. Please use the member variable model_proto_
+    // in the following code
     model_proto_ = ONNX_NAMESPACE::optimization::Optimize(
-        model_proto, vector<string>{"eliminate_nop_pad"});
+        model_proto, optimizers);
 
     for (const auto &tensor : model_proto_.graph().initializer()) {
         if (tensor.data_type() == ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
@@ -236,8 +250,6 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
         }
         operands_.push_back(tensor.name());
     }
-    VLOG(5) << "We get " << onnx_bin_tensors_.size() << " binary weight and "
-              << onnx_float_tensors_.size() << " float weight";
 
     vector<flatbuffers::Offset<flatbnn::Input>> inputs;
     for (const auto &input : model_proto_.graph().input()) {
@@ -297,8 +309,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
             }
 
             auto ori_weight_name = m(node.input(1));
+            const bool binary_conv = (node.domain() == "dabnn");
             AddConv(m(node.input(0)), strides, pads, dilations, group,
-                    ori_weight_name, bias_name, m(node.output(0)));
+                    ori_weight_name, bias_name, m(node.output(0)), binary_conv);
             VLOG(5) << "Converting Conv completed";
         } else if (op == "AveragePool" || op == "MaxPool" ||
                    op == "GlobalAveragePool" || op == "GlobalMaxPool") {
@@ -535,25 +548,23 @@ void OnnxConverter::CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
         coeff_a_data.push_back(scale.data[i] / tmp);
         coeff_b_data.push_back(b.data[i] - scale.data[i] * mean.data[i] / tmp);
     }
-
     for (const auto &node2 : model_proto_.graph().node()) {
-        if (node2.op_type() == "Conv" && node2.output(0) == node.input(0)) {
+        if (node2.domain() == "dabnn" && node2.op_type() == "Conv" 
+                && node2.output(0) == node.input(0)) {
             const auto &weight = onnx_float_tensors_[node2.input(1)];
-            if (is_binary_weight(weight.data.data(), weight.shape)) {
-                {
-                    int channels = Shaper::onnx_kc(weight.shape);
-                    int width = Shaper::onnx_kw(weight.shape);
-                    int height = Shaper::onnx_kh(weight.shape);
+            {
+                int channels = Shaper::onnx_kc(weight.shape);
+                int width = Shaper::onnx_kw(weight.shape);
+                int height = Shaper::onnx_kh(weight.shape);
 
-                    FORZ(i, coeff_b_data.size()) {
-                        coeff_b_data[i] = coeff_b_data[i] + channels * width *
-                                                                height *
-                                                                coeff_a_data[i];
-                    }
+                FORZ(i, coeff_b_data.size()) {
+                    coeff_b_data[i] = coeff_b_data[i] + channels * width *
+                                                            height *
+                                                            coeff_a_data[i];
                 }
-                {
-                    FORZ(i, coeff_a_data.size()) { coeff_a_data[i] *= -2; }
-                }
+            }
+            {
+                FORZ(i, coeff_a_data.size()) { coeff_a_data[i] *= -2; }
             }
         }
     }
