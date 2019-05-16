@@ -220,7 +220,8 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
     // Please check out "dabnn_*" pases in
     // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes
     // for details.
-    vector<string> optimizers{"eliminate_nop_pad", "dabnn_bconv_strict"};
+    vector<string> optimizers{"eliminate_nop_pad", "extract_constant_to_initializer",
+	    "dabnn_bconv_strict"};
     if (level == Level::kModerate || level == Level::kAggressive) {
         optimizers.push_back("dabnn_bconv_moderate");
     }
