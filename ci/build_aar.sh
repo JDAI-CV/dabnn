@@ -20,10 +20,6 @@ if (($# == 0)); then
         echo "HEAD is not tagged, skip deploy aar"
         exit 0
     fi
-    if [[ `git rev-parse --abbrev-ref HEAD` != "master" ]]; then
-        echo "HEAD is not master, skip deploy aar"
-        exit 0
-    fi
     # tag is expected to be something like "v0.2", so remove the leading "v"
     if [[ `echo $tag | cut -c -1` == "v" ]]; then
         ver=`echo $tag | cut -c 2-10`
