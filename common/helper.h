@@ -80,6 +80,9 @@ inline float random_float() {
     static std::normal_distribution<float> distr;
 
     float rand_float = distr(eng) / 10;
+    if (rand_float == 0) {
+        return random_float();
+    }
     // LOG(INFO) << "Random float: " << rand_float;
 
     return rand_float;
@@ -113,27 +116,20 @@ inline void fill_rand_uint64(uint64_t *data, size_t num) {
     FORZ(i, num) { *(data + i) = random_uint64(); }
 }
 
-template <typename T>
-std::string binrep(const T &a) {
-    const char *beg = reinterpret_cast<const char *>(&a);
-    const char *end = beg + sizeof(a);
-
-    std::stringstream ss;
-
-    while (beg != end) ss << std::bitset<CHAR_BIT>(*beg++) << ' ';
-    ss << '\n';
-    return ss.str();
-}
-
-template <typename T>
-std::string binrep(const T &a, const size_t size) {
-    const char *beg = reinterpret_cast<const char *>(&a);
+/**
+ * parameter human will make the output on little endian machines human-readable
+ */
+inline std::string binrep(const void *a, const size_t size, bool reverse) {
+    const char *beg = static_cast<const char *>(a);
     const char *end = beg + size;
 
     std::stringstream ss;
 
-    while (beg != end) ss << std::bitset<CHAR_BIT>(*beg++) << ' ';
-    ss << '\n';
+    if (reverse) {
+        while (beg != end) ss << std::bitset<CHAR_BIT>(*(end-- - 1)) << ' ';
+    } else {
+        while (beg != end) ss << std::bitset<CHAR_BIT>(*beg++) << ' ';
+    }
     return ss.str();
 }
 

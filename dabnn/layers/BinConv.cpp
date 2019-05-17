@@ -114,7 +114,7 @@ std::string BinConv::to_str() const {
     std::stringstream ss;
     ss << type_ << ", ";
     PNT_TO(ss, input_mat->h, input_mat->w, input_mat->elem_c, weight_mat->h,
-           weight_mat->w, weight_mat->n);
+           weight_mat->w, weight_mat->n, pad_h, pad_w);
 
     return ss.str();
 }

@@ -285,8 +285,9 @@ inline std::ostream &operator<<(std::ostream &os, const Mat &mat) {
     os << "n: " << mat.n << ", width: " << mat.w << ", height: " << mat.h
        << ", channels: " << mat.c << std::endl;
     if (mat.data_type == DataType::Bit) {
-        return os << binrep(*static_cast<char *>(mat.data),
-                            std::min(mat.total(), size_t{10}) * mat.elemsize);
+        return os << binrep(static_cast<char *>(mat.data),
+                            std::min(mat.total(), size_t{10}) * mat.elemsize,
+                            true);
     } else {
         for (size_t i = 0;
              i < std::min(static_cast<decltype(mat.total())>(10), mat.total());

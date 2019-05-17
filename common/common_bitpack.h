@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include <common/helper.h>
+#include <dabnn/mat.h>
 
 inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
                               size_t size) {
@@ -181,6 +182,25 @@ inline void pack_64_bitfield(const float *fptr, uint64_t *buf) {
     u.t.b62 = fptr[62] > 0;
     u.t.b63 = fptr[63] > 0;
     *buf = u.u64;
+}
+
+inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    BNN_ASSERT(
+        float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
+        float_mat.w * float_mat.c);
+    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "");
+
+    FORZ(n, float_mat.n) {
+        FORZ(h, float_mat.h) {
+            auto *fptr = float_mat.point<float>(n, h, 0);
+            auto *bptr = binary_mat.point<uint64_t>(n, h, 0);
+            FORZ(i, float_mat.w * float_mat.c / 64) {
+                pack_64_bitfield(fptr, bptr);
+                fptr += 64;
+                bptr++;
+            }
+        }
+    }
 }
 
 #endif /* COMMON_BITPACK_H */
