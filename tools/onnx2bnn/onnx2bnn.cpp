@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     if (cmdl["strict"]) {
         opt_level = bnn::OnnxConverter::Level::kStrict;
     }
-    if (cmdl["aggresive"]) {
+    if (cmdl["aggressive"]) {
         opt_level = bnn::OnnxConverter::Level::kAggressive;
     }
 
