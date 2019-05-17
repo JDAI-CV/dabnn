@@ -16,94 +16,6 @@
 #include <glog/logging.h>
 #include "mat.h"
 
-inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
-    BNN_ASSERT(
-        float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
-        float_mat.w * float_mat.c);
-    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "");
-
-    FORZ(n, float_mat.n) {
-        FORZ(h, float_mat.h) {
-            auto *fptr = float_mat.point<float>(n, h, 0);
-            auto *bptr = binary_mat.point<uint64_t>(n, h, 0);
-            FORZ(i, float_mat.w * float_mat.c / 64) {
-                pack_64_bitfield(fptr, bptr);
-                fptr += 64;
-                bptr++;
-            }
-        }
-    }
-}
-
-inline void pack_128_3(const float *float_ptr, void *binary_ptr, size_t size) {
-    size_t nn_size = size >> 7;
-
-    asm volatile(
-        "0:     \n"
-        "prfm   pldl1keep, [%0]     \n"
-        "ld1    {v0.4s, v1.4s, v2.4s, v3.4s}, [%0], #64    \n"
-        "ld1    {v4.4s, v5.4s, v6.4s, v7.4s}, [%0], #64    \n"
-        "sri    v0.4s, v1.4s, #1    \n"
-        "sri    v0.4s, v2.4s, #1    \n"
-        "sri    v0.4s, v3.4s, #1    \n"
-        "sri    v0.4s, v4.4s, #1    \n"
-
-        "ld1    {v8.4s, v9.4s, v10.4s, v11.4s}, [%0], #64    \n"
-        "prfm   pldl1keep, [%0, #64]     \n"
-        "ld1    {v12.4s, v13.4s, v14.4s, v15.4s}, [%0], #64    \n"
-        "sri    v0.4s, v5.4s, #1    \n"
-        "sri    v0.4s, v6.4s, #1    \n"
-        "sri    v0.4s, v7.4s, #1    \n"
-        "sri    v0.4s, v8.4s, #1    \n"
-
-        "subs   %2, %2, #1          \n"
-
-        "ld1    {v16.4s, v17.4s, v18.4s, v19.4s}, [%0], #64    \n"
-        "prfm   pldl1keep, [%0, #64]     \n"
-        "ld1    {v20.4s, v21.4s, v22.4s, v23.4s}, [%0], #64    \n"
-
-        "sri    v0.4s, v9.4s, #2    \n"
-        "sri    v0.4s, v10.4s, #2    \n"
-        "sri    v0.4s, v11.4s, #2   \n"
-        "sri    v0.4s, v12.4s, #2   \n"
-
-        "sri    v0.4s, v13.4s, #1    \n"
-        "sri    v0.4s, v14.4s, #1    \n"
-        "sri    v0.4s, v15.4s, #1    \n"
-        "sri    v0.4s, v16.4s, #1    \n"
-
-        "ld1    {v8.4s, v9.4s, v10.4s, v11.4s}, [%0], #64    \n"
-        "prfm   pldl1keep, [%0, #64]     \n"
-        "ld1    {v12.4s, v13.4s, v14.4s, v15.4s}, [%0], #64    \n"
-        "sri    v0.4s, v17.4s, #1    \n"
-        "sri    v0.4s, v18.4s, #1    \n"
-        "sri    v0.4s, v19.4s, #1    \n"
-        "sri    v0.4s, v20.4s, #1    \n"
-
-        "sri    v0.4s, v21.4s, #2   \n"
-        "sri    v0.4s, v22.4s, #2   \n"
-        "sri    v0.4s, v23.4s, #2   \n"
-        "sri    v0.4s, v24.4s, #2   \n"
-
-        "sri    v0.4s, v25.4s, #4   \n"
-        "sri    v0.4s, v26.4s, #4   \n"
-        "sri    v0.4s, v27.4s, #4   \n"
-        "sri    v0.4s, v28.4s, #4   \n"
-
-        "sri    v0.4s, v29.4s, #8    \n"
-        "sri    v0.4s, v31.4s, #8    \n"
-        "sri    v0.4s, v30.4s, #16    \n"
-
-        "st1    {v0.4s}, [%1], #16         \n"
-        "bne    0b                  \n"
-        : "+r"(float_ptr),   // %0
-          "+r"(binary_ptr),  // %1
-          "+r"(nn_size)      // %2
-        :
-        : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8",
-            "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18",
-            "v19", "x0");
-}
 inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
 
@@ -163,6 +75,17 @@ inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
         "sri    v2.4s, v3.4s, #8    \n"
         "sri    v0.4s, v2.4s, #16    \n"
 
+        // Bit-packing with sign bit is introduced after the first version
+        // of dabnn is published. Sign bit will be 1 when x < 0, 0 when x > 0,
+        // which is different with the way we used before --- set bit to 1 if
+        // x > 0 or 0 if x < 0
+        // So for the compatibility we add a "not" instruction here.
+        // Maybe we can save this instruction by introducing "version" for
+        // dabnn model and force users to upgrade.
+        // Note: If this line is removed, the padding value of binary convolution
+        // should also be changed from 0 (-1 in xnor) to -1 (1 in xnor)
+        "not    v0.16b, v0.16b        \n"
+
         "st1    {v0.4s}, [%1], #16         \n"
         "bne    0b                  \n"
         : "+r"(float_ptr),   // %0
@@ -171,8 +94,9 @@ inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
         :
         : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8",
             "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18",
-            "v19", "x0");
+            "v19", "v20", "v21", "v22", "v23", "x0");
 }
+
 inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
 
@@ -261,17 +185,24 @@ inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
           "x0");
 }
 
-inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+inline void pack_mat_128_2(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     assert(!binary_mat.empty());
 
     pack_128_2(static_cast<float *>(float_mat.data), binary_mat.data,
              float_mat.total());
 }
 
+inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    assert(!binary_mat.empty());
+
+    pack_128(static_cast<float *>(float_mat.data), binary_mat.data,
+             float_mat.total());
+}
+
 inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(float_mat.c % 64 == 0, float_mat.c);
     if (float_mat.c % 128 == 0) {
-        pack_mat_128(float_mat, binary_mat);
+        pack_mat_128_2(float_mat, binary_mat);
     } else {
         pack_mat_64(float_mat, binary_mat);
     }

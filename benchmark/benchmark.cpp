@@ -13,6 +13,22 @@
 #include <dabnn/mat.h>
 #include <dabnn/net.h>
 
+static void BM_pack_mat_64_small(benchmark::State &state) {
+    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
+    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
+    for (auto _ : state) {
+        pack_mat_64(a, b);
+    }
+}
+
+static void BM_pack_mat_128_small(benchmark::State &state) {
+    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
+    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
+    for (auto _ : state) {
+        pack_mat_128(a, b);
+    }
+}
+
 static void BM_pack_mat_64(benchmark::State &state) {
     const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float);
     bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit);

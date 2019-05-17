@@ -27,7 +27,8 @@ class Net : public std::enable_shared_from_this<Net> {
     StrKeyMap<std::shared_ptr<Mat>> mat_map_;
     Shaper shaper;
     void add_mat(const std::string &name, std::shared_ptr<Mat> mat);
-    std::vector<std::shared_ptr<std::vector<float>>> float_bufs;
+    // The lifecycle of float_bufs_ is the same as Net object
+    std::vector<std::shared_ptr<std::vector<float>>> float_bufs_;
     std::vector<std::shared_ptr<Layer>> layers;
 
     std::string input_name_;
@@ -58,6 +59,7 @@ class Net : public std::enable_shared_from_this<Net> {
     bool optimize = true;
     bool run_fconv = true;
     bool strict = true;
+    bool new_bitpack = true;
 
 #ifdef BNN_BENCHMARK
     void print_time();

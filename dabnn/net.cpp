@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <common/flatbuffers_helper.h>
+#include <dabnn/bitpack.h>
 #include <dabnn/layers/Add.h>
 #include <dabnn/layers/Affine.h>
 #include <dabnn/layers/AvePool.h>
@@ -68,17 +69,37 @@ void Net::prepare() {
 
     for (const auto &tensor : *model_->initializers()) {
         if (tensor->data_type() == flatbnn::DataType::Bit) {
+            // This shape is the same as that of flatbuffers
             Shaper::Shape shape(tensor->shape()->begin(),
                                 tensor->shape()->end());
-            const auto *data = tensor->bin_data()->Data();
+            const auto *data = tensor->bin_data()->data();
+
             const auto name = tensor->name()->str();
 
             shaper.AddShape(name, shape);
 
-            add_mat(name,
-                    std::make_shared<Mat>(shape[0], shape[1], shape[2],
-                                          shape[3], const_cast<uint8_t *>(data),
-                                          bnn::DataType::Bit, false));
+            if (new_bitpack && Shaper::c(shape) % 128 == 0) {
+                // Re-arrange the bit order
+                const auto len = shaper.total(shape);
+                const auto tmp = std::make_shared<Mat>(
+                    shape[0], shape[1], shape[2], shape[3],
+                    bnn::DataType::Float, false);
+                auto *float_data = static_cast<float *>(tmp->data);
+                FORZ(i, len / 64) {
+                    std::bitset<64> bs(*(data + i));
+                    FORZ(j, 64) { float_data[i * 64 + j] = bs[j] ? 1 : -1; }
+                }
+
+                add_mat(name, std::make_shared<Mat>(shape[0], shape[1],
+                                                    shape[2], shape[3],
+                                                    bnn::DataType::Bit, false));
+                pack_mat_128_2(*tmp, *mat_map_[name]);
+            } else {
+                add_mat(name, std::make_shared<Mat>(
+                                  shape[0], shape[1], shape[2], shape[3],
+                                  const_cast<uint64_t *>(data),
+                                  bnn::DataType::Bit, false));
+            }
         } else if (tensor->data_type() == flatbnn::DataType::Float32) {
             Shaper::Shape shape(tensor->shape()->begin(),
                                 tensor->shape()->end());
@@ -102,7 +123,7 @@ void Net::prepare() {
                 memcpy(buf->data(), data, shape[0] * sizeof(float));
                 add_mat(name, std::make_shared<Mat>(shape[0], buf->data(),
                                                     DataType::Float));
-                float_bufs.push_back(buf);
+                float_bufs_.push_back(buf);
             }
         }
     }

@@ -5,20 +5,20 @@
 #include <algorithm>
 #include <chrono>
 
+#include <common/argh.h>
 #include <common/flatbuffers_helper.h>
 #include <dabnn/net.h>
 
 int main(int argc, char **argv) {
-    (void)argc;
+    argh::parser cmdl(argc, argv);
     google::InitGoogleLogging(argv[0]);
-    FLAGS_v = 1;
+    cmdl("v", 1) >> FLAGS_v;
     FLAGS_alsologtostderr = true;
     // FLAGS_logbuflevel = -1;
 
     float *input = new float[3 * 224 * 224];
     FORZ(i, 3 * 224 * 224) { input[i] = 1; }
 
-    // const std::string blob_name = "125";
     auto net1 = bnn::Net::create();
     net1->optimize = true;
     net1->run_fconv = true;
@@ -31,7 +31,6 @@ int main(int argc, char **argv) {
     FORZ(i, N) {
         LOG(INFO) << "------";
         net1->run(input);
-        // LOG(INFO) << "hh";
     }
     const auto t2 = Clock::now();
     css blob_name = argv[2];
@@ -45,7 +44,7 @@ int main(int argc, char **argv) {
         if (blob1->data_type == bnn::DataType::Float) {
             LOG(INFO) << static_cast<float *>(blob1->data)[i];
         } else {
-            LOG(INFO) << binrep(static_cast<uint64_t *>(blob1->data)[i]);
+            LOG(INFO) << binrep(static_cast<uint64_t *>(blob1->data) + i, 64, false);
         }
     }
     LOG(INFO) << "Time: "
