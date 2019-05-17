@@ -185,9 +185,15 @@ void Net::prepare() {
                 break;
             }
             case flatbnn::LayerType::Affine: {
+#ifdef BNN_CHECK_CONSISTENCY
+                ADD_LAYER(affine, Affine, input, a, b, output);
+                layers.push_back(std::make_shared<Affine>(get_weak(), name,
+                                                          input, a, b, output));
+#else
                 ADD_INPLACE_LAYER(affine, Affine, input, a, b, output);
                 layers.push_back(
                     std::make_shared<Affine>(get_weak(), name, input, a, b));
+#endif
                 break;
             }
             case flatbnn::LayerType::Add: {
