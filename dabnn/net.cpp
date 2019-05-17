@@ -78,7 +78,7 @@ void Net::prepare() {
 
             shaper.AddShape(name, shape);
 
-            if (new_bitpack && Shaper::c(shape) % 128 == 0) {
+            if (Shaper::c(shape) % 128 == 0) {
                 // Re-arrange the bit order
                 const auto len = shaper.total(shape);
                 const auto tmp = std::make_shared<Mat>(

@@ -59,7 +59,6 @@ class Net : public std::enable_shared_from_this<Net> {
     bool optimize = true;
     bool run_fconv = true;
     bool strict = true;
-    bool new_bitpack = true;
 
 #ifdef BNN_BENCHMARK
     void print_time();
