@@ -2,6 +2,13 @@
 
 set -e
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "The system is Mac OS X, alias sed to gsed"
+    alias sed=gsed
+    echo "Output of sed:"
+    sed
+fi
+
 MY_ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
 MY_ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-$MY_ANDROID_HOME/ndk-bundle}"
 JNI_BUILD_DIR=build_jni_tmp

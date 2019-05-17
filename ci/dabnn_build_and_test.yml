@@ -3,8 +3,8 @@ pool:
 steps:
 - checkout: self
   submodules: true
-- bash: brew install watch
-  displayName: Install watch
+- bash: brew install watch gnu-sed
+  displayName: Install watch and gnu-sed
 - bash: ci/build_dabnn.sh
   displayName: Build
 - bash: ci/start_android_emulator.sh
