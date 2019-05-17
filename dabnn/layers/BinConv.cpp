@@ -99,14 +99,13 @@ void BinConv::forward_impl() const {
                   m, static_cast<uint64_t *>(col_mat->data), k,
                   static_cast<float *>(output_mat->data), m);
         } else {
-            baseline_bconv(*padded_mat, *weight_mat, weight_mat->h,
-                           weight_mat->w, 0, 0, stride_h, stride_w, 1, 1,
+            baseline_bconv(*input_mat, *weight_mat, weight_mat->h,
+                           weight_mat->w, pad_h, pad_w, stride_h, stride_w, 1, 1,
                            output_mat->c, *output_mat);
         }
     } else {
-        pad(*input_mat, pad_h, pad_w, *padded_mat);
-        baseline_bconv(*padded_mat, *weight_mat, weight_mat->h, weight_mat->w,
-                       0, 0, stride_h, stride_w, 1, 1, output_mat->c,
+        baseline_bconv(*input_mat, *weight_mat, weight_mat->h, weight_mat->w,
+                       pad_h, pad_w, stride_h, stride_w, 1, 1, output_mat->c,
                        *output_mat);
     }
 }
