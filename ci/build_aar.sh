@@ -4,9 +4,9 @@ set -e
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "The system is Mac OS X, alias sed to gsed"
-    alias sed=gsed
-    echo "Output of sed:"
-    sed
+    export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+    echo "Output of sed -v:"
+    sed -v
 fi
 
 MY_ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
