@@ -12,11 +12,23 @@ class Affine : public Layer {
     MatCP a_mat;
     MatCP b_mat;
 
+#ifdef BNN_CHECK_CONSISTENCY
+    MatCP output_mat;
+
+    Affine(NetCP net, const std::string &name, css data, css a, css b,
+           css output)
+        : Layer(net, name, "Affine"),
+          data_mat(mat(data)),
+          a_mat(mat(a)),
+          b_mat(mat(b)),
+          output_mat(mat(output)) {}
+#else
     Affine(NetCP net, const std::string &name, css data, css a, css b)
         : Layer(net, name, "Affine"),
           data_mat(mat(data)),
           a_mat(mat(a)),
           b_mat(mat(b)) {}
+#endif
     virtual void forward_impl() const;
 };
 }  // namespace bnn

@@ -6,12 +6,10 @@ project(dabnn CXX)
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
-    message("No build type, set to Release")
+    message(STATUS "No build type, set to Release")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
-message("Build type: ${CMAKE_BUILD_TYPE}")
-
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -40,6 +38,8 @@ endif()
 
 if (${BNN_BUILD_ANDROID})
     set(CMAKE_CXX_STANDARD 17)
+
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
     if (${BNN_BUILD_TEST})
         include(cmake/gtest.cmake)
