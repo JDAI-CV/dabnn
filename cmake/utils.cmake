@@ -3,7 +3,7 @@
 # Add MSVC RunTime Flag
 function(add_msvc_runtime_flag lib)
     if (MSVC)
-        if(${DNN_USE_MSVC_STATIC_RUNTIME})
+        if(${BNN_USE_MSVC_STATIC_RUNTIME})
             if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
                 target_compile_options(${lib} PRIVATE /MTd)
             else()
