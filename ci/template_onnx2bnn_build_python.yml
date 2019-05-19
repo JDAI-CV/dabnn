@@ -4,6 +4,14 @@ steps:
 - script: python setup.py sdist bdist_wheel
   workingDirectory: tools/onnx2bnn/python/
   displayName: Build onnx2bnn python package
+- task: CopyFiles@2
+  inputs:
+      contents: '.setuptools-cmake-build\tools\onnx2bnn\Release\onnx2bnn.exe'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: onnx2bnn.exe
 - script: python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
   displayName: Upload wheel to PyPI
   workingDirectory: tools/onnx2bnn/python/
