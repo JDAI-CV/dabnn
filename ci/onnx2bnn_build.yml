@@ -24,6 +24,15 @@ jobs:
     inputs:
       pathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: onnx2bnn AppImage
+  - task: GitHubRelease@0
+    inputs:
+      gitHubConnection: 'dabnn release'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'edit'
+      tag: '$(Build.SourceBranchName)'
+      target: '$(Build.SourceVersion)'
+      assets: '$(Build.ArtifactStagingDirectory)/*'
+      assetUploadMode: 'replace'
 - job: Windows_Python_Package
   pool:
       vmImage: 'vs2017-win2016'
@@ -53,6 +62,15 @@ jobs:
       sourceFolder: '.setuptools-cmake-build\tools\onnx2bnn\Release\'
       contents: 'onnx2bnn.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: GitHubRelease@0
+    inputs:
+      gitHubConnection: 'dabnn release'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'edit'
+      tag: '$(Build.SourceBranchName)'
+      target: '$(Build.SourceVersion)'
+      assets: '$(Build.ArtifactStagingDirectory)/*'
+      assetUploadMode: 'replace'
   - script: python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/test'))
     displayName: Upload wheel to PyPI
@@ -60,20 +78,3 @@ jobs:
     env:
       TWINE_USERNAME: $(twineUsername)
       TWINE_PASSWORD: $(twinePassword)
-- job: Publish_GitHub_Release
-  dependsOn:
-    - Linux_AppImage
-    - Windows_Python_Package
-  condition: succeeded()
-  steps:
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: onnx2bnn
-  - task: GitHubRelease@0
-    inputs:
-      gitHubConnection: 'dabnn release'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'create'
-      target: '$(Build.SourceVersion)'
-      assets: '$(Build.ArtifactStagingDirectory)/*'
