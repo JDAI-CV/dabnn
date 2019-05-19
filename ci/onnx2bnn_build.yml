@@ -32,6 +32,13 @@ jobs:
   steps:
   - checkout: self
     submodules: true
+  - powershell: |
+      Write-Host "This works: $env:TWINE_USERNAME"    # Recommended
+      Write-Host "This works: $env:TWINE_PASSWORD"    # Recommended
+    workingDirectory: tools/onnx2bnn/python/
+    env:
+      TWINE_USERNAME: $(twineUsername)
+      TWINE_PASSWORD: $(twinePassword)
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.5' 
@@ -42,3 +49,8 @@ jobs:
   - script: python setup.py sdist bdist_wheel
     workingDirectory: tools/onnx2bnn/python/
     displayName: Build onnx2bnn python package
+  - script: python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
+    workingDirectory: tools/onnx2bnn/python/
+    env:
+      TWINE_USERNAME: $(twineUsername)
+      TWINE_PASSWORD: $(twinePassword)
