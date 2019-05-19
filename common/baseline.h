@@ -6,7 +6,7 @@
 #include <bitset>
 
 #include <common/helper.h>
-#include <common/common_bitpack.h>
+#include <dabnn/bitpack.h>
 #include <dabnn/mat.h>
 
 inline int bitcount(uint64_t x) {

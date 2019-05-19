@@ -199,6 +199,25 @@ inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
              float_mat.total());
 }
 
+inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    BNN_ASSERT(
+        float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
+        float_mat.w * float_mat.c);
+    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "");
+
+    FORZ(n, float_mat.n) {
+        FORZ(h, float_mat.h) {
+            auto *fptr = float_mat.point<float>(n, h, 0);
+            auto *bptr = binary_mat.point<uint64_t>(n, h, 0);
+            FORZ(i, float_mat.w * float_mat.c / 64) {
+                pack_64_bitfield(fptr, bptr);
+                fptr += 64;
+                bptr++;
+            }
+        }
+    }
+}
+
 inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(float_mat.c % 64 == 0, float_mat.c);
     if (float_mat.c % 128 == 0) {
