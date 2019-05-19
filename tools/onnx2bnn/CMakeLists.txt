@@ -1,13 +1,8 @@
 # Copyright 2019 JD.com Inc. JD AI
 
-find_package(Protobuf REQUIRED)
-if (${CMAKE_VERSION} VERSION_LESS "3.6.0")
-    set(Protobuf_LIBRARIES ${PROTOBUF_LIBRARIES})
-    set(Protobuf_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS})
-endif()
+include(${PROJECT_SOURCE_DIR}/cmake/utils.cmake)
 
-add_executable(onnx2bnn
-    ${CMAKE_CURRENT_SOURCE_DIR}/onnx2bnn.cpp
+add_library(onnx2bnn
     ${CMAKE_CURRENT_SOURCE_DIR}/OnnxConverter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OnnxConverter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/NodeAttrHelper.cpp
@@ -16,27 +11,42 @@ add_executable(onnx2bnn
     ${PROJECT_SOURCE_DIR}/common/Shaper.h
     ${PROJECT_SOURCE_DIR}/common/Shaper.cpp
     )
-
 target_link_libraries(onnx2bnn
     glog::glog
     onnx
+    protobuf::libprotobuf
     )
-
 target_include_directories(onnx2bnn
-    PRIVATE
+    PUBLIC
     ${PROJECT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     )
-
-if(${CMAKE_VERSION} VERSION_GREATER "3.10.0") 
-    target_link_libraries(onnx2bnn
-        protobuf::libprotobuf)
-else()
-    target_link_libraries(onnx2bnn
-        ${Protobuf_LIBRARIES})
-    target_include_directories(onnx2bnn
-        PRIVATE
-        ${Protobuf_INCLUDE_DIRS})
+if (${BNN_SYSTEM_PROTOBUF})
+    treat_warnings_as_errors(onnx2bnn)
 endif()
+set_property(TARGET onnx2bnn PROPERTY POSITION_INDEPENDENT_CODE ON)
+add_msvc_runtime_flag(onnx2bnn)
 
-treat_warnings_as_errors(onnx2bnn)
+add_executable(onnx2bnn-bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/onnx2bnn.cpp
+    )
+target_link_libraries(onnx2bnn-bin
+    onnx2bnn)
+treat_warnings_as_errors(onnx2bnn-bin)
+set_target_properties(onnx2bnn-bin PROPERTIES OUTPUT_NAME "onnx2bnn")
+
+if (${BNN_BUILD_PYTHON})
+    pybind11_add_module(_onnx2bnn
+        ${CMAKE_CURRENT_SOURCE_DIR}/pywrapper.cpp)
+
+    target_link_libraries(_onnx2bnn
+        PUBLIC
+        protobuf::libprotobuf
+        glog::glog
+        onnx
+        onnx2bnn
+        pybind11::pybind11
+        )
+
+    add_msvc_runtime_flag(_onnx2bnn)
+endif()

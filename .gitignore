@@ -8,3 +8,7 @@ compile_commands.json
 build-*/
 build_*/
 .daq_pm/status/
+.setuptools-cmake-build/
+.eggs/
+tools/onnx2bnn/python/dist/
+tools/onnx2bnn/python/onnx2bnn.egg-info/
