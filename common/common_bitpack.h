@@ -15,8 +15,8 @@ inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
     const size_t UNIT_LEN = 64;
     std::bitset<UNIT_LEN> bits1;
     std::bitset<UNIT_LEN> bits2;
-    static_assert(std::is_same<decltype(bits1.to_ullong()), uint64_t>::value,
-                  "bits.to_ullong() must return uint64_t");
+    static_assert(sizeof(decltype(bits1.to_ullong())) * CHAR_BIT == 64,
+                  "bits.to_ullong() must return a 64-bit element");
 
     FORZS(j, size, 128) {
         FORZS(i, 128, 4) {
@@ -37,8 +37,8 @@ inline void pack_64_bitset(const float *fptr, uint64_t *buf) {
     for (size_t i = 0; i < UNIT_LEN; i++) {
         bits[i] = (*(fptr + i) > 0);
     }
-    static_assert(std::is_same<decltype(bits.to_ullong()), uint64_t>::value,
-                  "bits.to_ullong() must return uint64_t");
+    static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
+                  "bits.to_ullong() must return a 64-bit element");
     *buf = bits.to_ullong();
 }
 
