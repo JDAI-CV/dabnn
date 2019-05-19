@@ -1,5 +1,5 @@
 macro(alias_protobuf)
-    add_executable(protobuf::libprotoc ALIAS libprotoc)
+    add_library(protobuf::libprotoc ALIAS libprotoc)
     add_library(protobuf::libprotobuf ALIAS libprotobuf)
     add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)
 endmacro()

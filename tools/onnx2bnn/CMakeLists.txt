@@ -21,10 +21,6 @@ target_include_directories(onnx2bnn
     ${PROJECT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     )
-if (${BNN_SYSTEM_PROTOBUF})
-    treat_warnings_as_errors(onnx2bnn)
-endif()
-set_property(TARGET onnx2bnn PROPERTY POSITION_INDEPENDENT_CODE ON)
 add_msvc_runtime_flag(onnx2bnn)
 
 add_executable(onnx2bnn-bin
@@ -32,8 +28,11 @@ add_executable(onnx2bnn-bin
     )
 target_link_libraries(onnx2bnn-bin
     onnx2bnn)
-treat_warnings_as_errors(onnx2bnn-bin)
 set_target_properties(onnx2bnn-bin PROPERTIES OUTPUT_NAME "onnx2bnn")
+if (${BNN_SYSTEM_PROTOBUF})
+    treat_warnings_as_errors(onnx2bnn)
+    treat_warnings_as_errors(onnx2bnn-bin)
+endif()
 
 if (${BNN_BUILD_PYTHON})
     pybind11_add_module(_onnx2bnn

@@ -26,3 +26,12 @@ jobs:
         action: 'create'
         target: '$(Build.SourceVersion)'
         assets: '$(Build.ArtifactStagingDirectory)/onnx2bnn.AppImage'
+- job:
+    pool:
+        vmImage: 'vs2017-win2016'
+    steps:
+    - checkout: self
+      submodules: true
+    - script: tools/onnx2bnn/python/setup.py
+      workingDirectory: tools/onnx2bnn/python/
+      displayName: Build onnx2bnn python package

@@ -65,6 +65,11 @@ if (${BNN_BUILD_ANDROID})
 else()
     set(CMAKE_CXX_STANDARD 11)
 
+    if (${BNN_BUILD_PYTHON})
+        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+        add_subdirectory(third_party/pybind11)
+    endif()
+
     include(cmake/protobuf.cmake)
     if (${BNN_SYSTEM_PROTOBUF})
         find_package(Protobuf)
@@ -75,10 +80,6 @@ else()
 
     include(cmake/onnx.cmake)
     configure_onnx()
-
-    if (${BNN_BUILD_PYTHON})
-        add_subdirectory(third_party/pybind11)
-    endif()
 
     add_subdirectory(tools)
 endif()

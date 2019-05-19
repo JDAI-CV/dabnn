@@ -108,6 +108,7 @@ class build_ext(setuptools.command.build_ext.build_ext):
                 '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                 '-DPY_EXT_SUFFIX={}'.format(sysconfig.get_config_var('EXT_SUFFIX') or ''),
                 '-DBNN_BUILD_PYTHON=ON',
+                '-DBNN_SYSTEM_PROTOBUF=OFF',
                 '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={}'.format(extdir),
             ]
             if COVERAGE or DEBUG:
