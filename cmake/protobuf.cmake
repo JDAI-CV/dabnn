@@ -1,0 +1,16 @@
+macro(alias_protobuf)
+    add_library(protobuf::libprotoc ALIAS libprotoc)
+    add_library(protobuf::libprotobuf ALIAS libprotobuf)
+    add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)
+endmacro()
+
+macro(configure_protobuf)
+    message(STATUS "Configuring protobuf...")
+    option(protobuf_BUILD_TESTS "" OFF)
+    option(protobuf_BUILD_EXAMPLES "" OFF)
+    option(protobuf_BUILD_SHARED_LIBS "" OFF)
+    option(protobuf_BUILD_PROTOC_BINARIES "" ON)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/protobuf/cmake)
+    alias_protobuf()
+endmacro()
+
