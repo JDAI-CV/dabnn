@@ -32,6 +32,11 @@ jobs:
   steps:
   - checkout: self
     submodules: true
-  - script: python3 tools/onnx2bnn/python/setup.py
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.5' 
+      addToPath: true
+      architecture: 'x64'
+  - script: python tools/onnx2bnn/python/setup.py
     workingDirectory: tools/onnx2bnn/python/
     displayName: Build onnx2bnn python package
