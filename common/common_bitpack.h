@@ -15,8 +15,8 @@ inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
     const size_t UNIT_LEN = 64;
     std::bitset<UNIT_LEN> bits1;
     std::bitset<UNIT_LEN> bits2;
-    static_assert(std::is_same<decltype(bits1.to_ulong()), uint64_t>::value,
-                  "bits.to_ulong() must return uint64_t");
+    static_assert(std::is_same<decltype(bits1.to_ullong()), uint64_t>::value,
+                  "bits.to_ullong() must return uint64_t");
 
     FORZS(j, size, 128) {
         FORZS(i, 128, 4) {
@@ -26,8 +26,8 @@ inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
             bits2[t] = (*(float_ptr + j + i + 2) > 0);
             bits2[t + 32] = (*(float_ptr + j + i + 3) > 0);
         }
-        *ui64_ptr++ = bits1.to_ulong();
-        *ui64_ptr++ = bits2.to_ulong();
+        *ui64_ptr++ = bits1.to_ullong();
+        *ui64_ptr++ = bits2.to_ullong();
     }
 }
 
@@ -37,9 +37,9 @@ inline void pack_64_bitset(const float *fptr, uint64_t *buf) {
     for (size_t i = 0; i < UNIT_LEN; i++) {
         bits[i] = (*(fptr + i) > 0);
     }
-    static_assert(std::is_same<decltype(bits.to_ulong()), uint64_t>::value,
-                  "bits.to_ulong() must return uint64_t");
-    *buf = bits.to_ulong();
+    static_assert(std::is_same<decltype(bits.to_ullong()), uint64_t>::value,
+                  "bits.to_ullong() must return uint64_t");
+    *buf = bits.to_ullong();
 }
 
 inline void pack_64_bitfield(const float *fptr, uint64_t *buf) {
