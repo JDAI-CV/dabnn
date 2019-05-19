@@ -108,8 +108,7 @@ class build_ext(setuptools.command.build_ext.build_ext):
                 '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                 '-DPY_EXT_SUFFIX={}'.format(sysconfig.get_config_var('EXT_SUFFIX') or ''),
                 '-DBNN_BUILD_PYTHON=ON',
-                '-DBNN_SYSTEM_PROTOBUF=OFF',
-                '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={}'.format(extdir),
+                '-DBNN_SYSTEM_PROTOBUF=OFF'
             ]
             if COVERAGE or DEBUG:
                 # in order to get accurate coverage information, the
@@ -145,6 +144,21 @@ class build_ext(setuptools.command.build_ext.build_ext):
                 build_args.extend(['--', '-j', str(multiprocessing.cpu_count())])
             subprocess.check_call(build_args)
 
+        fullname = self.get_ext_fullname(ext.name)
+        filename = os.path.basename(self.get_ext_filename(fullname))
+
+        lib_path = os.path.join(CMAKE_BUILD_DIR, 'tools', 'onnx2bnn')
+        if os.name == 'nt':
+            debug_lib_dir = os.path.join(lib_path, "Debug")
+            release_lib_dir = os.path.join(lib_path, "Release")
+            if os.path.exists(debug_lib_dir):
+                lib_path = debug_lib_dir
+            elif os.path.exists(release_lib_dir):
+                lib_path = release_lib_dir
+        src = os.path.join(lib_path, filename)
+        dst = os.path.join(os.path.realpath(self.build_lib), "onnx2bnn", filename)
+        self.copy_file(src, dst)
+
 
 cmdclass = {
     'build_ext': build_ext,
@@ -171,7 +185,7 @@ packages = setuptools.find_packages()
 
 setuptools.setup(
     name="onnx2bnn",
-    version="0.0.1",
+    version="0.0.2",
     description="Convert ONNX to dabnn",
     ext_modules=ext_modules,
     cmdclass=cmdclass,

@@ -1,4 +1,4 @@
-import _onnx2bnn
+import onnx2bnn._onnx2bnn
 
 import onnx
 
