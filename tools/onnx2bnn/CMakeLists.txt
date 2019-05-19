@@ -21,7 +21,6 @@ target_include_directories(onnx2bnn
     ${PROJECT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     )
-add_msvc_runtime_flag(onnx2bnn)
 
 add_executable(onnx2bnn-bin
     ${CMAKE_CURRENT_SOURCE_DIR}/onnx2bnn.cpp
@@ -46,6 +45,4 @@ if (${BNN_BUILD_PYTHON})
         onnx2bnn
         pybind11::pybind11
         )
-
-    add_msvc_runtime_flag(_onnx2bnn)
 endif()

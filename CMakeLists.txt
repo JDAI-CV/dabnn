@@ -28,6 +28,9 @@ else()
     set(BNN_BUILD_ANDROID OFF)
 endif()
 
+include(cmake/utils.cmake)
+bnn_add_msvc_runtime_flag()
+
 include(cmake/common.cmake)
 include(cmake/system.cmake)
 
