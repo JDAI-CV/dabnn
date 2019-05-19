@@ -185,7 +185,7 @@ packages = setuptools.find_packages()
 
 setuptools.setup(
     name="onnx2bnn",
-    version="0.0.2",
+    version="0.0.3",
     description="Convert ONNX to dabnn",
     ext_modules=ext_modules,
     cmdclass=cmdclass,
