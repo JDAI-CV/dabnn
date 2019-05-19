@@ -71,8 +71,8 @@ jobs:
       target: '$(Build.SourceVersion)'
       assets: '$(Build.ArtifactStagingDirectory)/*'
       assetUploadMode: 'replace'
-  - script: python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/test'))
+  - script: python -m twine upload dist/* --verbose
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
     displayName: Upload wheel to PyPI
     workingDirectory: tools/onnx2bnn/python/
     env:
