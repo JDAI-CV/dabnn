@@ -25,6 +25,7 @@ jobs:
       pathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: onnx2bnn AppImage
   - task: GitHubRelease@0
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
     inputs:
       gitHubConnection: 'dabnn release'
       repositoryName: '$(Build.Repository.Name)'
@@ -63,6 +64,7 @@ jobs:
       contents: 'onnx2bnn.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: GitHubRelease@0
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
     inputs:
       gitHubConnection: 'dabnn release'
       repositoryName: '$(Build.Repository.Name)'
