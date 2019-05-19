@@ -1,6 +1,6 @@
 # Copyright 2019 JD.com Inc. JD AI
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 project(dabnn CXX)
 
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
@@ -75,6 +75,7 @@ else()
         find_package(Protobuf)
     endif()
     if (NOT Protobuf_FOUND)
+        message(STATUS "BNN_SYSTEM_PROTOBUF is ON but protobuf is not found, using the packed protobuf..")
         set(BNN_SYSTEM_PROTOBUF OFF CACHE BOOL "Use system protobuf when building onnx2daq" FORCE)
     endif()
 

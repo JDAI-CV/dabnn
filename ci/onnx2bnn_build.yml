@@ -5,8 +5,8 @@ jobs:
   steps:
   - checkout: self
     submodules: true
-  - script: sudo apt install -y cmake protobuf-compiler libprotobuf-dev
-    displayName: Install cmake 3.5.1 and protobuf
+  - script: sudo apt install -y protobuf-compiler libprotobuf-dev
+    displayName: Install protobuf
   - bash: ci/build_onnx2bnn.sh
     displayName: Build
   - bash: ci/build_appimage.sh
