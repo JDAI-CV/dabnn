@@ -27,7 +27,7 @@ pr:
     - dabnn/*
 
 jobs:
-- job: Linux_AppImage
+- job: LinuxAppImage
   pool:
       vmImage: 'ubuntu-16.04'
   steps:
@@ -48,7 +48,7 @@ jobs:
       pathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: onnx2bnn AppImage
   - template: template_onnx2bnn_github_release.yml
-- job: Windows_Python_Package
+- job: Windows
   pool:
       vmImage: 'vs2017-win2016'
   steps:
@@ -61,10 +61,18 @@ jobs:
       contents: 'onnx2bnn.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - template: template_onnx2bnn_github_release.yml
-  - script: python -m twine upload dist/* --verbose
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-    displayName: Upload wheel to PyPI
-    workingDirectory: tools/onnx2bnn/python/
-    env:
-      TWINE_USERNAME: $(twineUsername)
-      TWINE_PASSWORD: $(twinePassword)
+  - template: template_onnx2bnn_upload_to_pypi.yml
+- job: macOS
+  pool:
+      vmImage: 'macOS-10.14'
+  steps:
+  - checkout: self
+    submodules: true
+  - template: template_onnx2bnn_build_python_all_version.yml
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '.setuptools-cmake-build/tools/onnx2bnn'
+      contents: 'onnx2bnn.*'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+  - template: template_onnx2bnn_github_release.yml
+  - template: template_onnx2bnn_upload_to_pypi.yml
