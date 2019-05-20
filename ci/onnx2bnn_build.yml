@@ -1,8 +1,31 @@
 trigger:
   branches:
     include:
-      - refs/heads/*
-      - refs/tags/*
+    - master
+  tags:
+    include:
+    - v*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - README.md
+    - docs/*
+    # not trigger onnx2bnn build when only dabnn is edited
+    - dabnn/*
+pr:
+  branches:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - README.md
+    - docs/*
+    # not trigger onnx2bnn build when only dabnn is edited
+    - dabnn/*
+
 jobs:
 - job: Linux_AppImage
   pool:

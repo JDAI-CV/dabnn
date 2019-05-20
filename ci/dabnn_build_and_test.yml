@@ -1,8 +1,27 @@
 trigger:
   branches:
     include:
-      - refs/heads/*
-      - refs/tags/*
+    - master
+  tags:
+    include:
+    - v*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - README.md
+    - docs/*
+pr:
+  branches:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - README.md
+    - docs/*
+
 pool:
     vmImage: 'macOS-10.14'
 steps:
