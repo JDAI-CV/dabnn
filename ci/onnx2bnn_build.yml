@@ -47,55 +47,20 @@ jobs:
     inputs:
       pathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: onnx2bnn AppImage
-  - task: GitHubRelease@0
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-    inputs:
-      gitHubConnection: 'dabnn release'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'edit'
-      tag: '$(Build.SourceBranchName)'
-      target: '$(Build.SourceVersion)'
-      assets: '$(Build.ArtifactStagingDirectory)/*'
-      assetUploadMode: 'replace'
+  - template: template_onnx2bnn_github_release.yml
 - job: Windows_Python_Package
   pool:
       vmImage: 'vs2017-win2016'
   steps:
   - checkout: self
     submodules: true
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.7' 
-      addToPath: true
-      architecture: 'x64'
-  - template: template_onnx2bnn_build_python.yml
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.6' 
-      addToPath: true
-      architecture: 'x64'
-  - template: template_onnx2bnn_build_python.yml
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.5' 
-      addToPath: true
-      architecture: 'x64'
-  - template: template_onnx2bnn_build_python.yml
+  - template: template_onnx2bnn_build_python_all_version.yml
   - task: CopyFiles@2
     inputs:
       sourceFolder: '.setuptools-cmake-build\tools\onnx2bnn\Release\'
       contents: 'onnx2bnn.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
-  - task: GitHubRelease@0
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-    inputs:
-      gitHubConnection: 'dabnn release'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'edit'
-      tag: '$(Build.SourceBranchName)'
-      target: '$(Build.SourceVersion)'
-      assets: '$(Build.ArtifactStagingDirectory)/*'
-      assetUploadMode: 'replace'
+  - template: template_onnx2bnn_github_release.yml
   - script: python -m twine upload dist/* --verbose
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
     displayName: Upload wheel to PyPI
