@@ -1,0 +1,5 @@
+# It is a configuration file for [project_manager.vim](https://github.com/daquexian/project_manager.vim)
+name binary-nn
+type cpp
+build_dir build_x86_python
+cmake_options -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBNN_BUILD_PYTHON=ON

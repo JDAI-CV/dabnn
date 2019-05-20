@@ -1,26 +1,82 @@
-pool:
-    vmImage: 'ubuntu-16.04'
-steps:
-- checkout: self
-  submodules: true
-- script: sudo apt install -y cmake protobuf-compiler libprotobuf-dev
-  displayName: Install cmake 3.5.1 and protobuf
-- bash: ci/build_onnx2bnn.sh
-  displayName: Build
-- bash: ci/build_appimage.sh
-  displayName: Build AppImage
-- task: CopyFiles@2
-  inputs:
-      contents: 'onnx2bnn.AppImage'
+trigger:
+  branches:
+    include:
+      - refs/heads/*
+      - refs/tags/*
+jobs:
+- job: Linux_AppImage
+  pool:
+      vmImage: 'ubuntu-16.04'
+  steps:
+  - checkout: self
+    submodules: true
+  - script: sudo apt install -y protobuf-compiler libprotobuf-dev
+    displayName: Install protobuf
+  - bash: ci/build_onnx2bnn.sh
+    displayName: Build
+  - bash: ci/build_appimage.sh
+    displayName: Build AppImage
+  - task: CopyFiles@2
+    inputs:
+        contents: 'onnx2bnn.AppImage'
+        targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: onnx2bnn AppImage
+  - task: GitHubRelease@0
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    inputs:
+      gitHubConnection: 'dabnn release'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'edit'
+      tag: '$(Build.SourceBranchName)'
+      target: '$(Build.SourceVersion)'
+      assets: '$(Build.ArtifactStagingDirectory)/*'
+      assetUploadMode: 'replace'
+- job: Windows_Python_Package
+  pool:
+      vmImage: 'vs2017-win2016'
+  steps:
+  - checkout: self
+    submodules: true
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7' 
+      addToPath: true
+      architecture: 'x64'
+  - template: template_onnx2bnn_build_python.yml
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6' 
+      addToPath: true
+      architecture: 'x64'
+  - template: template_onnx2bnn_build_python.yml
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.5' 
+      addToPath: true
+      architecture: 'x64'
+  - template: template_onnx2bnn_build_python.yml
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '.setuptools-cmake-build\tools\onnx2bnn\Release\'
+      contents: 'onnx2bnn.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: $(Build.ArtifactStagingDirectory)
-    artifactName: onnx2bnn AppImage
-- task: GitHubRelease@0
-  inputs:
-    gitHubConnection: 'dabnn release'
-    repositoryName: '$(Build.Repository.Name)'
-    action: 'create'
-    target: '$(Build.SourceVersion)'
-    assets: '$(Build.ArtifactStagingDirectory)/onnx2bnn.AppImage'
+  - task: GitHubRelease@0
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    inputs:
+      gitHubConnection: 'dabnn release'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'edit'
+      tag: '$(Build.SourceBranchName)'
+      target: '$(Build.SourceVersion)'
+      assets: '$(Build.ArtifactStagingDirectory)/*'
+      assetUploadMode: 'replace'
+  - script: python -m twine upload dist/* --verbose
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    displayName: Upload wheel to PyPI
+    workingDirectory: tools/onnx2bnn/python/
+    env:
+      TWINE_USERNAME: $(twineUsername)
+      TWINE_PASSWORD: $(twinePassword)

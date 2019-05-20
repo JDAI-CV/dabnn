@@ -1,0 +1,6 @@
+steps:
+- script: python -m pip install --user --upgrade setuptools wheel twine
+  displayName: Install setuptools, wheel and twine
+- script: python setup.py sdist bdist_wheel
+  workingDirectory: tools/onnx2bnn/python/
+  displayName: Build onnx2bnn python package

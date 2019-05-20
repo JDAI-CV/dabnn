@@ -8,7 +8,6 @@
 #include <cstdint>
 
 #include <common/helper.h>
-#include <dabnn/mat.h>
 
 inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
                               size_t size) {
@@ -16,8 +15,8 @@ inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
     const size_t UNIT_LEN = 64;
     std::bitset<UNIT_LEN> bits1;
     std::bitset<UNIT_LEN> bits2;
-    static_assert(std::is_same<decltype(bits1.to_ulong()), uint64_t>::value,
-                  "bits.to_ulong() must return uint64_t");
+    static_assert(sizeof(decltype(bits1.to_ullong())) * CHAR_BIT == 64,
+                  "bits.to_ullong() must return a 64-bit element");
 
     FORZS(j, size, 128) {
         FORZS(i, 128, 4) {
@@ -27,8 +26,8 @@ inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
             bits2[t] = (*(float_ptr + j + i + 2) > 0);
             bits2[t + 32] = (*(float_ptr + j + i + 3) > 0);
         }
-        *ui64_ptr++ = bits1.to_ulong();
-        *ui64_ptr++ = bits2.to_ulong();
+        *ui64_ptr++ = bits1.to_ullong();
+        *ui64_ptr++ = bits2.to_ullong();
     }
 }
 
@@ -38,9 +37,9 @@ inline void pack_64_bitset(const float *fptr, uint64_t *buf) {
     for (size_t i = 0; i < UNIT_LEN; i++) {
         bits[i] = (*(fptr + i) > 0);
     }
-    static_assert(std::is_same<decltype(bits.to_ulong()), uint64_t>::value,
-                  "bits.to_ulong() must return uint64_t");
-    *buf = bits.to_ulong();
+    static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
+                  "bits.to_ullong() must return a 64-bit element");
+    *buf = bits.to_ullong();
 }
 
 inline void pack_64_bitfield(const float *fptr, uint64_t *buf) {
@@ -182,25 +181,6 @@ inline void pack_64_bitfield(const float *fptr, uint64_t *buf) {
     u.t.b62 = fptr[62] > 0;
     u.t.b63 = fptr[63] > 0;
     *buf = u.u64;
-}
-
-inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
-    BNN_ASSERT(
-        float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
-        float_mat.w * float_mat.c);
-    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "");
-
-    FORZ(n, float_mat.n) {
-        FORZ(h, float_mat.h) {
-            auto *fptr = float_mat.point<float>(n, h, 0);
-            auto *bptr = binary_mat.point<uint64_t>(n, h, 0);
-            FORZ(i, float_mat.w * float_mat.c / 64) {
-                pack_64_bitfield(fptr, bptr);
-                fptr += 64;
-                bptr++;
-            }
-        }
-    }
 }
 
 #endif /* COMMON_BITPACK_H */
