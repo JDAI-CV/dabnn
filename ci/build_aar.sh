@@ -21,15 +21,11 @@ cp ${JNI_BUILD_DIR}/dabnn/jni/libdabnn-jni.so ci/android_aar/dabnn/src/main/jniL
 
 # Increase version code and update version name
 
+echo "Build source branch: $BUILD_SOURCEBRANCH"
+
 if (($# == 0)); then
-    ret=0; tag=`git describe --exact-match --tags` || ret=$?
-    if [ $ret != 0 ]; then
-        echo "HEAD is not tagged, skip deploy aar"
-        exit 0
-    fi
-    # tag is expected to be something like "v0.2", so remove the leading "v"
-    if [[ `echo $tag | cut -c -1` == "v" ]]; then
-        ver=`echo $tag | cut -c 2-10`
+    if [[ $BUILD_SOURCEBRANCH == refs/tags/v* ]]; then
+        ver=`echo $BUILD_SOURCEBRANCH | cut -c 12-`
     else
         echo "HEAD is not tagged as a version, skip deploy aar"
         exit 0
