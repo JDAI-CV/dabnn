@@ -43,10 +43,7 @@ jobs:
     inputs:
         contents: 'onnx2bnn.AppImage'
         targetFolder: $(Build.ArtifactStagingDirectory)
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: onnx2bnn AppImage
+  - template: template_onnx2bnn_publish_artifacts.yml
   - template: template_onnx2bnn_github_release.yml
 - job: Windows
   pool:
@@ -60,6 +57,7 @@ jobs:
       sourceFolder: '.setuptools-cmake-build\tools\onnx2bnn\Release\'
       contents: 'onnx2bnn.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
+  - template: template_onnx2bnn_publish_artifacts.yml
   - template: template_onnx2bnn_github_release.yml
   - template: template_onnx2bnn_upload_to_pypi.yml
 - job: macOS
@@ -72,7 +70,8 @@ jobs:
   - task: CopyFiles@2
     inputs:
       sourceFolder: '.setuptools-cmake-build/tools/onnx2bnn'
-      contents: 'onnx2bnn.*'
+      contents: 'onnx2bnn'
       targetFolder: $(Build.ArtifactStagingDirectory)
+  - template: template_onnx2bnn_publish_artifacts.yml
   - template: template_onnx2bnn_github_release.yml
   - template: template_onnx2bnn_upload_to_pypi.yml
