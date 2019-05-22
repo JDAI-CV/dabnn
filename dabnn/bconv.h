@@ -833,7 +833,7 @@ inline void bnn::bconv_3x3(const Mat &bottom_blob, const Mat &weight,
         bconv_3x3_64(bottom_blob, weight, top_blob, stride);
     } else if (bottom_blob.c == 2 && top_blob.c == 128) {
         top_blob.fill<float>(0.f);
-        if (stride == 1) {
+        if (stride == 1 && top_blob.w % 2 == 0) {
             bconv_3x3_128_internal_s1(
                 static_cast<uint64_t *>(bottom_blob.data), bottom_blob.w,
                 static_cast<uint64_t *>(weight.data),
