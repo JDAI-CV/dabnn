@@ -1,0 +1,12 @@
+steps:
+- task: GitHubRelease@0
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  inputs:
+    gitHubConnection: 'dabnn release'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'edit'
+    tag: '$(Build.SourceBranchName)'
+    target: '$(Build.SourceVersion)'
+    assets: '$(Build.ArtifactStagingDirectory)/*'
+    assetUploadMode: 'replace'
+
