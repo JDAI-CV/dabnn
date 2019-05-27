@@ -2,6 +2,7 @@
 
 set -e
 
+nproc=$(ci/get_cores.sh)
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "The system is Mac OS X, alias sed to gsed"
     export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
@@ -14,22 +15,18 @@ MY_ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-$MY_ANDROID_HOME/ndk-bundle}"
 JNI_BUILD_DIR=build_jni_tmp
 rm -rf ${JNI_BUILD_DIR} && mkdir ${JNI_BUILD_DIR} && pushd ${JNI_BUILD_DIR}
 cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_TOOLCHAIN_FILE=${MY_ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake -DANDROID_CPP_FEATURES=exceptions -DANDROID_PLATFORM=android-21 -DANDROID_ABI=arm64-v8a -DBNN_BUILD_JNI=ON -DBNN_BUILD_TEST=OFF -DBNN_BUILD_BENCHMARK=OFF ..
-cmake --build . -- "-j$(nproc)"
+cmake --build . -- -j$nproc
 popd
 mkdir -p ci/android_aar/dabnn/src/main/jniLibs/arm64-v8a
 cp ${JNI_BUILD_DIR}/dabnn/jni/libdabnn-jni.so ci/android_aar/dabnn/src/main/jniLibs/arm64-v8a/
 
 # Increase version code and update version name
 
+echo "Build source branch: $BUILD_SOURCEBRANCH"
+
 if (($# == 0)); then
-    ret=0; tag=`git describe --exact-match --tags` || ret=$?
-    if [ $ret != 0 ]; then
-        echo "HEAD is not tagged, skip deploy aar"
-        exit 0
-    fi
-    # tag is expected to be something like "v0.2", so remove the leading "v"
-    if [[ `echo $tag | cut -c -1` == "v" ]]; then
-        ver=`echo $tag | cut -c 2-10`
+    if [[ $BUILD_SOURCEBRANCH == refs/tags/v* ]]; then
+        ver=`echo $BUILD_SOURCEBRANCH | cut -c 12-`
     else
         echo "HEAD is not tagged as a version, skip deploy aar"
         exit 0

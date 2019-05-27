@@ -1,10 +1,33 @@
 trigger:
   branches:
     include:
-      - refs/heads/*
-      - refs/tags/*
+    - master
+  tags:
+    include:
+    - v*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - README.md
+    - docs/*
+    # not trigger onnx2bnn build when only dabnn is edited
+    - dabnn/*
+pr:
+  branches:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - README.md
+    - docs/*
+    # not trigger onnx2bnn build when only dabnn is edited
+    - dabnn/*
+
 jobs:
-- job: Linux_AppImage
+- job: LinuxAppImage
   pool:
       vmImage: 'ubuntu-16.04'
   steps:
@@ -20,63 +43,37 @@ jobs:
     inputs:
         contents: 'onnx2bnn.AppImage'
         targetFolder: $(Build.ArtifactStagingDirectory)
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: onnx2bnn AppImage
-  - task: GitHubRelease@0
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-    inputs:
-      gitHubConnection: 'dabnn release'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'edit'
-      tag: '$(Build.SourceBranchName)'
-      target: '$(Build.SourceVersion)'
-      assets: '$(Build.ArtifactStagingDirectory)/*'
-      assetUploadMode: 'replace'
-- job: Windows_Python_Package
+  - template: template_onnx2bnn_publish_artifacts.yml
+  - template: template_onnx2bnn_github_release.yml
+- job: Windows
   pool:
       vmImage: 'vs2017-win2016'
   steps:
   - checkout: self
     submodules: true
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.7' 
-      addToPath: true
-      architecture: 'x64'
-  - template: template_onnx2bnn_build_python.yml
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.6' 
-      addToPath: true
-      architecture: 'x64'
-  - template: template_onnx2bnn_build_python.yml
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.5' 
-      addToPath: true
-      architecture: 'x64'
-  - template: template_onnx2bnn_build_python.yml
+  - template: template_onnx2bnn_build_python_all_version.yml
   - task: CopyFiles@2
     inputs:
       sourceFolder: '.setuptools-cmake-build\tools\onnx2bnn\Release\'
       contents: 'onnx2bnn.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
-  - task: GitHubRelease@0
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  - template: template_onnx2bnn_publish_artifacts.yml
+  - template: template_onnx2bnn_github_release.yml
+  - template: template_onnx2bnn_upload_to_pypi.yml
+- job: macOS
+  pool:
+      vmImage: 'macOS-10.14'
+  steps:
+  - checkout: self
+    submodules: true
+  - template: template_onnx2bnn_build_python_all_version.yml
+  - script: 'cp .setuptools-cmake-build/tools/onnx2bnn/onnx2bnn .setuptools-cmake-build/tools/onnx2bnn/onnx2bnn-macos'
+    displayName: 'Rename onnx2bnn'
+  - task: CopyFiles@2
     inputs:
-      gitHubConnection: 'dabnn release'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'edit'
-      tag: '$(Build.SourceBranchName)'
-      target: '$(Build.SourceVersion)'
-      assets: '$(Build.ArtifactStagingDirectory)/*'
-      assetUploadMode: 'replace'
-  - script: python -m twine upload dist/* --verbose
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-    displayName: Upload wheel to PyPI
-    workingDirectory: tools/onnx2bnn/python/
-    env:
-      TWINE_USERNAME: $(twineUsername)
-      TWINE_PASSWORD: $(twinePassword)
+      sourceFolder: '.setuptools-cmake-build/tools/onnx2bnn'
+      contents: 'onnx2bnn-macos'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+  - template: template_onnx2bnn_publish_artifacts.yml
+  - template: template_onnx2bnn_github_release.yml
+  - template: template_onnx2bnn_upload_to_pypi.yml
