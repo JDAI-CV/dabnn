@@ -9,6 +9,7 @@
 
 namespace bnn {
 
+#ifdef __aarch64__
 void maxpool2x2(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                 const int stride_w = 1) {
     FORZ(h, output.h) {
@@ -126,6 +127,7 @@ void maxpool3x3(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
         }
     }
 }
+#endif // __aarch64__
 
 MaxPool::MaxPool(NetCP net, const std::string &name, css input, css output,
                  int kernel_h, int kernel_w, int pad_h, int pad_w, int stride_h,
@@ -150,6 +152,7 @@ MaxPool::MaxPool(NetCP net, const std::string &name, css input, css output,
     padded_mat = mat_map[pad_name];
 }
 void MaxPool::forward_impl() const {
+#ifdef __aarch64__
     // std::numeric_limits<float>::min() is the closest value to 0, so we uses
     // -max()
     pad(*input_mat, pad_h, pad_w, *padded_mat,
@@ -164,6 +167,9 @@ void MaxPool::forward_impl() const {
     } else {
         std::invalid_argument("Not supported max_pool");
     }
+#else
+    std::invalid_argument("Not supported max_pool");
+#endif // __aarch64__
 }
 
 std::string MaxPool::to_str() const {

@@ -78,6 +78,7 @@ void Net::prepare() {
 
             shaper.AddShape(name, shape);
 
+#ifdef __aarch64__
             if (Shaper::c(shape) % 128 == 0) {
                 // Re-arrange the bit order
                 const auto len = shaper.total(shape);
@@ -95,11 +96,14 @@ void Net::prepare() {
                                                     bnn::DataType::Bit, false));
                 pack_mat_128_2(*tmp, *mat_map_[name]);
             } else {
+#endif // __aarch64__
                 add_mat(name, std::make_shared<Mat>(
                                   shape[0], shape[1], shape[2], shape[3],
                                   const_cast<uint64_t *>(data),
                                   bnn::DataType::Bit, false));
+#ifdef __aarch64__
             }
+#endif // __aarch64__
         } else if (tensor->data_type() == flatbnn::DataType::Float32) {
             Shaper::Shape shape(tensor->shape()->begin(),
                                 tensor->shape()->end());

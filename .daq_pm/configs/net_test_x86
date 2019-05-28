@@ -1,0 +1,7 @@
+# It is a configuration file for [project_manager.vim](https://github.com/daquexian/project_manager.vim)
+name binary-nn
+type cpp
+build_dir build_net_test_x86
+target net_test
+cmake_options -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DBNN_BUILD_MAIN_LIB=ON -GNinja 
+binary tests/net_test
