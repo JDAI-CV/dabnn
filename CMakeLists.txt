@@ -24,7 +24,8 @@ option(BNN_USE_MSVC_STATIC_RUNTIME "Link onnx2bnn to msvc static runtime" ON)
 
 message(STATUS "Target architecture: ${CMAKE_SYSTEM_PROCESSOR}")
 if (NOT DEFINED BNN_BUILD_MAIN_LIB)
-    if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+    if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" OR 
+            CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7-a")
         set(BNN_BUILD_MAIN_LIB ON)
     else()
         set(BNN_BUILD_MAIN_LIB OFF)
