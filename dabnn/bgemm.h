@@ -6,6 +6,7 @@
 #if __ARM_NEON
 #include <arm_neon.h>
 #endif  // __ARM_NEON
+#include <common/baseline.h>
 #include <common/helper.h>
 
 #define P 8
@@ -86,7 +87,7 @@ inline void inner_kernel(const int m, const int n, const int k,
         FOR(_j, 0, j) {
             FOR(_i, i, m) {
                 FORZ(_k, k) {
-                    C(_i, _j) += __builtin_popcountl(A(_i, _k) ^ B(_k, _j));
+                    C(_i, _j) += bitcount(A(_i, _k) ^ B(_k, _j));
                 }
             }
         }
@@ -95,7 +96,7 @@ inline void inner_kernel(const int m, const int n, const int k,
         FOR(_j, j, n) {
             FOR(_i, 0, i) {
                 FORZ(_k, k) {
-                    C(_i, _j) += __builtin_popcountl(A(_i, _k) ^ B(_k, _j));
+                    C(_i, _j) += bitcount(A(_i, _k) ^ B(_k, _j));
                 }
             }
         }
@@ -104,7 +105,7 @@ inline void inner_kernel(const int m, const int n, const int k,
         FOR(_j, j, n) {
             FOR(_i, i, m) {
                 FORZ(_k, k) {
-                    C(_i, _j) += __builtin_popcountl(A(_i, _k) ^ B(_k, _j));
+                    C(_i, _j) += bitcount(A(_i, _k) ^ B(_k, _j));
                 }
             }
         }
@@ -430,7 +431,7 @@ inline void bgemm_naive(const int m, const int n, const int k,
         FORZ(j, n) {
             FORZ(h, k) {
                 C(i, j) += static_cast<float>(
-                    __builtin_popcountl((A(i, h) ^ B(h, j))));
+                    bitcount((A(i, h) ^ B(h, j))));
             }
         }
     }

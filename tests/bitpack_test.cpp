@@ -74,3 +74,17 @@ TEST(bitpack, pack_mat_fallback) {
 
     ASSERT_EQ(a_binary, expected);
 }
+
+TEST(bitpack, addv_v7) {
+    uint64_t data[2];
+    fill_rand_uint64(data, 2);
+    uint8x16_t v = vld1q_u8(reinterpret_cast<unsigned char *>(data));
+    auto v1 = vcntq_u8(v);
+    auto v2 = vpaddlq_u8(v1);
+    auto v3 = vpaddlq_u16(v2);
+    auto v4 = vpaddlq_u32(v3);
+
+    auto res = vgetq_lane_u64(v4, 0) + vgetq_lane_u64(v4, 1);
+
+    ASSERT_EQ(res, __builtin_popcountl(data[0]) + __builtin_popcountl(data[1]));
+}
