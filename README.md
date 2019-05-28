@@ -46,9 +46,9 @@ The following is the comparison between our dabnn and [Caffe](http://caffe.berke
 
 ## Convert ONNX Model
 
-We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabnn model. To get the conversion tool, just build the project using the native toolchain (instead of arm cross-compiling toolchain). For Linux users, we provide pre-built onnx2bnn AppImage. Linux users can download it from [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases). For the usage and other information about AppImage, please check out https://appimage.org .
+We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabnn model. We provide onnx2bnn pre-built binaries for all platforms in [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases). For Linux users, the onnx2bnn pre-built binary is [AppImage](https://appimage.org) format, see https://appimage.org for details.
 
-Note: Binary convolution is a custom operator, so whether the ONNX model is dabnn-comptabile heavily depends on the implementation of the binary convolution in the training code. We will soon provide an dabnn-comptabile PyTorch implementation of binary convolution.
+Note: Binary convolution is a custom operator, so whether the ONNX model is dabnn-comptabile heavily depends on the implementation of the binary convolution in the training code. Please check out [our wiki](https://github.com/JDAI-CV/dabnn/wiki/Train,-export-and-convert-a-dabnn-model) for the further information.
 
 After conversion, the generated dabnn model can be deployed on armv8 devices. For Android developer, we have provided Android AAR package and published it on [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion), for the usage please check out [example project](https://github.com/JDAI-CV/dabnn-example).
 
