@@ -273,8 +273,6 @@ inline bool Mat::operator==(const Mat &m) const {
     }
     FORZ(i, total()) {
         if (std::abs(static_cast<float *>(data)[i] - m[i]) > 1e-5) {
-            PNT(static_cast<float *>(data)[i]);
-            PNT(m[i]);
             return false;
         }
     }
