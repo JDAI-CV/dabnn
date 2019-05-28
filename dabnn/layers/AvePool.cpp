@@ -7,6 +7,7 @@
 
 namespace bnn {
 
+#ifdef __aarch64__
 void ave_pool_2x2_s2(const bnn::Mat &input, bnn::Mat &output) {
     FORZ(h, output.h) {
         FORZ(w, output.w) {
@@ -48,6 +49,7 @@ void ave_pool_2x2_s2(const bnn::Mat &input, bnn::Mat &output) {
         }
     }
 }
+#endif // __aarch64__
 
 void ave_pool_fallback(const bnn::Mat &input, const size_t pad_h,
                        const size_t pad_w, const size_t stride_h,
@@ -114,6 +116,7 @@ AvePool::AvePool(NetCP net, const std::string &name, css input, css output,
 }
 
 void AvePool::forward_impl() const {
+#ifdef __aarch64__
     if (stride_h == 2 && stride_w == 2 && kernel_h == 2 && kernel_w == 2 &&
         input_mat->c % 4 == 0) {
         pad(*input_mat, pad_h, pad_w, *padded_mat);
@@ -122,6 +125,10 @@ void AvePool::forward_impl() const {
         ave_pool_fallback(*input_mat, pad_h, pad_w, stride_h, stride_w,
                           kernel_h, kernel_w, *output_mat);
     }
+#else
+    ave_pool_fallback(*input_mat, pad_h, pad_w, stride_h, stride_w,
+                      kernel_h, kernel_w, *output_mat);
+#endif // __aarch64__
 }
 
 }  // namespace bnn

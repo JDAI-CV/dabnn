@@ -190,7 +190,7 @@ TEST(bconv_test, bconv_test_3x3_64) {
 
     bnn::Mat c(CHEIGHT, CWIDTH, NUM_OUTPUT, bnn::DataType::Float);
     c.fill<float>(0);
-    bnn::bconv_3x3_64(padded, b, c);
+    bnn::bconv_3x3(padded, b, c);
 
     bnn::Mat expected(CHEIGHT, CWIDTH, NUM_OUTPUT, bnn::DataType::Float);
     expected.fill<float>(0);
@@ -229,7 +229,7 @@ TEST(bconv_test, bconv_test_3x3_64_s2) {
 
     bnn::Mat c(CHEIGHT, CWIDTH, NUM_OUTPUT, bnn::DataType::Float);
     c.fill<float>(0);
-    bnn::bconv_3x3_64(padded, b, c, 2);
+    bnn::bconv_3x3(padded, b, c, 2);
 
     bnn::Mat expected(CHEIGHT, CWIDTH, NUM_OUTPUT, bnn::DataType::Float);
     expected.fill<float>(0);

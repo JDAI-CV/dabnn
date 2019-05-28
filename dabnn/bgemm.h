@@ -16,6 +16,7 @@
 
 #define min(i, j) ((i) < (j) ? (i) : (j))
 
+#if __aarch64__
 inline void pack_a(const int kc, const uint64_t *a, const int lda,
                    uint64_t *a_to);
 inline void pack_b(const int kc, const uint64_t *b, const int ldb,
@@ -28,6 +29,7 @@ inline void inner_kernel(const int m, const int n, const int k,
                          const uint64_t *a, const int lda, const uint64_t *b,
                          const int ldb, float *c, const int ldc,
                          const int first_time);
+#endif  // __aarch64__
 inline void bgemm_naive(const int m, const int n, const int k,
                         const uint64_t *a, const int lda, const uint64_t *b,
                         const int ldb, float *c, const int ldc);
@@ -35,6 +37,7 @@ inline void bgemm_naive(const int m, const int n, const int k,
 inline void bgemm(const int m, const int n, const int k, const uint64_t *a,
                   int lda, const uint64_t *b, const int ldb, float *c,
                   const int ldc) {
+#if __aarch64__
     int kc = 32;
     int mc = 32;
     int i, q, qb, ib;
@@ -48,8 +51,12 @@ inline void bgemm(const int m, const int n, const int k, const uint64_t *a,
                          i == 0);
         }
     }
+#else
+    bgemm_naive(m, n, k, a, lda, b, ldb, c, ldc);
+#endif  // __aarch64__
 }
 
+#if __aarch64__
 inline void inner_kernel(const int m, const int n, const int k,
                          const uint64_t *a, const int lda, const uint64_t *b,
                          const int ldb, float *c, const int ldc,
@@ -414,9 +421,11 @@ inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
           "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27",
           "v28", "v29", "v30");
 }
+#endif  // __aarch64__
 
-inline void bgemm_naive(int m, int n, int k, uint64_t *a, int lda, uint64_t *b,
-                        int ldb, float *c, int ldc) {
+inline void bgemm_naive(const int m, const int n, const int k,
+                        const uint64_t *a, const int lda, const uint64_t *b,
+                        const int ldb, float *c, const int ldc) {
     FORZ(i, m) {
         FORZ(j, n) {
             FORZ(h, k) {

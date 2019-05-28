@@ -7,11 +7,15 @@
 #include <arm_neon.h>
 #endif  // __ARM_NEON
 
+#if not defined (__aarch64__)
+#include <common/baseline.h>
+#endif
 #include <common/helper.h>
 #include <dabnn/im2col.h>
 #include "mat.h"
 
 namespace bnn {
+#ifdef __aarch64__
 inline void bconv_1x1_64(const Mat &bottom_blob, const Mat &weight,
                          Mat &top_blob);
 inline void bconv_1x1_128(const Mat &bottom_blob, const Mat &weight,
@@ -20,8 +24,10 @@ inline void bconv_1x1_256(const Mat &bottom_blob, const Mat &weight,
                           Mat &top_blob);
 inline void bconv_1x1_512(const Mat &bottom_blob, const Mat &weight,
                           Mat &top_blob);
+#endif
 inline void bconv_3x3(const Mat &bottom_blob, const Mat &weight, Mat &top_blob,
                       const int stride = 1);
+#ifdef __aarch64__
 inline void bconv_3x3_64(const Mat &bottom_blob, const Mat &weight,
                          Mat &top_blob, const int stride = 1);
 inline void bconv_3x3_64_fallback(const Mat &bottom_blob, const Mat &weight,
@@ -44,8 +50,10 @@ inline void bconv_3x3_128_internal_s1(const uint64_t *bottom_ptr, const int b_w,
 inline void bconv_3x3_128_internal_fallback(
     const uint64_t *bottom_ptr, const int b_w, const uint64_t *weight_ptr,
     float *top_ptr, const int top_h, const int top_w, const int stride = 1);
+#endif
 }  // namespace bnn
 
+#ifdef __aarch64__
 inline void bnn::bconv_3x3_64(const Mat &bottom_blob, const Mat &weight,
                               Mat &top_blob, const int stride) {
     bconv_3x3_64_opt4(bottom_blob, weight, top_blob, 0, stride);
@@ -819,9 +827,11 @@ inline void unpack_output(float *b, float *a, int width, int height,
 
 #undef A
 }
+#endif // __aarch64__
 
 inline void bnn::bconv_3x3(const Mat &bottom_blob, const Mat &weight,
                            Mat &top_blob, const int stride) {
+#ifdef __aarch64__
     // TODO: more elegant way
     static uint64_t packed_weight[999999];
     static uint64_t packed_input[9999999];
@@ -884,8 +894,12 @@ inline void bnn::bconv_3x3(const Mat &bottom_blob, const Mat &weight,
         unpack_output(packed_output, static_cast<float *>(top_blob.data),
                       top_blob.w, top_blob.h, top_blob.c);
     }
+#else // __aarch64__
+    baseline_bconv(bottom_blob, weight, 3, 3, 0, 0, stride, stride, 1, 1, top_blob.c, top_blob);
+#endif // __aarch64__
 }
 
+#ifdef __aarch64__
 inline void bnn::bconv_1x1_512(const Mat &bottom_blob, const Mat &weight,
                                Mat &top_blob) {
     FORZS(th, top_blob.h, 2) {
@@ -1673,5 +1687,6 @@ inline void bnn::bconv_1x1_64(const Mat &bottom_blob, const Mat &weight,
         }
     }
 }
+#endif // __aarch64__
 
 #endif

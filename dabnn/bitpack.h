@@ -16,6 +16,7 @@
 #include <glog/logging.h>
 #include "mat.h"
 
+#ifdef __aarch64__
 inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
 
@@ -198,6 +199,7 @@ inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     pack_128(static_cast<float *>(float_mat.data), binary_mat.data,
              float_mat.total());
 }
+#endif // __aarch64__
 
 inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(
@@ -220,11 +222,15 @@ inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 
 inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(float_mat.c % 64 == 0, float_mat.c);
+#ifdef __aarch64__
     if (float_mat.c % 128 == 0) {
         pack_mat_128_2(float_mat, binary_mat);
     } else {
         pack_mat_64(float_mat, binary_mat);
     }
+#else
+    pack_mat_64(float_mat, binary_mat);
+#endif // __aarch64__
 }
 
 #endif /* BITPACK_H */
