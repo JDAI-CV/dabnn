@@ -1,0 +1,7 @@
+# It is a configuration file for [project_manager.vim](https://github.com/daquexian/project_manager.vim)
+name binary-nn
+type cpp
+build_dir build_test_v7
+target net_test
+cmake_options -DCMAKE_TOOLCHAIN_FILE=~/Android/Sdk/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=android-21 -DANDROID_ABI="armeabi-v7a with NEON" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -GNinja
+binary ~/adb_push_and_run.sh tests/net_test

@@ -22,26 +22,34 @@ pr:
     - README.md
     - docs/*
 
-pool:
-    vmImage: 'macOS-10.14'
-steps:
-- checkout: self
-  submodules: true
-- bash: brew install watch gnu-sed
-  displayName: Install watch and gnu-sed
-- bash: ci/build_dabnn.sh
-  displayName: Build
-- bash: ci/start_android_emulator.sh
-  displayName: Start Android Emulator
-- bash: ci/adb_push_and_run.sh build_dabnn/tests/bconv_test
-  displayName: Binary Conv Test
-- bash: ci/adb_push_and_run.sh build_dabnn/tests/bgemm_test
-  displayName: Binary Gemm Test
-- bash: ci/download_models.sh
-  displayName: Download Models
-- bash: ci/adb_push_and_run.sh build_dabnn/tests/net_test
-  displayName: Model Test
-- bash: ci/build_aar.sh
-  env: 
-    BINTRAY_KEY: $(bintrayKey)
-  displayName: Build and Publish AAR package
+jobs:
+- job: aarch64
+  pool:
+      vmImage: 'macOS-10.14'
+  steps:
+  - checkout: self
+    submodules: true
+  - bash: brew install watch gnu-sed
+    displayName: Install watch and gnu-sed
+  - bash: ci/build_dabnn.sh
+    displayName: Build
+  - bash: ci/start_android_emulator.sh
+    displayName: Start Android Emulator
+  - template: template_dabnn_run_test.yml
+  - bash: ci/build_aar.sh
+    env: 
+      BINTRAY_KEY: $(bintrayKey)
+    displayName: Build and Publish AAR package
+- job: armv7a_with_NEON
+  pool:
+      vmImage: 'macOS-10.14'
+  steps:
+  - checkout: self
+    submodules: true
+  - bash: brew install watch gnu-sed
+    displayName: Install watch and gnu-sed
+  - bash: ci/build_dabnn_v7.sh
+    displayName: Build
+  - bash: ci/start_android_emulator_v7.sh
+    displayName: Start Android Emulator
+  - template: template_dabnn_run_test.yml

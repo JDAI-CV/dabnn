@@ -30,8 +30,9 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
     }
     const auto col_mat_name = "col_mat";
     if (mat_map.find(col_mat_name) == mat_map.end()) {
+        const auto len = output_mat->h * output_mat->w * weight_mat->h * weight_mat->w * input_mat->elem_c;
         mat_map[col_mat_name] =
-            std::make_shared<Mat>(999999, bnn::DataType::Bit);
+            std::make_shared<Mat>(len, bnn::DataType::Bit);
     }
 
     padded_mat = mat(pad_name);
@@ -45,7 +46,7 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
         const int k = weight_mat->h * weight_mat->w * weight_mat->c;
         transposed_weight_mat =
             std::make_shared<Mat>(weight_mat->n, weight_mat->h, weight_mat->w,
-                                  weight_mat->elem_c, DataType::Bit);
+                                  weight_mat->elem_c, DataType::Bit, false);
         auto *trans_data_ptr =
             static_cast<uint64_t *>(transposed_weight_mat->data);
         auto *data_ptr = static_cast<uint64_t *>(weight_mat->data);
@@ -85,8 +86,8 @@ bool BinConv::direct_conv_compatible() const {
 }
 
 bool BinConv::gemm_compatible() const {
-#ifdef __aarch64__
-    return weight_mat->h * weight_mat->n * weight_mat->c % 2 == 0;
+#ifdef __ARM_NEON
+    return weight_mat->h * weight_mat->w * weight_mat->c % 2 == 0;
 #else
     return false;
 #endif
@@ -98,6 +99,7 @@ void BinConv::forward_impl() const {
             pad(*input_mat, pad_h, pad_w, *padded_mat);
             bconv_3x3(*padded_mat, *weight_mat, *output_mat, stride_h);
         } else if (gemm_compatible()) {
+            output_mat->fill<float>(0.f);
             bnn::im2col(*input_mat, weight_mat->h, weight_mat->w, pad_h, pad_w,
                         stride_h, stride_w, 1, 1, *col_mat);
             const int m = weight_mat->n;

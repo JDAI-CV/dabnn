@@ -2,6 +2,6 @@
 name binary-nn
 type cpp
 build_dir build_test_x86
-target bconv_test
+target bgemm_test
 cmake_options  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBNN_BUILD_MAIN_LIB=ON -GNinja
-binary tests/bconv_test
+binary tests/bgemm_test

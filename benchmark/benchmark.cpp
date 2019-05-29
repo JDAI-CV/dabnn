@@ -21,6 +21,7 @@ static void BM_pack_mat_64_small(benchmark::State &state) {
     }
 }
 
+#ifdef __aarch64__
 static void BM_pack_mat_128_small(benchmark::State &state) {
     const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
     bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
@@ -28,6 +29,7 @@ static void BM_pack_mat_128_small(benchmark::State &state) {
         pack_mat_128(a, b);
     }
 }
+#endif  // __aarch64__
 
 static void BM_pack_mat_64(benchmark::State &state) {
     const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float);
@@ -37,6 +39,7 @@ static void BM_pack_mat_64(benchmark::State &state) {
     }
 }
 
+#ifdef __aarch64__
 static void BM_pack_mat_128(benchmark::State &state) {
     const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float);
     bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit);
@@ -44,6 +47,7 @@ static void BM_pack_mat_128(benchmark::State &state) {
         pack_mat_128(a, b);
     }
 }
+#endif  // __aarch64__
 
 #define SETUP_BCONV_FLOAT(size_a, size_b, num_output)                         \
     const size_t AHEIGHT = size_a;                                            \
@@ -73,6 +77,7 @@ static void BM_pack_mat_128(benchmark::State &state) {
                                                                               \
     bnn::Mat c(CHEIGHT, CWIDTH, NUM_OUTPUT, bnn::DataType::Float);
 
+#ifdef __aarch64__
 static void BM_bconv_float_3x3_128(benchmark::State &state) {
     SETUP_BCONV_FLOAT(30, 3, 128);
     for (auto _ : state) {
@@ -88,6 +93,7 @@ static void BM_bconv_float_1x1_128(benchmark::State &state) {
         bnn::bconv_1x1_128(a_binary, b, c);
     }
 }
+#endif  // __aarch64__
 
 #undef SETUP_BCONV_FLOAT
 
@@ -135,6 +141,7 @@ static void BM_bnn_bconv_1x1_naive_128(benchmark::State &state) {
     }
 }
 
+#ifdef __aarch64__
 static void BM_bnn_bconv_1x1_64(benchmark::State &state) {
     SETUP_BCONV(56, 1, 64, 1);
     for (auto _ : state) {
@@ -162,6 +169,7 @@ static void BM_bnn_bconv_1x1_512(benchmark::State &state) {
         bnn::bconv_1x1_512(a, b, c);
     }
 }
+#endif  // __aarch64__
 
 static void BM_bnn_bconv_3x3_64(benchmark::State &state) {
     SETUP_BCONV(58, 3, 64, 1);
