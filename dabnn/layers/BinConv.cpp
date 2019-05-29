@@ -30,8 +30,9 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
     }
     const auto col_mat_name = "col_mat";
     if (mat_map.find(col_mat_name) == mat_map.end()) {
+        const auto len = output_mat->h * output_mat->w * weight_mat->h * weight_mat->w * input_mat->elem_c;
         mat_map[col_mat_name] =
-            std::make_shared<Mat>(999999, bnn::DataType::Bit);
+            std::make_shared<Mat>(len, bnn::DataType::Bit);
     }
 
     padded_mat = mat(pad_name);
