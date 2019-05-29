@@ -271,10 +271,32 @@ inline bool Mat::operator==(const Mat &m) const {
           h == m.h && c == m.c && data_type == m.data_type)) {
         return false;
     }
-    FORZ(i, total()) {
-        if (std::abs(static_cast<float *>(data)[i] - m[i]) > 1e-5) {
-            return false;
+    if (m.data_type == DataType::Float) {
+        FORZ(i, total()) {
+            const auto elem = static_cast<float *>(data)[i];
+            if (std::isnan(elem) && !std::isnan(m[i])) {
+                PNT(elem, m[i]);
+                return false;
+            }
+            if (!std::isnan(elem) && std::isnan(m[i])) {
+                PNT(elem, m[i]);
+                return false;
+            }
+            if (std::abs(elem - m[i]) > 1e-5) {
+                PNT(i, elem, m[i]);
+                return false;
+            }
         }
+    } else if (m.data_type == DataType::Bit) {
+        FORZ(i, total()) {
+            const auto elem = static_cast<uint64_t *>(data)[i];
+            if (elem != m[i]) {
+                PNT(elem, m[i]);
+                return false;
+            }
+        }
+    } else {
+        throw std::invalid_argument("Unknown datatype");
     }
     return true;
 }
