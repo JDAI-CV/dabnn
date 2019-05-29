@@ -46,7 +46,7 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
         const int k = weight_mat->h * weight_mat->w * weight_mat->c;
         transposed_weight_mat =
             std::make_shared<Mat>(weight_mat->n, weight_mat->h, weight_mat->w,
-                                  weight_mat->elem_c, DataType::Bit);
+                                  weight_mat->elem_c, DataType::Bit, false);
         auto *trans_data_ptr =
             static_cast<uint64_t *>(transposed_weight_mat->data);
         auto *data_ptr = static_cast<uint64_t *>(weight_mat->data);
