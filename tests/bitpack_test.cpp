@@ -9,6 +9,7 @@
 #include <common/helper.h>
 #include <dabnn/mat.h>
 
+#ifdef __aarch64__
 TEST(bitpack, pack_mat_128) {
     const size_t AHEIGHT = 64;
     const size_t AWIDTH = 64;
@@ -32,6 +33,7 @@ TEST(bitpack, pack_mat_128) {
                       bitcount(*(static_cast<uint64_t *>(expected) + i + 1)));
     }
 }
+#endif  // __aarch64__
 
 TEST(bitpack, pack_mat_64) {
     const size_t AHEIGHT = 64;
@@ -57,6 +59,7 @@ TEST(bitpack, pack_mat_64) {
     }
 }
 
+#ifdef __aarch64__
 TEST(bitpack, pack_mat_fallback) {
     const size_t AHEIGHT = 64;
     const size_t AWIDTH = 64;
@@ -74,6 +77,7 @@ TEST(bitpack, pack_mat_fallback) {
 
     ASSERT_EQ(a_binary, expected);
 }
+#endif  // __aarch64__
 
 TEST(bitpack, addv_v7) {
     uint64_t data[2];
