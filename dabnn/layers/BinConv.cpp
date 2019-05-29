@@ -99,6 +99,7 @@ void BinConv::forward_impl() const {
             pad(*input_mat, pad_h, pad_w, *padded_mat);
             bconv_3x3(*padded_mat, *weight_mat, *output_mat, stride_h);
         } else if (gemm_compatible()) {
+            output_mat->fill<float>(0.f);
             bnn::im2col(*input_mat, weight_mat->h, weight_mat->w, pad_h, pad_w,
                         stride_h, stride_w, 1, 1, *col_mat);
             const int m = weight_mat->n;
