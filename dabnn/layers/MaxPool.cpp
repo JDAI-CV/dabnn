@@ -241,10 +241,10 @@ void MaxPool::forward_impl() const {
     } else if (kernel_h == 2 && kernel_w == 2) {
         maxpool2x2(*padded_mat, *output_mat, stride_h, stride_w);
     } else {
-        std::invalid_argument("Not supported max_pool");
+        throw std::invalid_argument("Not supported max_pool");
     }
 #else
-    std::invalid_argument("Not supported max_pool");
+    throw std::invalid_argument("Not supported max_pool");
 #endif  // __aarch64__
 }
 
