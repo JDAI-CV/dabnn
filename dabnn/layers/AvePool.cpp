@@ -7,7 +7,7 @@
 
 namespace bnn {
 
-#ifdef __aarch64__
+#ifdef __ARM_NEON
 void ave_pool_2x2_s2(const bnn::Mat &input, bnn::Mat &output) {
     FORZ(h, output.h) {
         FORZ(w, output.w) {
@@ -17,6 +17,7 @@ void ave_pool_2x2_s2(const bnn::Mat &input, bnn::Mat &output) {
             const float *ptr3 = input.point<float>(h * 2 + 1, w * 2 + 1);
             float *output_ptr = output.point<float>(h, w);
             size_t nn = input.c >> 2;
+#ifdef __aarch64__
             asm volatile(
                 "fmov   s30, #4.0               \n"
                 "dup    v30.4s, v30.s[0]        \n"
@@ -46,10 +47,39 @@ void ave_pool_2x2_s2(const bnn::Mat &input, bnn::Mat &output) {
                 :
                 : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6",
                   "v7", "v8", "v9", "v10", "v11", "v12", "v30");
+#else   // __aarch64__
+            asm volatile(
+                "vmov.f32   q13, #0.25               \n"
+                "0:     \n"
+                "vld1.32    q0, [%0]!           \n"
+                "pld   [%0, #128]              \n"
+                "vld1.32    q1, [%1]!           \n"
+                "pld   [%1, #128]              \n"
+                "vld1.32    q2, [%2]!           \n"
+                "pld   [%2, #128]              \n"
+                "vld1.32    q3, [%3]!           \n"
+                "pld   [%3, #128]              \n"
+                "vadd.f32   q0, q0, q1          \n"
+                "vadd.f32   q2, q2, q3          \n"
+                "vadd.f32   q0, q0, q2          \n"
+                "vmul.f32   q0, q0, q13          \n"
+                "subs   %5, %5, #1            \n"
+                "vst1.32    q0, [%4]!          \n"
+                "bne    0b                      \n"
+
+                : "+r"(ptr0),        // %0
+                  "+r"(ptr1),        // %1
+                  "+r"(ptr2),        // %2
+                  "+r"(ptr3),        // %3
+                  "+r"(output_ptr),  // %4
+                  "+r"(nn)           // %5
+                :
+                : "cc", "memory", "q0", "q1", "q2", "q3", "q13");
+#endif  // __aarch64__
         }
     }
 }
-#endif // __aarch64__
+#endif // __ARM_NEON
 
 void ave_pool_fallback(const bnn::Mat &input, const size_t pad_h,
                        const size_t pad_w, const size_t stride_h,
@@ -116,7 +146,7 @@ AvePool::AvePool(NetCP net, const std::string &name, css input, css output,
 }
 
 void AvePool::forward_impl() const {
-#ifdef __aarch64__
+#ifdef __ARM_NEON
     if (stride_h == 2 && stride_w == 2 && kernel_h == 2 && kernel_w == 2 &&
         input_mat->c % 4 == 0) {
         pad(*input_mat, pad_h, pad_w, *padded_mat);
@@ -128,7 +158,7 @@ void AvePool::forward_impl() const {
 #else
     ave_pool_fallback(*input_mat, pad_h, pad_w, stride_h, stride_w,
                       kernel_h, kernel_w, *output_mat);
-#endif // __aarch64__
+#endif // __ARM_NEON
 }
 
 }  // namespace bnn

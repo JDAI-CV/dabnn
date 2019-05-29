@@ -9,7 +9,7 @@
 
 namespace bnn {
 
-#ifdef __aarch64__
+#ifdef __ARM_NEON
 void maxpool2x2(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                 const int stride_w = 1) {
     FORZ(h, output.h) {
@@ -24,6 +24,7 @@ void maxpool2x2(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                 input.point<float>(h * stride_h + 1, w * stride_w + 1);
             float *output_ptr = output.point<float>(h, w);
             size_t nn = input.c >> 2;
+#ifdef __aarch64__
             asm volatile(
                 "0:     \n"
                 "ld1    {v0.4s}, [%0], #16      \n"
@@ -50,6 +51,33 @@ void maxpool2x2(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                 :
                 : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6",
                   "v7", "v8", "v9", "v10", "v11", "v12");
+#else   // __aarch64__
+            asm volatile(
+                "0:     \n"
+                "vld1.32    q0, [%0]!       \n"
+                "pld    [%0, #128]          \n"
+                "vld1.32    q1, [%1]!       \n"
+                "pld    [%1, #128]          \n"
+                "vld1.32    q2, [%2]!       \n"
+                "pld    [%2, #128]          \n"
+                "vld1.32    q3, [%3]!       \n"
+                "pld    [%3, #128]          \n"
+                "vmax.f32   q0, q0, q1      \n"
+                "vmax.f32   q2, q2, q3      \n"
+                "vmax.f32   q0, q2, q2      \n"
+                "subs   %5, %5, #1          \n"
+                "vst1.32    q0, [%4]!       \n"
+                "bne    0b                  \n"
+
+                : "+r"(ptr0),        // %0
+                  "+r"(ptr1),        // %1
+                  "+r"(ptr2),        // %2
+                  "+r"(ptr3),        // %3
+                  "+r"(output_ptr),  // %4
+                  "+r"(nn)           // %5
+                :
+                : "cc", "memory", "q0", "q1", "q2", "q3");
+#endif  // __aarch64__
         }
     }
 }
@@ -78,6 +106,7 @@ void maxpool3x3(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                 input.point<float>(h * stride_h + 2, w * stride_w + 2);
             float *output_ptr = output.point<float>(h, w);
             size_t nn = input.c >> 2;
+#ifdef __aarch64__
             asm volatile(
                 "0:     \n"
                 "ld1    {v0.4s}, [%0], #16      \n"
@@ -124,10 +153,57 @@ void maxpool3x3(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                 :
                 : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6",
                   "v7", "v8", "v9", "v10", "v11", "v12");
+#else
+            asm volatile(
+                "0:     \n"
+                "vld1.32    q0, [%0]!       \n"
+                "pld    [%0, #128]          \n"
+                "vld1.32    q1, [%1]!       \n"
+                "pld    [%1, #128]          \n"
+                "vld1.32    q2, [%2]!       \n"
+                "pld    [%2, #128]          \n"
+                "vld1.32    q3, [%3]!       \n"
+                "pld    [%3, #128]          \n"
+                "vmax.f32   q0, q0, q1      \n"
+                "vld1.32    q4, [%4]!       \n"
+                "pld    [%4, #128]          \n"
+                "vmax.f32   q2, q2, q3      \n"
+                "vld1.32    q5, [%5]!       \n"
+                "pld    [%5, #128]          \n"
+                "vld1.32    q6, [%6]!       \n"
+                "pld    [%6, #128]          \n"
+                "vmax.f32   q4, q4, q5      \n"
+                "vld1.32    q7, [%7]!       \n"
+                "pld    [%7, #128]          \n"
+                "vld1.32    q8, [%8]!       \n"
+                "pld    [%8, #128]          \n"
+                "vmax.f32   q2, q2, q8      \n"
+                "vmax.f32   q6, q6, q7      \n"
+                "vmax.f32   q0, q0, q2      \n"
+                "subs       %10, %10, #1    \n"
+                "vmax.f32   q4, q4, q6      \n"
+                "vmax.f32   q0, q0, q4      \n"
+                "vst1.32    q0, [%9]!       \n"
+                "bne    0b                  \n"
+
+                : "+r"(ptr0),        // %0
+                  "+r"(ptr1),        // %1
+                  "+r"(ptr2),        // %2
+                  "+r"(ptr3),        // %3
+                  "+r"(ptr4),        // %4
+                  "+r"(ptr5),        // %5
+                  "+r"(ptr6),        // %6
+                  "+r"(ptr7),        // %7
+                  "+r"(ptr8),        // %8
+                  "+r"(output_ptr),  // %9
+                  "+r"(nn)           // %10
+                :
+                : "cc", "memory", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8");
+#endif
         }
     }
 }
-#endif // __aarch64__
+#endif  // __ARM_NEON
 
 MaxPool::MaxPool(NetCP net, const std::string &name, css input, css output,
                  int kernel_h, int kernel_w, int pad_h, int pad_w, int stride_h,
@@ -152,7 +228,7 @@ MaxPool::MaxPool(NetCP net, const std::string &name, css input, css output,
     padded_mat = mat_map[pad_name];
 }
 void MaxPool::forward_impl() const {
-#ifdef __aarch64__
+#ifdef __ARM_NEON
     // std::numeric_limits<float>::min() is the closest value to 0, so we uses
     // -max()
     pad(*input_mat, pad_h, pad_w, *padded_mat,
@@ -169,7 +245,7 @@ void MaxPool::forward_impl() const {
     }
 #else
     std::invalid_argument("Not supported max_pool");
-#endif // __aarch64__
+#endif  // __aarch64__
 }
 
 std::string MaxPool::to_str() const {
