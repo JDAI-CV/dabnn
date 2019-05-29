@@ -70,7 +70,7 @@ inline void inner_kernel(const int m, const int n, const int k,
                          const uint64_t *a, const int lda, const uint64_t *b,
                          const int ldb, float *c, const int ldc,
                          const int first_time) {
-    BNN_ASSERT(k % 2 == 0, "k % 2 should be 0");
+    BNN_ASSERT(k % 2 == 0, "k % 2 should be 0, k =", k);
     BNN_ASSERT(k * P < 128000, "");
     BNN_ASSERT(k * R < 128000, "");
 
