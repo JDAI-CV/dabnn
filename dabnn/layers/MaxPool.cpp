@@ -64,7 +64,7 @@ void maxpool2x2(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                 "pld    [%3, #128]          \n"
                 "vmax.f32   q0, q0, q1      \n"
                 "vmax.f32   q2, q2, q3      \n"
-                "vmax.f32   q0, q2, q2      \n"
+                "vmax.f32   q0, q0, q2      \n"
                 "subs   %5, %5, #1          \n"
                 "vst1.32    q0, [%4]!       \n"
                 "bne    0b                  \n"
