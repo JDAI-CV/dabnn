@@ -1,5 +1,6 @@
 #### 背景和发展方向
-二值网络比较年轻，较有名的文献来自 2016 年的  [XNOR-Net](https://arxiv.org/abs/1603.05279v4)。初版精度不高，因此 [Bi-Real Net](https://arxiv.org/abs/1808.00278v5) 提出了一些精度提升方法。今年（2019）[BENN](https://arxiv.org/abs/1806.07550v2) 用机器学习方法进一步提升了 BNN 在分类任务上的表现，结果甚至超过单精度浮点模型。论文同时表明 BNN 由于天生泛化性差导致了在鲁棒性和稳定性上的缺陷。
+
+二值网络比较年轻，最初的两篇文章是 2016 年的 [Binary Neural Networks](https://arxiv.org/abs/1602.02830) 和 [XNOR-Net](https://arxiv.org/abs/1603.05279)。后续的工作中，[Bi-Real Net](https://arxiv.org/abs/1808.00278) 提出了一些精度提升方法，[BENN](https://arxiv.org/abs/1806.07550v2) 用 ensemble 方法进一步提升了 BNN 在分类任务上的表现，结果甚至超过单精度浮点模型。
 
 但是从移动端工程应用的角度来看，定点网络可以节省数十倍的内存、提升数倍推理速度，同时降低十倍以上能耗。这意味着原本设备充电一次只能用一个小时，现在理论上可以用十小时以上。能耗相关可参见[相关测试](https://camo.githubusercontent.com/e725038be60ce4bb698b22480603b636a92beeaf/687474703a2f2f66696c652e656c656366616e732e636f6d2f776562312f4d30302f35352f37392f7049594241467373565f5341504f63534141435742546f6d6531633033392e706e67)。
 
@@ -14,6 +15,6 @@
 #### 软件架构
 在使用流程和软件结构方面，dabnn 和已开源的推理库（如 [ncnn](https://github.com/Tencent/ncnn)、[Tengine](https://github.com/OAID/Tengine)、[FeatherCNN](https://github.com/Tencent/FeatherCNN) 等）差距不大：
 
-1. 模型训练可使用 [bmxnet]()，也可用[修改过的 PyTorch]() ，最终导出为[修改后的的 onnx 格式]()。onnx 主要增加了一些图优化方法，具体可查询相关项目；
-2. 由于 protobuf-lite 静态库远大于 flatbuffers，为节省内存并减小 SDK 和模型体积，推理时需要把 onnx 格式转换成 dabnn 内部格式，流程和**注意事项**可参照 [onnx2bnn_CN.md](onnx2bnn_CN.md)；
+1. 模型训练可使用任意一种可以导出 ONNX 模型的框架，但需要注意的是，二值卷积是自定义操作，为了让模型中二值卷积可以被 dabnn 正确识别，需要了解 [onnx2bnn 的几种识别模式]。一个 dabnn 官方提供的 PyTorch 实现在 [这里](https://gist.github.com/daquexian/7db1e7f1e0a92ab13ac1ad028233a9eb)
+1. 部署模型前需要把 onnx 格式转换成 dabnn 内部格式。在转换过程中，会把二值卷积的权重转换为 1-bit （而不是默认的 32-bit），大大减小模型文件的体积。流程和**注意事项**可参照 [onnx2bnn_CN.md](onnx2bnn_CN.md)；
 3. 二值卷积实现请查阅 [bconv_CN.md](bconv_CN.md)
