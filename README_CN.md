@@ -18,7 +18,7 @@ QQ 群：1021964010, 入群答案: nndab
 
 然而，想发挥出位运算的高效率，就需要用位运算对卷积进行重新实现。一直以来，始终没有人针对二值网络推出一个高度优化的 inference 框架，这让二值网络令人遗憾的失去了可以部署在现有通用设备上这个巨大的优势。
 
-为了填补这个巨大的空白，我们推出了 dabnn，一个用 armv8 汇编重写了卷积，高度优化的二值网络 inference 框架。实验显示 dabnn 相对于现有的二值网络和浮点网络 inference 框架均能带来极大的加速。在运行单个二值卷积时，我们的速度是 [BMXNet](https://github.com/hpi-xnor/BMXNet) （除 dabnn 外唯一一个二值网络 inference 框架） 的 **800%~2400%**，在运行二值化的 ResNet-18 时，我们的速度是 BMXNet 的约 **700%**。我们希望 dabnn 的开源可以成为二值网络部署在终端设备的关键一步，也可以有助于使这一领域的爱好者了解二值网络在真实设备上的表现。
+为了填补这个巨大的空白，我们推出了 dabnn，一个用 ARM 汇编重写了卷积，高度优化的二值网络 inference 框架。实验显示 dabnn 相对于现有的二值网络和浮点网络 inference 框架均能带来极大的加速。在运行单个二值卷积时，我们的速度是 [BMXNet](https://github.com/hpi-xnor/BMXNet) （除 dabnn 外唯一一个二值网络 inference 框架） 的 **800%~2400%**，在运行二值化的 ResNet-18 时，我们的速度是 BMXNet 的约 **700%**。我们希望 dabnn 的开源可以成为二值网络部署在终端设备的关键一步，也可以有助于使这一领域的爱好者了解二值网络在真实设备上的表现。
 
 ## 速度
 
@@ -48,11 +48,11 @@ dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- �
 
 ## 如何转换 ONNX 模型
 
-我们提供模型转换工具 onnx2bnn 将 ONNX 模型转换为 dabnn 格式的模型。用本地编译工具链（而不是 arm 交叉编译工具链）编译这个项目就可以编译出 onnx2dnn。对 Linux 用户我们提供可以在 Linux 下无需编译直接运行的 AppImage，从 [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases) 下载即可。AppImage 的使用方法和其它相关信息请参考 https://appimage.org/。
+我们提供模型转换工具 onnx2bnn 将 ONNX 模型转换为 dabnn 格式的模型。在 [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases) 里有各个平台的 onnx2bnn 预编译二进制文件，可以直接下载运行。Linux 用户我们提供的是 AppImage 格式的二进制文件，AppImage 的使用方法和其它相关信息请参考 https://appimage.org/。
 
-注意：因为二值卷积是一种自定义操作，所以 ONNX 模型是否与 dabnn 兼容极大程度上依赖于训练代码中二值卷积的实现。我们很快会提供一个与 dabnn 兼容的二值卷积 PyTorch 实现。
+注意：因为二值卷积是一种自定义操作，所以 ONNX 模型是否与 dabnn 兼容极大程度上依赖于训练代码中二值卷积的实现，在 [wiki](https://github.com/JDAI-CV/dabnn/wiki/Train,-export-and-convert-a-dabnn-model) 中有详细的进一步描述。
 
-转换完成后得到的 dabnn 模型就可以在 armv8 设备上使用。对 Android 开发者我们已经把 Android AAR 包上传到了 [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion)，使用方法请看[示例工程](https://github.com/JDAI-CV/dabnn-example)。
+转换完成后得到的 dabnn 模型就可以在 ARM 设备（例如手机和嵌入式设备）上使用。对 Android 开发者我们已经把 Android AAR 包上传到了 [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion)，使用方法请看[示例工程](https://github.com/JDAI-CV/dabnn-example)。
 
 ## 预训练模型
 

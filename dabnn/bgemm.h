@@ -6,16 +6,26 @@
 #if __ARM_NEON
 #include <arm_neon.h>
 #endif  // __ARM_NEON
+#include <common/baseline.h>
 #include <common/helper.h>
 
+#if __ARM_NEON
+#ifdef __aarch64__
 #define P 8
 #define R 6
+#else
+#define P 4
+#define R 4
+#endif // __aarch64__
+#endif // __ARM_NEON
+
 #define A(i, j) a[(j)*lda + (i)]  // A(y, x)
 #define B(i, j) b[(j)*ldb + (i)]  // B(y, x)
 #define C(i, j) c[(j)*ldc + (i)]  // C(y, x)
 
 #define min(i, j) ((i) < (j) ? (i) : (j))
 
+#ifdef __ARM_NEON
 inline void pack_a(const int kc, const uint64_t *a, const int lda,
                    uint64_t *a_to);
 inline void pack_b(const int kc, const uint64_t *b, const int ldb,
@@ -28,6 +38,7 @@ inline void inner_kernel(const int m, const int n, const int k,
                          const uint64_t *a, const int lda, const uint64_t *b,
                          const int ldb, float *c, const int ldc,
                          const int first_time);
+#endif  // __ARM_NEON
 inline void bgemm_naive(const int m, const int n, const int k,
                         const uint64_t *a, const int lda, const uint64_t *b,
                         const int ldb, float *c, const int ldc);
@@ -35,6 +46,7 @@ inline void bgemm_naive(const int m, const int n, const int k,
 inline void bgemm(const int m, const int n, const int k, const uint64_t *a,
                   int lda, const uint64_t *b, const int ldb, float *c,
                   const int ldc) {
+#ifdef __ARM_NEON
     int kc = 32;
     int mc = 32;
     int i, q, qb, ib;
@@ -48,13 +60,17 @@ inline void bgemm(const int m, const int n, const int k, const uint64_t *a,
                          i == 0);
         }
     }
+#else
+    bgemm_naive(m, n, k, a, lda, b, ldb, c, ldc);
+#endif  // __ARM_NEON
 }
 
+#if __ARM_NEON
 inline void inner_kernel(const int m, const int n, const int k,
                          const uint64_t *a, const int lda, const uint64_t *b,
                          const int ldb, float *c, const int ldc,
                          const int first_time) {
-    BNN_ASSERT(k % 2 == 0, "k % 2 should be 0");
+    BNN_ASSERT(k % 2 == 0, "k % 2 should be 0, k =", k);
     BNN_ASSERT(k * P < 128000, "");
     BNN_ASSERT(k * R < 128000, "");
 
@@ -78,27 +94,21 @@ inline void inner_kernel(const int m, const int n, const int k,
     if (i != m) {
         FOR(_j, 0, j) {
             FOR(_i, i, m) {
-                FORZ(_k, k) {
-                    C(_i, _j) += __builtin_popcountl(A(_i, _k) ^ B(_k, _j));
-                }
+                FORZ(_k, k) { C(_i, _j) += bitcount(A(_i, _k) ^ B(_k, _j)); }
             }
         }
     }
     if (j != n) {
         FOR(_j, j, n) {
             FOR(_i, 0, i) {
-                FORZ(_k, k) {
-                    C(_i, _j) += __builtin_popcountl(A(_i, _k) ^ B(_k, _j));
-                }
+                FORZ(_k, k) { C(_i, _j) += bitcount(A(_i, _k) ^ B(_k, _j)); }
             }
         }
     }
     if (i != m || j != n) {
         FOR(_j, j, n) {
             FOR(_i, i, m) {
-                FORZ(_k, k) {
-                    C(_i, _j) += __builtin_popcountl(A(_i, _k) ^ B(_k, _j));
-                }
+                FORZ(_k, k) { C(_i, _j) += bitcount(A(_i, _k) ^ B(_k, _j)); }
             }
         }
     }
@@ -135,11 +145,13 @@ inline void unpack_c(const float *c_from, const int ldc, float *c,
 
 inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
                          const uint64_t *b) {
+#ifdef __aarch64__
     // C: 8x6(float 32, 6x2=12regs), A: 8*K(8regs), B: K*6(6regs)
     // v0~v11 contains C, v12~v17 contains 6*128 of B, v18~v25 contains 128*8 of
-    // A v26~v30 store temporary values A is packed as   8*128
-    //                  -----
-    //                  8*128
+    // A v26~v30 store temporary values A is packed as
+    // 8*128
+    // -----
+    // 8*128
     // B is packed as 128*6 | 128*6
     asm volatile(
         "mov x0, %1     \n"
@@ -413,15 +425,172 @@ inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
           "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17",
           "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27",
           "v28", "v29", "v30");
-}
+#else  // __aarch64__
 
-inline void bgemm_naive(int m, int n, int k, uint64_t *a, int lda, uint64_t *b,
-                        int ldb, float *c, int ldc) {
+    // C: 4x4(float 32, 4x1=4), A: 4*K(4regs), B: K*4(4regs)
+    // q0~q3 contains C, q4~q7 contains 4*128 of B, q8~q11 contains 128*4 of A
+    // q12~q15 store temporary values
+    //
+    // A is packed as
+    // 4*128
+    // -----
+    // 4*128
+    // B is packed as 128*4 | 128*4
+    asm volatile(
+        "mov r0, %1                     \n"
+        "vld1.8 {q0-q1}, [r0]!    \n"
+        "vld1.8 {q2-q3}, [r0]!    \n"
+        "0: \n"
+        "vld1.8 {q8-q9}, [%3]!    \n"
+        "vld1.8 {q4-q5}, [%2]!    \n"
+        "vld1.8 {q10-q11}, [%3]!    \n"
+        "veor.u8  q12, q4, q8           \n"
+        "veor.u8  q13, q4, q9           \n"
+        "vcnt.u8  q12, q12          \n"
+        "vcnt.u8  q13, q13          \n"
+        "vld1.8 {q6-q7}, [%2]!    \n"
+        "veor.u8  q14, q4, q10           \n"
+        "veor.u8  q15, q4, q11           \n"
+        "vcnt.u8  q14, q14          \n"
+        "vcnt.u8  q15, q15          \n"
+        "vpaddl.u8 q12, q12         \n"
+        "vpaddl.u8 q13, q13         \n"
+        "vpaddl.u8 q14, q14         \n"
+        "vpaddl.u8 q15, q15         \n"
+        "vpaddl.u16 q12, q12            \n"
+        "vpaddl.u16 q13, q13            \n"
+        "vpaddl.u16 q14, q14            \n"
+        "vpaddl.u16 q15, q15            \n"
+        "vpaddl.u32 q12, q12            \n"
+        "vpaddl.u32 q13, q13            \n"
+        "vpaddl.u32 q14, q14            \n"
+        "vpaddl.u32 q15, q15            \n"
+        "vadd.u32   d24, d24, d25   \n"
+        "vadd.u32   d26, d26, d27   \n"
+        "vadd.u32   d28, d28, d29   \n"
+        "vadd.u32   d30, d30, d31   \n"
+        "vzip.u32   q12, q14    \n"
+        "vzip.u32   q13, q15    \n"
+        "vzip.u32   q12, q13    \n"
+        "vadd.u32   q0, q0, q12     \n"
+        
+        "veor.u8  q12, q5, q8           \n"
+        "veor.u8  q13, q5, q9           \n"
+        "veor.u8  q14, q5, q10           \n"
+        "veor.u8  q15, q5, q11           \n"
+        "vcnt.u8  q12, q12          \n"
+        "vcnt.u8  q13, q13          \n"
+        "vcnt.u8  q14, q14          \n"
+        "vcnt.u8  q15, q15          \n"
+        "vpaddl.u8 q12, q12         \n"
+        "vpaddl.u8 q13, q13         \n"
+        "vpaddl.u8 q14, q14         \n"
+        "vpaddl.u8 q15, q15         \n"
+        "vpaddl.u16 q12, q12            \n"
+        "vpaddl.u16 q13, q13            \n"
+        "vpaddl.u16 q14, q14            \n"
+        "vpaddl.u16 q15, q15            \n"
+        "vpaddl.u32 q12, q12            \n"
+        "vpaddl.u32 q13, q13            \n"
+        "vpaddl.u32 q14, q14            \n"
+        "vpaddl.u32 q15, q15            \n"
+        "vadd.u32   d24, d24, d25   \n"
+        "vadd.u32   d26, d26, d27   \n"
+        "vadd.u32   d28, d28, d29   \n"
+        "vadd.u32   d30, d30, d31   \n"
+        "vzip.u32   q12, q14    \n"
+        "vzip.u32   q13, q15    \n"
+        "vzip.u32   q12, q13    \n"
+        "vadd.u32   q1, q1, q12     \n"
+        
+        "veor.u8  q12, q6, q8           \n"
+        "veor.u8  q13, q6, q9           \n"
+        "veor.u8  q14, q6, q10           \n"
+        "veor.u8  q15, q6, q11           \n"
+        "vcnt.u8  q12, q12          \n"
+        "vcnt.u8  q13, q13          \n"
+        "vcnt.u8  q14, q14          \n"
+        "vcnt.u8  q15, q15          \n"
+        "vpaddl.u8 q12, q12         \n"
+        "vpaddl.u8 q13, q13         \n"
+        "vpaddl.u8 q14, q14         \n"
+        "vpaddl.u8 q15, q15         \n"
+        "vpaddl.u16 q12, q12            \n"
+        "vpaddl.u16 q13, q13            \n"
+        "vpaddl.u16 q14, q14            \n"
+        "vpaddl.u16 q15, q15            \n"
+        "vpaddl.u32 q12, q12            \n"
+        "vpaddl.u32 q13, q13            \n"
+        "vpaddl.u32 q14, q14            \n"
+        "vpaddl.u32 q15, q15            \n"
+        "vadd.u32   d24, d24, d25   \n"
+        "vadd.u32   d26, d26, d27   \n"
+        "vadd.u32   d28, d28, d29   \n"
+        "vadd.u32   d30, d30, d31   \n"
+        "vzip.u32   q12, q14    \n"
+        "vzip.u32   q13, q15    \n"
+        "vzip.u32   q12, q13    \n"
+        "vadd.u32   q2, q2, q12     \n"
+        
+        "subs %0, %0, #1    \n"
+
+        "veor.u8  q12, q7, q8           \n"
+        "veor.u8  q13, q7, q9           \n"
+        "veor.u8  q14, q7, q10           \n"
+        "veor.u8  q15, q7, q11           \n"
+        "vcnt.u8  q12, q12          \n"
+        "vcnt.u8  q13, q13          \n"
+        "vcnt.u8  q14, q14          \n"
+        "vcnt.u8  q15, q15          \n"
+        "vpaddl.u8 q12, q12         \n"
+        "vpaddl.u8 q13, q13         \n"
+        "vpaddl.u8 q14, q14         \n"
+        "vpaddl.u8 q15, q15         \n"
+        "vpaddl.u16 q12, q12            \n"
+        "vpaddl.u16 q13, q13            \n"
+        "vpaddl.u16 q14, q14            \n"
+        "vpaddl.u16 q15, q15            \n"
+        "vpaddl.u32 q12, q12            \n"
+        "vpaddl.u32 q13, q13            \n"
+        "vpaddl.u32 q14, q14            \n"
+        "vpaddl.u32 q15, q15            \n"
+        "vadd.u32   d24, d24, d25   \n"
+        "vadd.u32   d26, d26, d27   \n"
+        "vadd.u32   d28, d28, d29   \n"
+        "vadd.u32   d30, d30, d31   \n"
+        "vzip.u32   q12, q14    \n"
+        "vzip.u32   q13, q15    \n"
+        "vzip.u32   q12, q13    \n"
+        "vadd.u32   q3, q3, q12     \n"
+
+        "bne 0b     \n"
+
+        "vcvt.f32.u32  q0, q0   \n"
+        "vcvt.f32.u32  q1, q1   \n"
+        "vcvt.f32.u32  q2, q2   \n"
+        "vcvt.f32.u32  q3, q3   \n"
+        "vst1.32    q0, [%1]!   \n"
+        "vst1.32    q1, [%1]!   \n"
+        "vst1.32    q2, [%1]!   \n"
+        "vst1.32    q3, [%1]!   \n"
+        : "+r"(kc),  // %0
+          "+r"(c),   // %1
+          "+r"(b),   // %2
+          "+r"(a)    // %3
+        :
+        : "cc", "memory", "r0", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15"
+        );
+#endif  // __aarch64__
+}
+#endif  // __ARM_NEON
+
+inline void bgemm_naive(const int m, const int n, const int k,
+                        const uint64_t *a, const int lda, const uint64_t *b,
+                        const int ldb, float *c, const int ldc) {
     FORZ(i, m) {
         FORZ(j, n) {
             FORZ(h, k) {
-                C(i, j) += static_cast<float>(
-                    __builtin_popcountl((A(i, h) ^ B(h, j))));
+                C(i, j) += static_cast<float>(bitcount((A(i, h) ^ B(h, j))));
             }
         }
     }

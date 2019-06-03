@@ -8,6 +8,7 @@
 
 namespace bnn {
 void Relu::forward_impl() const {
+#if __ARM_NEON
     float32x4_t _zero = vdupq_n_f32(0.f);
     float *ptr = static_cast<float *>(*data_mat);
     FORZ(i, data_mat->total() / 4) {
@@ -17,5 +18,11 @@ void Relu::forward_impl() const {
 
         ptr += 4;
     }
+#else
+    float *ptr = static_cast<float *>(*data_mat);
+    FORZ(i, data_mat->total()) {
+        *ptr = std::max(*ptr, 0.f);
+    }
+#endif // __ARM_NEON
 }
 }  // namespace bnn

@@ -10,8 +10,12 @@
 #include <dabnn/mat.h>
 
 inline int bitcount(uint64_t x) {
+#ifdef __aarch64__
+    return __builtin_popcountl(x);
+#else
     std::bitset<64> bs(x);
     return bs.count();
+#endif
 }
 
 inline void baseline_pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {

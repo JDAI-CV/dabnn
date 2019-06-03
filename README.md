@@ -16,7 +16,7 @@ Join chat at [Gitter (English)](https://gitter.im/dabnn/dabnn) or QQ Group (Chin
 
 Binary neural networks (BNNs) have great potential on edge devices since they replace float operations by efficient bit-wise operations. However, to leverage the efficiency of bit-wise operations, the reimplmentation of convolution layer and also other layers is needed. 
 
-To our best knowledge, dabnn is the first highly-optimized binary neural networks inference framework for mobile platform. We implemented binary convolutions with armv8 assembly. On Google Pixel 1, our dabnn is as **800%~2400% faster** as [BMXNet](https://github.com/hpi-xnor/BMXNet) (the only one open-sourced BNN inference framework except dabnn to our best knowledge) on a single binary convolution, and as about **700% faster** as it on binarized ResNet-18.
+To our best knowledge, dabnn is the first highly-optimized binary neural networks inference framework for mobile platform. We implemented binary convolutions with ARM assembly. On Google Pixel 1, our dabnn is as **800%~2400% faster** as [BMXNet](https://github.com/hpi-xnor/BMXNet) (the only one open-sourced BNN inference framework except dabnn to our best knowledge) on a single binary convolution, and as about **700% faster** as it on binarized ResNet-18.
 
 ## Benchmark and Comparison
 
@@ -46,11 +46,11 @@ The following is the comparison between our dabnn and [Caffe](http://caffe.berke
 
 ## Convert ONNX Model
 
-We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabnn model. To get the conversion tool, just build the project using the native toolchain (instead of arm cross-compiling toolchain). For Linux users, we provide pre-built onnx2bnn AppImage. Linux users can download it from [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases). For the usage and other information about AppImage, please check out https://appimage.org .
+We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabnn model. We provide onnx2bnn pre-built binaries for all platforms in [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases). For Linux users, the onnx2bnn pre-built binary is [AppImage](https://appimage.org) format, see https://appimage.org for details.
 
-Note: Binary convolution is a custom operator, so whether the ONNX model is dabnn-comptabile heavily depends on the implementation of the binary convolution in the training code. We will soon provide an dabnn-comptabile PyTorch implementation of binary convolution.
+Note: Binary convolution is a custom operator, so whether the ONNX model is dabnn-comptabile heavily depends on the implementation of the binary convolution in the training code. Please check out [our wiki](https://github.com/JDAI-CV/dabnn/wiki/Train,-export-and-convert-a-dabnn-model) for the further information.
 
-After conversion, the generated dabnn model can be deployed on armv8 devices. For Android developer, we have provided Android AAR package and published it on [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion), for the usage please check out [example project](https://github.com/JDAI-CV/dabnn-example).
+After conversion, the generated dabnn model can be deployed on ARM devices (e.g., mobile phones and embedded devices). For Android developer, we have provided Android AAR package and published it on [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion), for the usage please check out [example project](https://github.com/JDAI-CV/dabnn-example).
 
 ## Pretrained Models
 
