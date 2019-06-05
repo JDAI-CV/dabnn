@@ -64,7 +64,9 @@ dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- �
 
 ## 技术细节
 
-我们计划参加 [ACM Multimedia 2019 Open Source Software Competition](https://www.acmmm.org/2019/call-for-open-source-software-competition/). dabnn 的技术细节很快会在一篇四页的短论文中描述。
+* Binary Convolutions 的实现: [docs/bconv.md](docs/bconv_CN.md)
+
+* 模型转换: [docs/onnx2bnn.md](docs/onnx2bnn_CN.md)
 
 ## 示例工程
 
