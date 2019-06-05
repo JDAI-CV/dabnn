@@ -62,7 +62,9 @@ We publish two pretrained binary neural network models based on [Bi-Real Net](ht
 
 ## Implementation Details
 
-We plan to participate the [ACM Multimedia 2019 Open Source Software Competition](https://www.acmmm.org/2019/call-for-open-source-software-competition/). Our implementation details will be presented in a 4-page short paper soon.
+* The Implementation of Binary Convolutions: [docs/bconv.md](docs/bconv.md)
+
+* Model Conversion: [docs/onnx2bnn.md](docs/onnx2bnn.md)
 
 ## Example project
 
