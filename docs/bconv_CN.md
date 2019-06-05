@@ -1,5 +1,5 @@
 ## Bit-packing
-在执行二值卷积之前，网络需要手动插入一层`Binarize`。是指将 N 个 32 位的 float/integer，根据和 0 的大小关系，二值化为 N 个 bit （即 0 或 1），并打包成一个 N-bit 的整体，例如对 128 个浮点数进行 bit-packing 之后，就会产生一个 128-bit 的操作数。这一步叫做 bit-packing，做了这一步，后续才可以进行位运算 xnor/xor。
+Bit-packing 在 `Binarize` 层进行，是指将 N 个 32 位的 float/integer，根据和 0 的大小关系，二值化为 N 个 bit （即 0 或 1），并打包成一个 N-bit 的整体，例如对 128 个浮点数进行 bit-packing 之后，就会产生一个 128-bit 的操作数。做了这一步，后续才可以进行位运算 xnor/xor。
 
 Bit-packing 的具体实现在 
 
@@ -20,6 +20,6 @@ BGEMM 的具体实现在 https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bgem
 
 然而 BGEMM 在 ARM 设备上并不高效，因为二值乘-加操作中，加法需要两步 - bitcount 和普通的加法。Bitcount 用来得到一个 N-bit 操作数中有多少 bit 是 1。在 ARMv8 设备上，bitcount 需要两条指令，ARMv7 设备上需要更多条指令。这大大限制了 BGEMM 的速度。因此 dabnn 提出了直接卷积的方法，称为 Binary Direct Convolution （BDC），它是指直接按照卷积的定义来计算卷积。在 BDC 中，通过一个简单的变换，大部分 bitcount 指令会被消除。它的优点是性能比 BGEMM 更高，但不能像 BGEMM 一样用一套代码覆盖所有的情况。
 
-关于 BDC 如何消除大部分 bitcount 指令，请留意我们即将 publish 的 paper。
+关于 BDC 如何消除大部分 bitcount 指令在 [bconv.md](bconv.md) 中有详细的说明。
 
 BDC 的具体实现在 https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bconv.h。
