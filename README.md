@@ -44,6 +44,12 @@ The following is the comparison between our dabnn and [Caffe](http://caffe.berke
 
 ![Comparison](images/comparison_en.png)
 
+## Build
+
+We provide pre-built onnx2bnn and also dabnn Android package. However, you need to build it if you want to deploy BNNs on non-Android ARM devices.
+
+We use CMake build system like most C++ projects. Check out [docs/build.md](docs/build.md) for the detail instructions.
+
 ## Convert ONNX Model
 
 We provide a conversion tool, named onnx2bnn, to convert an ONNX model to a dabnn model. We provide onnx2bnn pre-built binaries for all platforms in [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases). For Linux users, the onnx2bnn pre-built binary is [AppImage](https://appimage.org) format, see https://appimage.org for details.

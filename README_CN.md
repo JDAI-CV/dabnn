@@ -46,6 +46,12 @@ dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- �
 
 ![Comparison](images/comparison_cn.png)
 
+## 如何编译
+
+我们已经提供预编译的 onnx2bnn 和 dabnn 的 Android package，不过如果需要在非 Android 的 ARM 设备上使用 dabnn，就需要自己编译它了。
+
+如同大部分 C++ 项目，我们使用 CMake 构建系统。具体请看 [docs/build.md](docs/build.md)。
+
 ## 如何转换 ONNX 模型
 
 我们提供模型转换工具 onnx2bnn 将 ONNX 模型转换为 dabnn 格式的模型。在 [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases) 里有各个平台的 onnx2bnn 预编译二进制文件，可以直接下载运行。Linux 用户我们提供的是 AppImage 格式的二进制文件，AppImage 的使用方法和其它相关信息请参考 https://appimage.org/。
