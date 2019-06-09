@@ -8,7 +8,7 @@ Cross-compiling for ARMv8 Android:
 
 1. Download and unzip Android NDK from https://developer.android.com/ndk/downloads.
 
-1. Run cmake with the toolchain file, which determine the proper compiling toolchains.
+2. Run cmake with the toolchain file, which determine the proper compiling toolchains. **If this step fails, please check whether the toolchain file really exists on the path you set.**
 
 ```bash
 mkdir build-dabnn
@@ -16,9 +16,7 @@ cd build-dabnn
 cmake -DCMAKE_TOOLCHAIN_FILE=the_path_to_android_ndk/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DCMAKE_BUILD_TYPE=Release ..
 ```
 
-**If this step fails, please check whether the toolchain file really exists on the path you set.**
-
-1. Build
+3. Build
 
 ```bash
 cmake --build .
@@ -32,7 +30,7 @@ For non-ARM devices, only the unoptimized code will work. If you still want to b
 
 ### Build onnx2bnn
 
-On non-ARM devices, 
+On non-ARM devices, just run cmake and build the project directly.
 
 1. Run cmake
 
@@ -42,7 +40,7 @@ cd build-onnx2bnn
 cmake ..
 ```
 
-1. Build
+2. Build
 
 ```bash
 cmake --build .
