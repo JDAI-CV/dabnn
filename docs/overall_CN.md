@@ -16,5 +16,5 @@
 在使用流程和软件结构方面，dabnn 和已开源的推理库（如 [ncnn](https://github.com/Tencent/ncnn)、[Tengine](https://github.com/OAID/Tengine)、[FeatherCNN](https://github.com/Tencent/FeatherCNN) 等）差距不大：
 
 1. 模型训练可使用任意一种可以导出 ONNX 模型的框架，但需要注意的是，二值卷积是自定义操作，为了让模型中二值卷积可以被 dabnn 正确识别，请看 [onnx2bnn_CN.md](onnx2bnn_CN.md)。
-1. 部署模型前需要把 onnx 格式转换成 dabnn 内部格式。在转换过程中，会把二值卷积的权重转换为 1-bit （而不是默认的 32-bit），大大减小模型文件的体积。流程和**注意事项**可参照 [onnx2bnn_CN.md](onnx2bnn_CN.md)；
+2. 部署模型前需要把 onnx 格式转换成 dabnn 内部格式。在转换过程中，会把二值卷积的权重转换为 1-bit （而不是默认的 32-bit），大大减小模型文件的体积。流程和**注意事项**可参照 [onnx2bnn_CN.md](onnx2bnn_CN.md)；
 3. 二值卷积实现请查阅 [bconv_CN.md](bconv_CN.md)
