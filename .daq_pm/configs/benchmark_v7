@@ -1,0 +1,8 @@
+# It is a configuration file for [project_manager.vim](https://github.com/daquexian/project_manager.vim)
+name binary-nn
+type cpp
+build_dir build_release_v7
+build_type Release
+target dabnn_benchmark
+cmake_options -DCMAKE_TOOLCHAIN_FILE=~/Android/Sdk/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=android-21 -DANDROID_ABI="armeabi-v7a with NEON" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+binary ~/adb_push_and_run.sh benchmark/dabnn_benchmark
