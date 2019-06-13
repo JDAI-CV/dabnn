@@ -4,8 +4,8 @@ Bit-packing is performed in `Binarize` layers. It pack N 32-bit float/integer to
 
 The details of bit-packing are in 
 
-* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L20 (optimized, for tensors of 128 and more channels)
-* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L204 (normal, for tensors of less than 128 channels)
+* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L29 (optimized, for tensors of 128 and more channels)
+* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L228 (normal, for tensors of less than 128 channels)
 
 The optmized version is 4X faster than the normal version. Bit-packing algorithm directly leverage the sign bits of int32 and IEEE 754 float numbers, and then eliminate the comparison with zeros. SIMD instructions are also used to speed up this process. Note that after SIMD instructions is performed, the N bit in the result will be re-arranged so that they are not in the same order with the N 32-bit inputs. Fortunately, the output of xnor/xor is not affected as long as the input and weight is re-arranged in the same way. Given this observation, we re-arranged the weights of binary convs whose inputs is bit-packed in the optmized way. The details are in https://github.com/JDAI-CV/dabnn/blob/master/dabnn/net.cpp#L82.
 

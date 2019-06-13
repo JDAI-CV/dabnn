@@ -3,8 +3,8 @@ Bit-packing 在 `Binarize` 层进行，是指将 N 个 32 位的 float/integer�
 
 Bit-packing 的具体实现在 
 
-* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L20 （高优化版，针对 128 和以上 channel 数的 tensor） 
-* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L204 （低优化版，针对 128 channel 以下的 tensor） 
+* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L29 （高优化版，针对 128 和以上 channel 数的 tensor） 
+* https://github.com/JDAI-CV/dabnn/blob/master/dabnn/bitpack.h#L228 （低优化版，针对 128 channel 以下的 tensor） 
 
 高优化版和低优化版的性能差距在 4 倍左右。在高优化版中，bit-packing 算法直接利用 IEEE 754 float 和 int32 的符号位，而不需要把每一个数都和 0 比较，并使用了 SIMD 指令加速这一算法。值得一提的是，使用 SIMD 指令进行 bit-packing 后，输出的 N-bit 操作数的 N 个 bit 和 N 个输入不是按顺序对应的，但只要 xnor/xor 的两个操作数的每个 bit 一一对应，就不会对运算产生任何影响，因此，在适用高优化 bit-packing 的场景下，我们会对 weight 进行重排，使它的每个 bit 和 input 的每个 bit 一一对应，这一步的具体代码在 https://github.com/JDAI-CV/dabnn/blob/master/dabnn/net.cpp#L82。
 

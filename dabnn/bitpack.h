@@ -1,4 +1,13 @@
 // Copyright 2019 JD.com Inc. JD AI
+//
+// The step of bit-packing packs N 32-bit float/integer to an N-bit 
+// operand according their signs. For example, performing bit-packing 
+// on 128 float numbers produces a 128-bit operand. xnor/xor is only 
+// enabled on these packed operands.
+//
+// The method in this file is usually for the packing of input. The 
+// packing of weight has been performed offline in the step of 
+// onnx2bnn.
 
 #ifndef BITPACK_H
 #define BITPACK_H
@@ -18,6 +27,21 @@
 
 #ifdef __aarch64__
 inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
+    /**
+     * This is the optimized bit-packing.
+     *
+     * sri is the "shift-right-and-overwrite" instruction.
+     * By this instruction, we directly leveraging the existing
+     * sign bits in 32-bit operands (both IEEE 754 float and 
+     * 32-bit integer).
+     * Note that the order of bits in the output operand is not
+     * the consistent with the order of input operands. Fortunately,
+     * this consistency is not indispensable -- the result of
+     * xnor/xor is still correct as long as the bits of both input
+     * and weight are re-arranged in the same way.
+     * Therefore, we re-arrange the packed weight accordingly in
+     * dabnn/net.cpp
+     */
     size_t nn_size = size >> 7;
 
     asm volatile(
@@ -202,6 +226,9 @@ inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 #endif // __aarch64__
 
 inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    /**
+     * This is the bit-packing for tensor of less than 128 channels.
+     */
     BNN_ASSERT(
         float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
         float_mat.w * float_mat.c);

@@ -62,6 +62,9 @@ inline void bnn::bconv_3x3_64(const Mat &bottom_blob, const Mat &weight,
 inline void bnn::bconv_3x3_64_opt3(const Mat &bottom_blob, const Mat &weight,
                                    Mat &top_blob, const int pad,
                                    const int stride) {
+    /**
+     * See bconv_3x3_64_opt4
+     */
     static uint64_t col_buf[999999];
 
     const size_t col_h = weight.h * weight.w;
@@ -217,6 +220,9 @@ inline void bnn::bconv_3x3_64_opt3(const Mat &bottom_blob, const Mat &weight,
 inline void bnn::bconv_3x3_64_opt2(const Mat &bottom_blob, const Mat &weight,
                                    Mat &top_blob, const int pad,
                                    const int stride) {
+    /**
+     * See bconv_3x3_64_opt4
+     */
     static uint64_t col_buf[999999];
 
     const size_t col_h = weight.h * weight.w;
@@ -282,6 +288,20 @@ inline void bnn::bconv_3x3_64_opt2(const Mat &bottom_blob, const Mat &weight,
 inline void bnn::bconv_3x3_64_opt4(const Mat &bottom_blob, const Mat &weight,
                                    Mat &top_blob, const int pad,
                                    const int stride) {
+    /**
+     * This method performs 64-input-channel 3x3 binary conv by
+     * im2col + BGEMM.
+     *
+     * The reason that it outperforms other ways when channel==64
+     * is the 128-bit vector registers cannot be fully filled in
+     * Binary Direct Convolution + NC1HWC2 memory layout if there
+     * are only 64 channels.
+     *
+     * By contrast, BGEMM can leverage 128-bit registers after im2col,
+     * and amortize the memory access.
+     *
+     */
+    // TODO: A more elegant way
     static uint64_t col_buf[999999];
 
     const size_t col_h = weight.h * weight.w;
@@ -404,6 +424,9 @@ inline void bnn::bconv_3x3_64_opt4(const Mat &bottom_blob, const Mat &weight,
 
 inline void bnn::bconv_3x3_64_opt(const Mat &bottom_blob, const Mat &weight,
                                   Mat &top_blob) {
+    /**
+     * See bconv_3x3_64_opt4
+     */
     BNN_ASSERT(weight.n % 2 == 0, weight.n);
     FORZ(th, top_blob.h) {
         FORZ(tw, top_blob.w) {
@@ -831,6 +854,13 @@ inline void unpack_output(float *b, float *a, int width, int height,
 
 inline void bnn::bconv_3x3(const Mat &bottom_blob, const Mat &weight,
                            Mat &top_blob, const int stride) {
+    /**
+     * This method shows our NC1HWC2 memory layout and Binary
+     * Direct Convolution. The input tensor and weight is packed
+     * into NC1HWC2 layout (in the method `pack_weight_3x3` and
+     * `pack_input_3x3`), the spatial redundancy is then leveraged
+     * in `bconv_3x3_128_internal_s1`.
+     */
 #ifdef __aarch64__
     // TODO: more elegant way
     static uint64_t packed_weight[999999];
