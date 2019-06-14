@@ -43,10 +43,10 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
         const auto trans_weight_mat_name = "trans_" + weight;
         // transpose the weight for bgemm
         const int m = weight_mat->n;
-        const int k = weight_mat->h * weight_mat->w * weight_mat->c;
-        transposed_weight_mat =
-            std::make_shared<Mat>(weight_mat->n, weight_mat->h, weight_mat->w,
-                                  weight_mat->elem_c, DataType::Bit, false);
+        BNN_ASSERT(weight_mat->total() % m == 0, "");
+        const int k = weight_mat->total() / m;
+        transposed_weight_mat = std::make_shared<Mat>(
+            m, k * 64, DataType::Bit, false);
         auto *trans_data_ptr =
             static_cast<uint64_t *>(transposed_weight_mat->data);
         auto *data_ptr = static_cast<uint64_t *>(weight_mat->data);

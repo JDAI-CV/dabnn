@@ -9,11 +9,23 @@
 
 #include <common/helper.h>
 
-inline void pack_64_bitset(const float *fptr, uint64_t *buf) {
+inline void pack_64_bitset(const float *fptr, uint64_t *buf,
+                           const size_t eff_bits = 64) {
+    /**
+     * The eff_bits is to support non-128-multiple channels.
+     * In this case, we need pad the tensor to make the
+     * channel aligned with 128.
+     */
     const size_t UNIT_LEN = 64;
+    BNN_ASSERT(eff_bits < UNIT_LEN,
+               "The eff_bits must be smaller than UNIT_LEN (64)");
     std::bitset<UNIT_LEN> bits;
     for (size_t i = 0; i < UNIT_LEN; i++) {
-        bits[i] = (*(fptr + i) > 0);
+        if (i < eff_bits) {
+            bits[i] = (*(fptr + i) > 0);
+        } else {
+            bits[i] = 0;
+        }
     }
     static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
                   "bits.to_ullong() must return a 64-bit element");

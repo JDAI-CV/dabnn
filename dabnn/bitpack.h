@@ -29,6 +29,8 @@
 inline void pack_128_opt(const float *float_ptr, void *binary_ptr,
                          size_t size) {
     /**
+     * size: the number of __elements__ needed to be packed.
+     *
      * This is the optimized bit-packing.
      *
      * sri is the "shift-right-and-overwrite" instruction.
