@@ -56,6 +56,8 @@ class Mat {
     // external dim
     Mat(int n, int w, int h, int c, void *data, DataType data_type,
         bool require_align = true);
+    Mat(int n, int w, int h, int c, void *data, DataType data_type,
+        size_t data_size, bool require_align = true);
 
     Mat subMat(int w1, int w2, int h1, int h2);
     // release
@@ -144,6 +146,8 @@ class Mat {
     size_t hstep;
 
     DataType data_type;
+
+    size_t data_num_;
 
     std::string name;
 };
@@ -236,6 +240,11 @@ inline Mat::Mat(int _w, int _h, int _c, void *_data, DataType data_type)
 
 inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
                 bool require_align)
+    : Mat(_n, _w, _h, _c, _data, data_type, 0, require_align) {
+}
+
+inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
+                size_t data_size, bool require_align)
     : data(_data), dims(4), data_type(data_type) {
     n = _n;
     w = _w;
@@ -245,6 +254,13 @@ inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
     if (data_type == DataType::Bit) {
         c /= 64;
     }
+    if (data_size == 0) {
+        data_num_ = _n * _w * _h * _c;
+    } else {
+        data_num_ = data_size;
+    }
+    PNT(data_num_, n, w, h, c);
+    BNN_ASSERT(data_num_ > n * w * h * c, "");
     elemsize = data_type == DataType::Float ? sizeof(float) : sizeof(uint64_t);
     BNN_ASSERT(c > 0, c);
     std::stringstream ss;
@@ -260,6 +276,7 @@ inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
 
     external_memory = true;
 }
+
 
 inline Mat::~Mat() { release(); }
 
@@ -575,7 +592,7 @@ inline void Mat::release() {
 
 inline bool Mat::empty() const { return data == nullptr || total() == 0; }
 
-inline size_t Mat::total() const { return n * h * w * c; }
+inline size_t Mat::total() const { return data_num_; }
 
 template <typename T>
 inline const T *Mat::point(int _n, int _h, int _w) const {
