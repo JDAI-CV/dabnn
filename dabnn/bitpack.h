@@ -26,7 +26,7 @@
 #include "mat.h"
 
 #ifdef __aarch64__
-inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
+inline void pack_128_opt(const float *float_ptr, void *binary_ptr, size_t size) {
     /**
      * This is the optimized bit-packing.
      *
@@ -122,7 +122,7 @@ inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
             "v19", "v20", "v21", "v22", "v23", "x0");
 }
 
-inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
+inline void pack_128_baseline(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
 
     asm volatile(
@@ -210,18 +210,27 @@ inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
           "x0");
 }
 
-inline void pack_mat_128_2(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+inline void pack_mat_128_opt(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     assert(!binary_mat.empty());
 
-    pack_128_2(static_cast<float *>(float_mat.data), binary_mat.data,
+    pack_128_opt(static_cast<float *>(float_mat.data), binary_mat.data,
+             float_mat.total());
+}
+
+inline void pack_mat_128_baseline(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    assert(!binary_mat.empty());
+
+    pack_128_baseline(static_cast<float *>(float_mat.data), binary_mat.data,
              float_mat.total());
 }
 
 inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
-    assert(!binary_mat.empty());
-
-    pack_128(static_cast<float *>(float_mat.data), binary_mat.data,
-             float_mat.total());
+    /**
+     * Delegate it to optimized implementation.
+     * The cost of function calling will be eliminated by compiler,
+     * don't bother.
+     */
+    pack_mat_128_opt(float_mat, binary_mat);
 }
 #endif // __aarch64__
 
@@ -251,7 +260,7 @@ inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(float_mat.c % 64 == 0, float_mat.c);
 #ifdef __aarch64__
     if (float_mat.c % 128 == 0) {
-        pack_mat_128_2(float_mat, binary_mat);
+        pack_mat_128_opt(float_mat, binary_mat);
     } else {
         pack_mat_64(float_mat, binary_mat);
     }
