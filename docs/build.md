@@ -2,6 +2,14 @@
 
 We use CMake build system like most C++ projects. 
 
+### Clone the project
+
+Clone dabnn recursively
+
+```bash
+git clone --recursively https://github.com/JDAI-CV/dabnn
+```
+
 ### Build dabnn
 
 Cross-compiling for ARMv8 Android:
