@@ -27,8 +27,6 @@ using std::unique_ptr;
 using std::vector;
 using Shape = Shaper::Shape;
 
-bool is_binary_weight(const float *data, Shape shape);
-
 std::string OnnxConverter::m(const std::string &str) {
     if (name_map_.find(str) != name_map_.end()) {
         return name_map_[str];
@@ -122,15 +120,6 @@ void OnnxConverter::AddConv(const string &input_name,
         AddFloatConv(input_name, strides, pads, dilations, group, weight_name,
                      bias_name, output_name, bnn_float_tensor);
     }
-}
-
-bool is_binary_weight(const float *data, Shape shape) {
-    FORZ(i, Shaper::total(shape)) {
-        if (data[i] != -1 && data[i] != 1) {
-            return false;
-        }
-    }
-    return true;
 }
 
 /*
