@@ -22,8 +22,8 @@ inline void affine_inplace(bnn::Mat &data, const bnn::Mat &a,
     }
 }
 
-inline void affine(const bnn::Mat &data, const bnn::Mat &a,
-                           const bnn::Mat &b, bnn::Mat &output) {
+inline void affine(const bnn::Mat &data, const bnn::Mat &a, const bnn::Mat &b,
+                   bnn::Mat &output) {
     FORZ(n, data.n) {
         FORZ(h, data.h) {
             const auto *ptr = data.point<float>(n, h, 0);
@@ -43,7 +43,7 @@ void Affine::forward_impl() const {
 #ifdef BNN_CHECK_CONSISTENCY
     affine(*data_mat, *a_mat, *b_mat, *output_mat);
 #else
-    affine_inplace(*data_mat, *a_mat, *b_mat); 
+    affine_inplace(*data_mat, *a_mat, *b_mat);
 #endif
 }
 

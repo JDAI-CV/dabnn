@@ -2,13 +2,10 @@
 
 #include "Pad.h"
 
-#include <dabnn/pad.h>
 #include <dabnn/net.h>
+#include <dabnn/pad.h>
 
 namespace bnn {
-void Pad::forward_impl() const { 
-    pad(*input_mat, pad_h, pad_w, *output_mat);
-}
+void Pad::forward_impl() const { pad(*input_mat, pad_h, pad_w, *output_mat); }
 
 }  // namespace bnn
-

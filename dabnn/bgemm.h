@@ -16,8 +16,8 @@
 #else
 #define P 4
 #define R 4
-#endif // __aarch64__
-#endif // __ARM_NEON
+#endif  // __aarch64__
+#endif  // __ARM_NEON
 
 #define A(i, j) a[(j)*lda + (i)]  // A(y, x)
 #define B(i, j) b[(j)*ldb + (i)]  // B(y, x)
@@ -425,7 +425,7 @@ inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
           "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17",
           "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27",
           "v28", "v29", "v30");
-#else  // __aarch64__
+#else   // __aarch64__
 
     // C: 4x4(float 32, 4x1=4), A: 4*K(4regs), B: K*4(4regs)
     // q0~q3 contains C, q4~q7 contains 4*128 of B, q8~q11 contains 128*4 of A
@@ -473,7 +473,7 @@ inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
         "vzip.u32   q13, q15    \n"
         "vzip.u32   q12, q13    \n"
         "vadd.u32   q0, q0, q12     \n"
-        
+
         "veor.u8  q12, q5, q8           \n"
         "veor.u8  q13, q5, q9           \n"
         "veor.u8  q14, q5, q10           \n"
@@ -502,7 +502,7 @@ inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
         "vzip.u32   q13, q15    \n"
         "vzip.u32   q12, q13    \n"
         "vadd.u32   q1, q1, q12     \n"
-        
+
         "veor.u8  q12, q6, q8           \n"
         "veor.u8  q13, q6, q9           \n"
         "veor.u8  q14, q6, q10           \n"
@@ -531,7 +531,7 @@ inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
         "vzip.u32   q13, q15    \n"
         "vzip.u32   q12, q13    \n"
         "vadd.u32   q2, q2, q12     \n"
-        
+
         "subs %0, %0, #1    \n"
 
         "veor.u8  q12, q7, q8           \n"
@@ -578,8 +578,8 @@ inline void micro_kernel(int64_t kc, float *c, const uint64_t *a,
           "+r"(b),   // %2
           "+r"(a)    // %3
         :
-        : "cc", "memory", "r0", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15"
-        );
+        : "cc", "memory", "r0", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7",
+          "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15");
 #endif  // __aarch64__
 }
 #endif  // __ARM_NEON

@@ -79,7 +79,7 @@ void ave_pool_2x2_s2(const bnn::Mat &input, bnn::Mat &output) {
         }
     }
 }
-#endif // __ARM_NEON
+#endif  // __ARM_NEON
 
 void ave_pool_fallback(const bnn::Mat &input, const size_t pad_h,
                        const size_t pad_w, const size_t stride_h,
@@ -156,9 +156,9 @@ void AvePool::forward_impl() const {
                           kernel_h, kernel_w, *output_mat);
     }
 #else
-    ave_pool_fallback(*input_mat, pad_h, pad_w, stride_h, stride_w,
-                      kernel_h, kernel_w, *output_mat);
-#endif // __ARM_NEON
+    ave_pool_fallback(*input_mat, pad_h, pad_w, stride_h, stride_w, kernel_h,
+                      kernel_w, *output_mat);
+#endif  // __ARM_NEON
 }
 
 }  // namespace bnn

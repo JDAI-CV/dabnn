@@ -30,9 +30,9 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
     }
     const auto col_mat_name = "col_mat";
     if (mat_map.find(col_mat_name) == mat_map.end()) {
-        const auto len = output_mat->h * output_mat->w * weight_mat->h * weight_mat->w * input_mat->elem_c;
-        mat_map[col_mat_name] =
-            std::make_shared<Mat>(len, bnn::DataType::Bit);
+        const auto len = output_mat->h * output_mat->w * weight_mat->h *
+                         weight_mat->w * input_mat->elem_c;
+        mat_map[col_mat_name] = std::make_shared<Mat>(len, bnn::DataType::Bit);
     }
 
     padded_mat = mat(pad_name);
@@ -110,8 +110,8 @@ void BinConv::forward_impl() const {
                   static_cast<float *>(output_mat->data), m);
         } else {
             baseline_bconv(*input_mat, *weight_mat, weight_mat->h,
-                           weight_mat->w, pad_h, pad_w, stride_h, stride_w, 1, 1,
-                           output_mat->c, *output_mat);
+                           weight_mat->w, pad_h, pad_w, stride_h, stride_w, 1,
+                           1, output_mat->c, *output_mat);
         }
     } else {
         baseline_bconv(*input_mat, *weight_mat, weight_mat->h, weight_mat->w,

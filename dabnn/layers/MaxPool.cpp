@@ -198,7 +198,8 @@ void maxpool3x3(const bnn::Mat &input, bnn::Mat &output, const int stride_h = 1,
                   "+r"(output_ptr),  // %9
                   "+r"(nn)           // %10
                 :
-                : "cc", "memory", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8");
+                : "cc", "memory", "q0", "q1", "q2", "q3", "q4", "q5", "q6",
+                  "q7", "q8");
 #endif
         }
     }
@@ -269,8 +270,8 @@ MaxPool::MaxPool(NetCP net, const std::string &name, css input, css output,
 void MaxPool::forward_impl() const {
 #ifdef __ARM_NEON
     if (kernel_h == 3 && kernel_w == 3) {
-        // std::numeric_limits<float>::min() is the closest value to 0, so we uses
-        // -max()
+        // std::numeric_limits<float>::min() is the closest value to 0, so we
+        // uses -max()
         pad(*input_mat, pad_h, pad_w, *padded_mat,
             -std::numeric_limits<float>::max());
         maxpool3x3(*padded_mat, *output_mat, stride_h, stride_w);
@@ -283,8 +284,8 @@ void MaxPool::forward_impl() const {
                           kernel_h, kernel_w, *output_mat);
     }
 #else
-    max_pool_fallback(*input_mat, pad_h, pad_w, stride_h, stride_w,
-                      kernel_h, kernel_w, *output_mat);
+    max_pool_fallback(*input_mat, pad_h, pad_w, stride_h, stride_w, kernel_h,
+                      kernel_w, *output_mat);
 #endif  // __aarch64__
 }
 

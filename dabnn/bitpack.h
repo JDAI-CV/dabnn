@@ -1,12 +1,12 @@
 // Copyright 2019 JD.com Inc. JD AI
 //
-// The step of bit-packing packs N 32-bit float/integer to an N-bit 
-// operand according their signs. For example, performing bit-packing 
-// on 128 float numbers produces a 128-bit operand. xnor/xor is only 
+// The step of bit-packing packs N 32-bit float/integer to an N-bit
+// operand according their signs. For example, performing bit-packing
+// on 128 float numbers produces a 128-bit operand. xnor/xor is only
 // enabled on these packed operands.
 //
-// The method in this file is usually for the packing of input. The 
-// packing of weight has been performed offline in the step of 
+// The method in this file is usually for the packing of input. The
+// packing of weight has been performed offline in the step of
 // onnx2bnn.
 
 #ifndef BITPACK_H
@@ -26,13 +26,14 @@
 #include "mat.h"
 
 #ifdef __aarch64__
-inline void pack_128_opt(const float *float_ptr, void *binary_ptr, size_t size) {
+inline void pack_128_opt(const float *float_ptr, void *binary_ptr,
+                         size_t size) {
     /**
      * This is the optimized bit-packing.
      *
      * sri is the "shift-right-and-overwrite" instruction.
      * By this instruction, we directly leveraging the existing
-     * sign bits in 32-bit operands (both IEEE 754 float and 
+     * sign bits in 32-bit operands (both IEEE 754 float and
      * 32-bit integer).
      * Note that the order of bits in the output operand is not
      * the consistent with the order of input operands. Fortunately,
@@ -107,8 +108,9 @@ inline void pack_128_opt(const float *float_ptr, void *binary_ptr, size_t size) 
         // So for the compatibility we add a "not" instruction here.
         // Maybe we can save this instruction by introducing "version" for
         // dabnn model and force users to upgrade.
-        // Note: If this line is removed, the padding value of binary convolution
-        // should also be changed from 0 (-1 in xnor) to -1 (1 in xnor)
+        // Note: If this line is removed, the padding value of binary
+        // convolution should also be changed from 0 (-1 in xnor) to -1 (1 in
+        // xnor)
         "not    v0.16b, v0.16b        \n"
 
         "st1    {v0.4s}, [%1], #16         \n"
@@ -118,11 +120,12 @@ inline void pack_128_opt(const float *float_ptr, void *binary_ptr, size_t size) 
           "+r"(nn_size)      // %2
         :
         : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8",
-            "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18",
-            "v19", "v20", "v21", "v22", "v23", "x0");
+          "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18",
+          "v19", "v20", "v21", "v22", "v23", "x0");
 }
 
-inline void pack_128_baseline(const float *float_ptr, void *binary_ptr, size_t size) {
+inline void pack_128_baseline(const float *float_ptr, void *binary_ptr,
+                              size_t size) {
     size_t nn_size = size >> 7;
 
     asm volatile(
@@ -214,14 +217,15 @@ inline void pack_mat_128_opt(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     assert(!binary_mat.empty());
 
     pack_128_opt(static_cast<float *>(float_mat.data), binary_mat.data,
-             float_mat.total());
+                 float_mat.total());
 }
 
-inline void pack_mat_128_baseline(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+inline void pack_mat_128_baseline(const bnn::Mat &float_mat,
+                                  bnn::Mat &binary_mat) {
     assert(!binary_mat.empty());
 
     pack_128_baseline(static_cast<float *>(float_mat.data), binary_mat.data,
-             float_mat.total());
+                      float_mat.total());
 }
 
 inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
@@ -232,7 +236,7 @@ inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
      */
     pack_mat_128_opt(float_mat, binary_mat);
 }
-#endif // __aarch64__
+#endif  // __aarch64__
 
 inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     /**
@@ -266,7 +270,7 @@ inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     }
 #else
     pack_mat_64(float_mat, binary_mat);
-#endif // __aarch64__
+#endif  // __aarch64__
 }
 
 #endif /* BITPACK_H */

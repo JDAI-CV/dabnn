@@ -7,7 +7,7 @@
 #include <arm_neon.h>
 #endif  // __ARM_NEON
 
-#if not defined (__aarch64__)
+#if not defined(__aarch64__)
 #include <common/baseline.h>
 #endif
 #include <common/helper.h>
@@ -850,7 +850,7 @@ inline void unpack_output(float *b, float *a, int width, int height,
 
 #undef A
 }
-#endif // __aarch64__
+#endif  // __aarch64__
 
 inline void bnn::bconv_3x3(const Mat &bottom_blob, const Mat &weight,
                            Mat &top_blob, const int stride) {
@@ -924,9 +924,10 @@ inline void bnn::bconv_3x3(const Mat &bottom_blob, const Mat &weight,
         unpack_output(packed_output, static_cast<float *>(top_blob.data),
                       top_blob.w, top_blob.h, top_blob.c);
     }
-#else // __aarch64__
-    baseline_bconv(bottom_blob, weight, 3, 3, 0, 0, stride, stride, 1, 1, top_blob.c, top_blob);
-#endif // __aarch64__
+#else   // __aarch64__
+    baseline_bconv(bottom_blob, weight, 3, 3, 0, 0, stride, stride, 1, 1,
+                   top_blob.c, top_blob);
+#endif  // __aarch64__
 }
 
 #ifdef __aarch64__
@@ -1717,6 +1718,6 @@ inline void bnn::bconv_1x1_64(const Mat &bottom_blob, const Mat &weight,
         }
     }
 }
-#endif // __aarch64__
+#endif  // __aarch64__
 
 #endif
