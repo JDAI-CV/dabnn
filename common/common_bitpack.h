@@ -9,28 +9,6 @@
 
 #include <common/helper.h>
 
-inline void pack_128_fallback(const float *float_ptr, void *binary_ptr,
-                              size_t size) {
-    uint64_t *ui64_ptr = static_cast<uint64_t *>(binary_ptr);
-    const size_t UNIT_LEN = 64;
-    std::bitset<UNIT_LEN> bits1;
-    std::bitset<UNIT_LEN> bits2;
-    static_assert(sizeof(decltype(bits1.to_ullong())) * CHAR_BIT == 64,
-                  "bits.to_ullong() must return a 64-bit element");
-
-    FORZS(j, size, 128) {
-        FORZS(i, 128, 4) {
-            const auto t = i / 4;
-            bits1[t] = (*(float_ptr + j + i) > 0);
-            bits1[t + 32] = (*(float_ptr + j + i + 1) > 0);
-            bits2[t] = (*(float_ptr + j + i + 2) > 0);
-            bits2[t + 32] = (*(float_ptr + j + i + 3) > 0);
-        }
-        *ui64_ptr++ = bits1.to_ullong();
-        *ui64_ptr++ = bits2.to_ullong();
-    }
-}
-
 inline void pack_64_bitset(const float *fptr, uint64_t *buf) {
     const size_t UNIT_LEN = 64;
     std::bitset<UNIT_LEN> bits;

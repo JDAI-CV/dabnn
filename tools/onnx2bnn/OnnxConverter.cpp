@@ -59,8 +59,8 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
     const auto param = flatbnn::CreateBinConv2DDirect(
         builder_, bin_name.c_str(), weight_name.c_str(), nullptr, &pads,
         &strides, &dilations, output_name.c_str());
-    const auto layer = flatbnn::CreateLayer(
-        builder_, flatbnn::LayerType::BinConv2D, 0, param);
+    const auto layer =
+        flatbnn::CreateLayer(builder_, flatbnn::LayerType::BinConv2D, 0, param);
     const auto flat_tensor = flatbnn::CreateTensorDirect(
         builder_, flatbnn::DataType::Bit, &bin_weight.data, nullptr,
         &bin_weight.shape, weight_name.c_str());
@@ -145,18 +145,11 @@ OnnxConverter::BTensor OnnxConverter::bitpack(OnnxConverter::FTensor ftensor) {
     BNN_ASSERT(c % 64 == 0, ftensor.shape);
 
     vector<bin_t> packed_data;
-    // if (c % 128 == 0) {
-    if (false) {
-        const auto size = Shaper::total(ftensor.shape);
-        packed_data.resize(size / 64);
-        pack_128_fallback(&ftensor.data[0], &packed_data[0], size);
-    } else {
-        bin_t tmp;
+    bin_t tmp;
 
-        FORZS(i, Shaper::total(ftensor.shape), 64) {
-            pack_64_bitset(&ftensor.data[i], &tmp);
-            packed_data.push_back(tmp);
-        }
+    FORZS(i, Shaper::total(ftensor.shape), 64) {
+        pack_64_bitset(&ftensor.data[i], &tmp);
+        packed_data.push_back(tmp);
     }
 
     Shape shape = {ftensor.shape[0], ftensor.shape[1], ftensor.shape[2],
@@ -190,27 +183,6 @@ std::vector<OnnxConverter::BTensor> OnnxConverter::split(
     return outputs;
 }
 
-vector<bin_t> bitpack(const float *data, Shape shape) {
-    static_assert(std::is_same<bin_t, uint64_t>::value,
-                  "bitpack requires bin_t is 64 bit");
-
-    auto c = Shaper::onnx_kc(shape);
-
-    BNN_ASSERT(c % 64 == 0, shape);
-
-    vector<bin_t> packed;
-
-    bin_t tmp;
-
-    FORZS(i, Shaper::total(shape), 64) {
-        pack_64_bitset(&data[i], &tmp);
-        packed.push_back(tmp);
-    }
-    BNN_ASSERT(false, "");
-
-    return packed;
-}
-
 void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                             const std::string &filepath,
                             const OnnxConverter::Level level) {
@@ -220,18 +192,19 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
     // Please check out "dabnn_*" pases in
     // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes
     // for details.
-    vector<string> optimizers{"eliminate_nop_pad", "extract_constant_to_initializer",
-	    "dabnn_bconv_strict"};
+    vector<string> optimizers{"eliminate_nop_pad",
+                              "extract_constant_to_initializer",
+                              "dabnn_bconv_strict"};
     if (level == Level::kModerate || level == Level::kAggressive) {
         optimizers.push_back("dabnn_bconv_moderate");
     }
     if (level == Level::kAggressive) {
         optimizers.push_back("dabnn_bconv_aggressive");
     }
-    // model_proto is only used here. Please use the member variable model_proto_
-    // in the following code
-    model_proto_ = ONNX_NAMESPACE::optimization::Optimize(
-        model_proto, optimizers);
+    // model_proto is only used here. Please use the member variable
+    // model_proto_ in the following code
+    model_proto_ =
+        ONNX_NAMESPACE::optimization::Optimize(model_proto, optimizers);
 
     for (const auto &tensor : model_proto_.graph().initializer()) {
         if (tensor.data_type() == ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
@@ -548,8 +521,8 @@ void OnnxConverter::CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
         coeff_b_data.push_back(b.data[i] - scale.data[i] * mean.data[i] / tmp);
     }
     for (const auto &node2 : model_proto_.graph().node()) {
-        if (node2.domain() == "dabnn" && node2.op_type() == "Conv" 
-                && node2.output(0) == node.input(0)) {
+        if (node2.domain() == "dabnn" && node2.op_type() == "Conv" &&
+            node2.output(0) == node.input(0)) {
             const auto &weight = onnx_float_tensors_[node2.input(1)];
             {
                 int channels = Shaper::onnx_kc(weight.shape);

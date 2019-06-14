@@ -94,7 +94,7 @@ void Net::prepare() {
                 add_mat(name, std::make_shared<Mat>(shape[0], shape[1],
                                                     shape[2], shape[3],
                                                     bnn::DataType::Bit, false));
-                pack_mat_128_2(*tmp, *mat_map_[name]);
+                pack_mat_128(*tmp, *mat_map_[name]);
             } else {
 #endif // __aarch64__
                 add_mat(name, std::make_shared<Mat>(
