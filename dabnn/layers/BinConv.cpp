@@ -5,6 +5,8 @@
 #include <common/baseline.h>
 #include <dabnn/bconv.h>
 #include <dabnn/bgemm.h>
+#include <dabnn/bitpack.h>
+#include <dabnn/fused_binarize_im2col.h>
 #include <dabnn/net.h>
 #include <dabnn/pad.h>
 
@@ -21,7 +23,14 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
       stride_h(stride_h),
       stride_w(stride_w) {
     auto &mat_map = net.lock()->mat_map_;
-    const auto &pad_name = "pad_for_" + output + "_cal";
+    const auto binaized_name = "binaized_for_" + output + "_cal";
+    if (mat_map.find(binaized_name) == mat_map.end()) {
+        auto &input_mat = *mat_map[input];
+        mat_map[binaized_name] = std::make_shared<Mat>(
+            input_mat.h, input_mat.w, input_mat.elem_c,
+            DataType::Bit, binaized_name);
+    }
+    const auto pad_name = "pad_for_" + output + "_cal";
     if (mat_map.find(pad_name) == mat_map.end()) {
         auto &input_mat = *mat_map[input];
         mat_map[pad_name] = std::make_shared<Mat>(
@@ -45,8 +54,8 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
         const int m = weight_mat->n;
         BNN_ASSERT(weight_mat->total() % m == 0, "");
         const int k = weight_mat->total() / m;
-        transposed_weight_mat = std::make_shared<Mat>(
-            m, k * 64, DataType::Bit, false);
+        transposed_weight_mat =
+            std::make_shared<Mat>(m, k * 64, DataType::Bit, false);
         auto *trans_data_ptr =
             static_cast<uint64_t *>(transposed_weight_mat->data);
         auto *data_ptr = static_cast<uint64_t *>(weight_mat->data);
@@ -96,12 +105,12 @@ bool BinConv::gemm_compatible() const {
 void BinConv::forward_impl() const {
     if (net_.lock()->optimize) {
         if (direct_conv_compatible()) {
-            pad(*input_mat, pad_h, pad_w, *padded_mat);
+            pack_mat(*input_mat, *binarized_mat);
+            pad(*binarized_mat, pad_h, pad_w, *padded_mat);
             bconv_3x3(*padded_mat, *weight_mat, *output_mat, stride_h);
         } else if (gemm_compatible()) {
             output_mat->fill<float>(0.f);
-            bnn::im2col(*input_mat, weight_mat->h, weight_mat->w, pad_h, pad_w,
-                        stride_h, stride_w, 1, 1, *col_mat);
+            bnn::fused_binarize_im2col(*input_mat, weight_mat->h, weight_mat->w, pad_h, pad_w, stride_h, stride_w, 1, 1, *col_mat);
             const int m = weight_mat->n;
             const int n = output_mat->h * output_mat->w;
             const int k = weight_mat->h * weight_mat->w * weight_mat->c;
@@ -109,12 +118,14 @@ void BinConv::forward_impl() const {
                   m, static_cast<uint64_t *>(col_mat->data), k,
                   static_cast<float *>(output_mat->data), m);
         } else {
-            baseline_bconv(*input_mat, *weight_mat, weight_mat->h,
+            pack_mat(*input_mat, *binarized_mat);
+            baseline_bconv(*binarized_mat, *weight_mat, weight_mat->h,
                            weight_mat->w, pad_h, pad_w, stride_h, stride_w, 1,
                            1, output_mat->c, *output_mat);
         }
     } else {
-        baseline_bconv(*input_mat, *weight_mat, weight_mat->h, weight_mat->w,
+        pack_mat(*input_mat, *binarized_mat);
+        baseline_bconv(*binarized_mat, *weight_mat, weight_mat->h, weight_mat->w,
                        pad_h, pad_w, stride_h, stride_w, 1, 1, output_mat->c,
                        *output_mat);
     }

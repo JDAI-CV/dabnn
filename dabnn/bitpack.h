@@ -25,6 +25,8 @@
 #include <glog/logging.h>
 #include "mat.h"
 
+namespace bnn {
+
 #ifdef __aarch64__
 inline void pack_128_opt(const float *float_ptr, void *binary_ptr,
                          size_t size) {
@@ -275,4 +277,5 @@ inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 #endif  // __aarch64__
 }
 
+}
 #endif /* BITPACK_H */

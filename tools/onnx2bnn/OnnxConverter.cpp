@@ -15,6 +15,7 @@
 #include <common/common_bitpack.h>
 #include <common/flatbuffers_helper.h>
 #include <common/helper.h>
+#include <common/macros.h>
 #include <glog/logging.h>
 #include <onnx/onnx_pb.h>
 #include <onnx/optimizer/optimize.h>
@@ -43,15 +44,6 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
                                const std::string &output_name,
                                BTensor bin_weight) {
     css bin_name = input_name + "_bin";
-
-    {
-        const auto param = flatbnn::CreateBinarizeDirect(
-            builder_, input_name.c_str(), bin_name.c_str());
-        const auto layer =
-            flatbnn::CreateLayer(builder_, flatbnn::LayerType::Binarize, 0, 0,
-                                 0, 0, 0, 0, 0, 0, 0, 0, param);
-        layers_.push_back(layer);
-    }
 
     BNN_ASSERT(group == 1, "Group != 1 is not supported");
     const auto param = flatbnn::CreateBinConv2DDirect(
@@ -507,7 +499,8 @@ std::vector<std::string> OnnxConverter::Convert(
     auto flat_inputs = builder_.CreateVector(inputs);
     auto flat_tensors = builder_.CreateVector(tensors_);
     auto flat_model =
-        flatbnn::CreateModel(builder_, flat_layers, flat_tensors, flat_inputs);
+        flatbnn::CreateModel(builder_, flat_layers, flat_tensors, flat_inputs,
+                             BNN_LATEST_MODEL_VERSION);
 
     builder_.Finish(flat_model);
 

@@ -55,7 +55,7 @@
 #define STR(a) #a
 #define XSTR(a) STR(a)
 
-#define PNT_STR(s) << s << " "
+#define PNT_STR(s) << s
 #define PNT_VAR(var) << XSTR(var) << " = " << (var) << ", "
 #define PNT_TO(stream, ...) stream FOR_EACH(PNT_VAR, __VA_ARGS__);
 #define PNT(...) PNT_TO(LOG(INFO), __VA_ARGS__)

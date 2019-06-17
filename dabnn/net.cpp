@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <common/flatbuffers_helper.h>
+#include <common/macros.h>
 #include <dabnn/bitpack.h>
 #include <dabnn/layers/Add.h>
 #include <dabnn/layers/Affine.h>
@@ -54,6 +55,9 @@ void Net::read_impl(const void *ptr) {
 
 void Net::prepare() {
     BNN_ASSERT(!(strict && !run_fconv), "fconv must be run in strict mode");
+    BNN_ASSERT(model_->version() == BNN_LATEST_MODEL_VERSION,
+               "The model version should be ", BNN_LATEST_MODEL_VERSION,
+               ", got ", model_->version(), " instead.");
     for (const auto &tensor : *model_->inputs()) {
         Shaper::Shape shape(tensor->shape()->begin(), tensor->shape()->end());
         const auto name = tensor->name()->str();
@@ -94,9 +98,9 @@ void Net::prepare() {
                     FORZ(j, 64) { float_data[i * 64 + j] = bs[j] ? 1 : -1; }
                 }
 
-                add_mat(name, std::make_shared<Mat>(shape[0], shape[1],
-                                                    shape[2], shape[3],
-                                                    bnn::DataType::Bit, len, false));
+                add_mat(name, std::make_shared<Mat>(
+                                  shape[0], shape[1], shape[2], shape[3],
+                                  bnn::DataType::Bit, len, false));
                 pack_mat_128(*tmp, *mat_map_[name]);
             } else {
 #endif  // __aarch64__
@@ -174,9 +178,8 @@ void Net::prepare() {
                 break;
             }
             case flatbnn::LayerType::BinConv2D: {
-                ADD_LAYER_WITH_DATA_TYPE(bin_conv2d, Conv, DataType::Float,
-                                         input, strides, dilations, pads,
-                                         weight, output);
+                ADD_LAYER(bin_conv2d, Conv, input, strides, dilations, pads,
+                          weight, output);
                 BNN_ASSERT(pads.size() == 2 ||
                                (pads.size() == 4 && pads[0] == pads[2] &&
                                 pads[1] == pads[3]),

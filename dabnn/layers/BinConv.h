@@ -9,6 +9,7 @@ namespace bnn {
 class BinConv : public Layer {
    public:
     MatCP input_mat;
+    MatP binarized_mat;
     MatP padded_mat;
     MatP col_mat;
     MatCP weight_mat;
