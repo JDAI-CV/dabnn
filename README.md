@@ -8,7 +8,7 @@
 
 *Enjoy binary neural networks on mobile!*
 
-[English](README.md) [Chinese/中文](README_CN.md)
+[[English](README.md)] [[Chinese/中文](README_CN.md)]
 
 Join chat at [Gitter (English)](https://gitter.im/dabnn/dabnn) or QQ Group (Chinese, 1021964010, answer: nndab)
 
