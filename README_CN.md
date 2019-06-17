@@ -6,7 +6,7 @@
 [![Gitter Chat](https://img.shields.io/gitter/room/dabnn/dabnn.svg)](https://gitter.im/dabnn/dabnn)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/JDAI-CV/dabnn/pulls)
 
-[English](README.md) [中文](README_CN.md)
+[English](README.md) [Chinese/中文](README_CN.md)
 
 Gitter (English): [dabnn/dabnn](https://gitter.im/dabnn/dabnn)
 
