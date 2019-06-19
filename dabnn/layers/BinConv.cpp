@@ -30,6 +30,8 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
             input_mat.h, input_mat.w, input_mat.elem_c,
             DataType::Bit, binaized_name);
     }
+    binarized_mat = mat(binaized_name);
+
     const auto pad_name = "pad_for_" + output + "_cal";
     if (mat_map.find(pad_name) == mat_map.end()) {
         auto &input_mat = *mat_map[input];
@@ -37,14 +39,14 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
             input_mat.h + pad_h * 2, input_mat.w + pad_w * 2, input_mat.elem_c,
             DataType::Bit, pad_name);
     }
+    padded_mat = mat(pad_name);
+
     const auto col_mat_name = "col_mat";
     if (mat_map.find(col_mat_name) == mat_map.end()) {
         const auto len = output_mat->h * output_mat->w * weight_mat->h *
                          weight_mat->w * input_mat->elem_c;
         mat_map[col_mat_name] = std::make_shared<Mat>(len, bnn::DataType::Bit);
     }
-
-    padded_mat = mat(pad_name);
     col_mat = mat(col_mat_name);
 
     if (net.lock()->optimize && !direct_conv_compatible() &&
