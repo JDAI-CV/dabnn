@@ -167,13 +167,6 @@ void Net::prepare() {
 
                 break;
             }
-            case flatbnn::LayerType::Binarize: {
-                ADD_LAYER_WITH_DATA_TYPE(binarize, Binarize, DataType::Bit,
-                                         input, output);
-                layers.push_back(std::make_shared<Binarize>(get_weak(), name,
-                                                            input, output));
-                break;
-            }
             case flatbnn::LayerType::BinConv2D: {
                 ADD_LAYER(bin_conv2d, Conv, input, strides, dilations, pads,
                           weight, output);
