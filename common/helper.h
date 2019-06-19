@@ -21,11 +21,14 @@
 #define FE_6(WHAT, X, ...) WHAT(X) FE_5(WHAT, __VA_ARGS__)
 #define FE_7(WHAT, X, ...) WHAT(X) FE_6(WHAT, __VA_ARGS__)
 #define FE_8(WHAT, X, ...) WHAT(X) FE_7(WHAT, __VA_ARGS__)
+#define FE_9(WHAT, X, ...) WHAT(X) FE_8(WHAT, __VA_ARGS__)
+#define FE_10(WHAT, X, ...) WHAT(X) FE_9(WHAT, __VA_ARGS__)
+#define FE_11(WHAT, X, ...) WHAT(X) FE_10(WHAT, __VA_ARGS__)
 //... repeat as needed
 
-#define GET_MACRO(_1, _2, _3, _4, _5, _6, _7, _8, NAME, ...) NAME
+#define GET_MACRO(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, NAME, ...) NAME
 #define FOR_EACH(action, ...)                                              \
-    GET_MACRO(__VA_ARGS__, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1) \
+    GET_MACRO(__VA_ARGS__, FE_11, FE_10, FE_9, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1) \
     (action, __VA_ARGS__)
 
 #define M_A_1(_1, ...) _1
@@ -36,11 +39,14 @@
 #define M_A_6(_1, _2, _3, _4, _5, _6, ...) _6
 #define M_A_7(_1, _2, _3, _4, _5, _6, _7, ...) _7
 #define M_A_8(_1, _2, _3, _4, _5, _6, _7, _8, ...) _8
+#define M_A_9(_1, _2, _3, _4, _5, _6, _7, _8, _9, ...) _9
+#define M_A_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, ...) _10
+#define M_A_11(_1, _2, _3, _4, _5, _6, _7, _8, _10, _11, ...) _11
 
 #define FIRST_ARG(...) M_A_1(__VA_ARGS__)
 
 #define LAST_ARG(...)                                                       \
-    GET_MACRO(__VA_ARGS__, M_A_8, M_A_7, M_A_6, M_A_5, M_A_4, M_A_3, M_A_2, \
+    GET_MACRO(__VA_ARGS__, M_A_11, M_A_10, M_A_9, M_A_8, M_A_7, M_A_6, M_A_5, M_A_4, M_A_3, M_A_2, \
               M_A_1)                                                        \
     (__VA_ARGS__)
 

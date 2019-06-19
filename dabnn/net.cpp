@@ -27,9 +27,6 @@ using std::string;
 using std::vector;
 
 namespace bnn {
-string get_bin_imm_name(string name) { return name + "_bin"; }
-
-string get_pad_imm_name(string name) { return "pad_for_" + name + "_cal"; }
 
 void Net::read(const std::string &path) {
     auto fd = open(path.c_str(), O_RDONLY);

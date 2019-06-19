@@ -17,8 +17,8 @@ inline void pack_64_bitset(const float *fptr, uint64_t *buf,
      * channel aligned with 128.
      */
     const size_t UNIT_LEN = 64;
-    BNN_ASSERT(eff_bits < UNIT_LEN,
-               "The eff_bits must be smaller than UNIT_LEN (64)");
+    BNN_ASSERT(eff_bits <= UNIT_LEN, "The eff_bits ", eff_bits,
+               " must be smaller than UNIT_LEN ", UNIT_LEN);
     std::bitset<UNIT_LEN> bits;
     for (size_t i = 0; i < UNIT_LEN; i++) {
         if (i < eff_bits) {

@@ -249,7 +249,7 @@ inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(
         float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
         float_mat.w * float_mat.c);
-    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "");
+    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "float_mat.c ", float_mat.c, ", binary_mat.c ", binary_mat.c);
 
     FORZ(n, float_mat.n) {
         FORZ(h, float_mat.h) {
@@ -265,6 +265,8 @@ inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 }
 
 inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    BNN_ASSERT(float_mat.data_type == DataType::Float , "float_mat has wrong data type");
+    BNN_ASSERT(binary_mat.data_type == DataType::Bit, "binary_mat has wrong data type");
     BNN_ASSERT(float_mat.c % 64 == 0, float_mat.c);
 #ifdef __aarch64__
     if (float_mat.c % 128 == 0) {
