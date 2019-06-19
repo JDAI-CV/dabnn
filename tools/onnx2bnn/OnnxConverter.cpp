@@ -122,23 +122,16 @@ OnnxConverter::BTensor OnnxConverter::bitpack(OnnxConverter::FTensor ftensor) {
     static_assert(std::is_same<bin_t, uint64_t>::value,
                   "bitpack requires bin_t is 64 bit");
 
-    const auto N = Shaper::kn(ftensor.shape);
-    const auto HWC = Shaper::total(ftensor.shape) / N;
+    auto c = Shaper::kc(ftensor.shape);
+
+    BNN_ASSERT(c % 64 == 0, ftensor.shape);
 
     vector<bin_t> packed_data;
     bin_t tmp;
 
-    FORZ(n, N) {
-        FORZS(i, HWC, 128) {
-            const size_t eff_bits = std::max<size_t>(HWC - i, 128);
-            pack_64_bitset(&ftensor.data[n * HWC + i], &tmp,
-                           std::min<size_t>(eff_bits, 64));
-            packed_data.push_back(tmp);
-            pack_64_bitset(
-                &ftensor.data[n * HWC + i + 64], &tmp,
-                std::min<size_t>(std::max<size_t>(0, eff_bits - 64), 64));
-            packed_data.push_back(tmp);
-        }
+    FORZS(i, Shaper::total(ftensor.shape), 64) {
+        pack_64_bitset(&ftensor.data[i], &tmp);
+        packed_data.push_back(tmp);
     }
 
     Shape shape = {ftensor.shape[0], ftensor.shape[1], ftensor.shape[2],
