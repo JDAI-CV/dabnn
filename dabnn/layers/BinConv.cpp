@@ -57,12 +57,15 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
         BNN_ASSERT(weight_mat->total() % m == 0, "");
         const int k = weight_mat->total() / m;
         transposed_weight_mat =
-            std::make_shared<Mat>(m, k * 64, DataType::Bit, false);
+            std::make_shared<Mat>(m, k * 64, DataType::Bit);
         auto *trans_data_ptr =
             static_cast<uint64_t *>(transposed_weight_mat->data);
         auto *data_ptr = static_cast<uint64_t *>(weight_mat->data);
         FORZ(i, k) {
-            FORZ(j, m) { trans_data_ptr[i * m + j] = data_ptr[j * k + i]; }
+            FORZ(j, m) { 
+                BNN_ASSERT(static_cast<size_t>(i * m + j) < transposed_weight_mat->total(), i * m + j, " ", transposed_weight_mat->total());
+                trans_data_ptr[i * m + j] = data_ptr[j * k + i]; 
+            }
         }
         net_.lock()->add_mat(trans_weight_mat_name, transposed_weight_mat);
     }
