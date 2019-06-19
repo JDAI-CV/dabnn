@@ -43,11 +43,9 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
                                const std::string &weight_name,
                                const std::string &output_name,
                                BTensor bin_weight) {
-    css bin_name = input_name + "_bin";
-
     BNN_ASSERT(group == 1, "Group != 1 is not supported");
     const auto param = flatbnn::CreateBinConv2DDirect(
-        builder_, bin_name.c_str(), weight_name.c_str(), nullptr, &pads,
+        builder_, input_name.c_str(), weight_name.c_str(), nullptr, &pads,
         &strides, &dilations, output_name.c_str());
     const auto layer =
         flatbnn::CreateLayer(builder_, flatbnn::LayerType::BinConv2D, 0, param);
