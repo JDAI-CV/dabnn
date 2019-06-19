@@ -74,23 +74,23 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
 
 bool BinConv::direct_conv_compatible() const {
 #ifdef __aarch64__
-    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->c == 1 &&
+    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->elem_c == 64 &&
         stride_h == stride_w) {
         return true;
     }
-    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->c == 2 &&
+    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->elem_c == 128 &&
         stride_h == stride_w) {
         return true;
     }
-    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->c == 4 &&
+    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->elem_c == 256 &&
         stride_h == stride_w) {
         return true;
     }
-    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->c == 8 &&
+    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->elem_c == 512 &&
         stride_h == stride_w) {
         return true;
     }
-    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->c == 16 &&
+    if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->elem_c == 1024 &&
         stride_h == stride_w) {
         return true;
     }
