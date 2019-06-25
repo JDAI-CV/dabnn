@@ -41,11 +41,11 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
     }
     padded_mat = mat(pad_name);
 
-    const auto col_mat_name = "col_mat";
+    const auto col_mat_name = "col_for_" + output + "_cal";
     if (mat_map.find(col_mat_name) == mat_map.end()) {
         const auto len = output_mat->h * output_mat->w * weight_mat->h *
                          weight_mat->w * input_mat->elem_c;
-        mat_map[col_mat_name] = std::make_shared<Mat>(len, bnn::DataType::Bit);
+        mat_map[col_mat_name] = std::make_shared<Mat>(1, 1, len, bnn::DataType::Bit);
     }
     col_mat = mat(col_mat_name);
 
@@ -74,6 +74,7 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
 
 bool BinConv::direct_conv_compatible() const {
 #ifdef __aarch64__
+    return false;
     if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->elem_c == 64 &&
         stride_h == stride_w) {
         return true;
@@ -116,9 +117,21 @@ void BinConv::forward_impl() const {
             bconv_3x3(*padded_mat, *weight_mat, *output_mat, stride_h);
         } else if (gemm_compatible()) {
             output_mat->fill<float>(0.f);
+            // pack_mat_64(*input_mat, *binarized_mat);
+            // bnn::im2col(*binarized_mat, weight_mat->h, weight_mat->w,
+            //                            pad_h, pad_w, stride_h, stride_w, 1, 1,
+            //                            *col_mat);
+
+            // const auto len = output_mat->h * output_mat->w * weight_mat->h *
+            //                  weight_mat->w * input_mat->elem_c;
+            // Mat temp(1, 1, len, bnn::DataType::Float);
+            // im2col(*input_mat, weight_mat->h, weight_mat->w, pad_h, pad_w, stride_h, stride_w, 1, 1, temp);
+            // pack_mat(temp, *col_mat);
+
             bnn::fused_binarize_im2col(*input_mat, weight_mat->h, weight_mat->w,
                                        pad_h, pad_w, stride_h, stride_w, 1, 1,
                                        *col_mat);
+
             const int m = weight_mat->n;
             const int n = output_mat->h * output_mat->w;
             const int k = weight_mat->h * weight_mat->w * weight_mat->c;

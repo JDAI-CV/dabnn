@@ -26,12 +26,20 @@
 #include "mat.h"
 
 namespace bnn {
+inline void pack_64(const float *float_ptr, void *binary_ptr, size_t size) {
+    uint64_t *u64_bptr = static_cast<uint64_t *>(binary_ptr);
+    FORZS(_, size, 64) {
+        pack_64_bitfield(float_ptr, u64_bptr);
+        float_ptr += 64;
+        u64_bptr++;
+    }
+}
 
 #ifdef __aarch64__
 inline void pack_128_opt(const float *float_ptr, void *binary_ptr,
                          size_t size) {
     /**
-     * size: the number of __elements__ needed to be packed.
+     * size: the number of __float elements__ needed to be packed.
      *
      * This is the optimized bit-packing.
      *
@@ -249,7 +257,8 @@ inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(
         float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
         float_mat.w * float_mat.c);
-    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "float_mat.c ", float_mat.c, ", binary_mat.c ", binary_mat.c);
+    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0,
+               "float_mat.c ", float_mat.c, ", binary_mat.c ", binary_mat.c);
 
     FORZ(n, float_mat.n) {
         FORZ(h, float_mat.h) {
@@ -265,12 +274,15 @@ inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 }
 
 inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
-    BNN_ASSERT(float_mat.data_type == DataType::Float , "float_mat has wrong data type");
-    BNN_ASSERT(binary_mat.data_type == DataType::Bit, "binary_mat has wrong data type");
+    BNN_ASSERT(float_mat.data_type == DataType::Float,
+               "float_mat has wrong data type");
+    BNN_ASSERT(binary_mat.data_type == DataType::Bit,
+               "binary_mat has wrong data type");
     BNN_ASSERT(float_mat.c % 64 == 0, float_mat.c);
 #ifdef __aarch64__
     if (float_mat.c % 128 == 0) {
-        pack_mat_128_opt(float_mat, binary_mat);
+        // pack_mat_128_opt(float_mat, binary_mat);
+        pack_mat_64(float_mat, binary_mat);
     } else {
         pack_mat_64(float_mat, binary_mat);
     }
@@ -279,5 +291,5 @@ inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 #endif  // __aarch64__
 }
 
-}
+}  // namespace bnn
 #endif /* BITPACK_H */
