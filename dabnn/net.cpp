@@ -79,13 +79,13 @@ void Net::prepare() {
 
             shaper.AddShape(name, shape);
 
+            const auto len = tensor->bin_data()->size();
 #ifdef __aarch64__
             // TODO: Move it to binconv.cpp
             // 1. More correct
             // 2. Don't need to maintain the the same shape
             if (Shaper::c(shape) % 128 == 0) {
                 // Re-arrange the bit order for the optmized bit-packing
-                const auto len = tensor->bin_data()->size();
                 const auto tmp = std::make_shared<Mat>(
                     shape[0], shape[1], shape[2], shape[3],
                     bnn::DataType::Float, false);
@@ -108,7 +108,7 @@ void Net::prepare() {
                 add_mat(name, std::make_shared<Mat>(
                                   shape[0], shape[1], shape[2], shape[3],
                                   const_cast<uint64_t *>(data),
-                                  bnn::DataType::Bit, false));
+                                  bnn::DataType::Bit, len, false));
 #ifdef __aarch64__
             }
 #endif  // __aarch64__
