@@ -6,7 +6,7 @@
 [![Gitter Chat](https://img.shields.io/gitter/room/dabnn/dabnn.svg)](https://gitter.im/dabnn/dabnn)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/JDAI-CV/dabnn/pulls)
 
-[English](README.md) [中文](README_CN.md)
+[[English](README.md)] [[Chinese/中文](README_CN.md)]
 
 Gitter (English): [dabnn/dabnn](https://gitter.im/dabnn/dabnn)
 
@@ -25,21 +25,21 @@ QQ 群：1021964010, 入群答案: nndab
 Google Pixel 1 上的 benchmark (单线程):
 
 ```
-2019-05-02 18:00:29
+2019-05-06 10:36:48
 Running data/local/tmp/dabnn_benchmark
 Run on (4 X 1593.6 MHz CPU s)
 ***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
 --------------------------------------------------------------------
 Benchmark                             Time           CPU Iterations
 --------------------------------------------------------------------
-dabnn_5x5_256                   3658193 ns    3636875 ns        192       <--- input: 14*14*256, kernel: 256*5*5*256, output: 14*14*256, padding: 2
-dabnn_3x3_64                    1285949 ns    1261826 ns        552       <--- input: 56*56*64,  kernel: 64*3*3*64, output: 56*56*64, padding: 1
-dabnn_3x3_128                    988757 ns     981547 ns        721       <--- input: 28*28*128, kernel: 128*3*3*128, output: 28*28*128, padding: 1
-dabnn_3x3_256                   1018918 ns    1008007 ns        689       <--- input: 14*14*256, kernel: 256*3*3*256, output: 14*14*256, padding: 1
-dabnn_3x3_256_s2                 269234 ns     268085 ns       2613       <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
-dabnn_3x3_512                   1226245 ns    1203749 ns        579       <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
-dabnn_bireal18_imagenet        61809506 ns   61056865 ns         10       <--- Bi-Real Net 18, ImageNet top-1 为 56.4%
-dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- 带有 stem 模块的 Bi-Real Net 18 (将在论文中描述), ImageNet top-1 为 56.4%
+dabnn_5x5_256                   3661928 ns    3638192 ns        191     <--- input: 14*14*256, kernel: 256*5*5*256, output: 14*14*256, padding: 2
+dabnn_3x3_64                    1306391 ns    1281553 ns        546     <--- input: 56*56*64,  kernel: 64*3*3*64, output: 56*56*64, padding: 1
+dabnn_3x3_128                    958388 ns     954754 ns        735     <--- input: 28*28*128, kernel: 128*3*3*128, output: 28*28*128, padding: 1
+dabnn_3x3_256                    975123 ns     969810 ns        691     <--- input: 14*14*256, kernel: 256*3*3*256, output: 14*14*256, padding: 1
+dabnn_3x3_256_s2                 268310 ns     267712 ns       2618     <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
+dabnn_3x3_512                   1281832 ns    1253921 ns        588     <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
+dabnn_bireal18_imagenet        61920154 ns   61339185 ns         10     <--- Bi-Real Net 18, ImageNet top-1 为 56.4%
+dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带有 stem 模块的 Bi-Real Net 18 (将在论文中描述), ImageNet top-1 为 56.4%
 ```
 
 在 Google Pixel 1 上与 [Caffe](http://caffe.berkeleyvision.org)（全精度）, [TensorFlow Lite](https://www.tensorflow.org/lite)（全精度）和 [BMXNet](https://github.com/hpi-xnor/BMXNet)（二值）的对比如下。我们很惊讶的发现现有的二值 inference 框架 BMXNet 甚至比全精度的 TensorFlow Lite 还要慢，这表明，直到 dabnn 推出之前，二值网络的潜力都远远没有被挖掘出来。
@@ -64,9 +64,9 @@ dabnn_bireal18_imagenet_stem   43279353 ns   41533009 ns         14       <--- �
 
 我们提供两个在 ImageNet 上训练的、基于 [Bi-Real Net](https://arxiv.org/abs/1808.00278) 的二值网络模型，将来还会有其它的模型发布。
 
-* [Bi-Real Net 18](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 61.8ms/image （单线程）。
+* Bi-Real Net 18, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 61.8ms/image （单线程）。[[dabnn](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo)] [[ONNX](https://drive.google.com/uc?export=download&id=1Xp3HB51H6Nhl6e555ieJubVutQake5sR)]
 
-* [Bi-Real Net 18 with Stem Module](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t), ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image （单线程）。详细的网络结构将在论文中描述。
+* Bi-Real Net 18 with Stem Module, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image （单线程）。详细的网络结构将在论文中描述。 [[dabnn](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t)] [[ONNX](https://drive.google.com/uc?export=download&id=1zu48CFptAGZ91IDCBPJSPM0bxDuPm9HS)]
 
 ## 技术细节
 
