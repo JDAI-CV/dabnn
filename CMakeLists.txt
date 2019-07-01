@@ -55,7 +55,6 @@ if (BNN_BUILD_MAIN_LIB)
     if (${BNN_BUILD_TEST})
         include(cmake/gtest.cmake)
         configure_gtest()
-        add_subdirectory(third_party/googletest)
     endif()
 
     add_subdirectory(dabnn)
