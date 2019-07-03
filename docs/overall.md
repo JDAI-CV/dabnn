@@ -8,4 +8,4 @@ BNNs can save 10X+ memory, and several times as fast as float NNs. What's more, 
 
 1. The BNN models can be trained by any frameworks which support ONNX. Note that binary convs are custom operations, please check out [onnx2bnn.md](docs/onnx2bnn.md) for how to make the model comptabile with dabnn.
 
-2. For the implementation of binary convolutions, please check out [bconv.md](docs/bconv.md).
+2. For the implementation of binary convolutions, please check out [bconv.md](bconv.md).
