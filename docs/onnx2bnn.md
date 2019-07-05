@@ -12,7 +12,7 @@
 
 It is an affine transform of bitcount(a), so we accordingly update the weight and bias of the corresponding BN layers.
 
-The details is in https://github.com/JDAI-CV/dabnn/blob/master/tools/onnx2bnn/OnnxConverter.cpp#L530.
+The details is in https://github.com/JDAI-CV/dabnn/blob/master/tools/onnx2bnn/OnnxConverter.cpp#L522.
 
 3. Other layers are converted as usual.
 
