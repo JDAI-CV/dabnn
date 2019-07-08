@@ -16,14 +16,6 @@ add_executable(fconv_test fconv_test.cpp)
 target_link_libraries(fconv_test dabnn gtest_main)
 add_test(NAME fconv_test COMMAND fconv_test)
 
-add_executable(gemm_test gemm_test.cpp)
-target_link_libraries(gemm_test dabnn gtest_main)
-add_test(NAME gemm_test COMMAND gemm_test)
-
-add_executable(pad_test pad_test.cpp)
-target_link_libraries(pad_test dabnn gtest_main)
-add_test(NAME pad_test COMMAND pad_test)
-
 add_executable(bgemm_test bgemm_test.cpp)
 target_link_libraries(bgemm_test dabnn gtest_main)
 add_test(NAME bgemm_test COMMAND bgemm_test)
