@@ -214,7 +214,7 @@ inline void pack_128_baseline(const float *float_ptr, void *binary_ptr,
 }
 
 inline void pack_mat_128_opt(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
-    assert(!binary_mat.empty());
+    BNN_ASSERT(!binary_mat.empty(), "binary_mat must not be empty");
 
     pack_128_opt(static_cast<float *>(float_mat.data), binary_mat.data,
                  float_mat.total());
@@ -222,7 +222,7 @@ inline void pack_mat_128_opt(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 
 inline void pack_mat_128_baseline(const bnn::Mat &float_mat,
                                   bnn::Mat &binary_mat) {
-    assert(!binary_mat.empty());
+    BNN_ASSERT(!binary_mat.empty(), "binary_mat must not be empty");
 
     pack_128_baseline(static_cast<float *>(float_mat.data), binary_mat.data,
                       float_mat.total());
