@@ -12,6 +12,8 @@ Gitter (English): [dabnn/dabnn](https://gitter.im/dabnn/dabnn)
 
 QQ 群：1021964010, 入群答案: nndab
 
+dabnn 已经被多媒体领域的会议 ACM MM 接收: https://arxiv.org/abs/1908.05858
+
 ## 简介
 
 二值网络（Binary Neural Networks，又称 1-bit 网络）是一种特殊的神经网络，它将网络的权重和中间特征压缩为 1 个 bit，可以看作是普通浮点型网络量化到极致的结果。和其它 bit 数稍高的量化网络（例如三值网络、2-bit 网络、4-bit 网络）相比，二值网络最突出的优点在于，1-bit 乘加操作可以通过位运算高效实现，因此可以无缝运行在主流硬件平台（x86、ARM）上，而三值、2-bit、4-bit 等等操作需要特殊硬件平台（FPGA、ASIC）支持。在计算效率上，一个 32 位浮点运算指令只能完成一次浮点乘法或加法运算，但一个 32 位位运算指令可以同时完成 32 个 1-bit 乘法运算。
@@ -39,7 +41,7 @@ dabnn_3x3_256                    975123 ns     969810 ns        691     <--- inp
 dabnn_3x3_256_s2                 268310 ns     267712 ns       2618     <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
 dabnn_3x3_512                   1281832 ns    1253921 ns        588     <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
 dabnn_bireal18_imagenet        61920154 ns   61339185 ns         10     <--- Bi-Real Net 18, ImageNet top-1 为 56.4%
-dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带有 stem 模块的 Bi-Real Net 18 (在我们的 paper https://arxiv.org/abs/1908.05858 中有描述), ImageNet top-1 为 56.4%
+dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带有 stem 模块的 Bi-Real Net 18 (在 [我们的 paper](https://arxiv.org/abs/1908.05858) 中有描述), ImageNet top-1 为 56.4%
 ```
 
 在 Google Pixel 1 上与 [Caffe](http://caffe.berkeleyvision.org)（全精度）, [TensorFlow Lite](https://www.tensorflow.org/lite)（全精度）和 [BMXNet](https://github.com/hpi-xnor/BMXNet)（二值）的对比如下。我们很惊讶的发现现有的二值 inference 框架 BMXNet 甚至比全精度的 TensorFlow Lite 还要慢，这表明，直到 dabnn 推出之前，二值网络的潜力都远远没有被挖掘出来。
@@ -66,13 +68,15 @@ dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带
 
 * Bi-Real Net 18, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 61.8ms/image （单线程）。[[dabnn](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo)] [[ONNX](https://drive.google.com/uc?export=download&id=1Xp3HB51H6Nhl6e555ieJubVutQake5sR)]
 
-* Bi-Real Net 18 with Stem Module, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image （单线程）。详细的网络结构在我们的 paper https://arxiv.org/abs/1908.05858 中有描述。 [[dabnn](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t)] [[ONNX](https://drive.google.com/uc?export=download&id=1zu48CFptAGZ91IDCBPJSPM0bxDuPm9HS)]
+* Bi-Real Net 18 with Stem Module, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image （单线程）。详细的网络结构在[我们的 paper](https://arxiv.org/abs/1908.05858) 中有描述。 [[dabnn](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t)] [[ONNX](https://drive.google.com/uc?export=download&id=1zu48CFptAGZ91IDCBPJSPM0bxDuPm9HS)]
 
 ## 技术细节
 
 * Binary Convolutions 的实现: [docs/bconv.md](docs/bconv_CN.md)
 
 * 模型转换: [docs/onnx2bnn.md](docs/onnx2bnn_CN.md)
+
+更多细节可以参阅[我们的 ACM MM paper](https://arxiv.org/abs/1908.05858)
 
 ## 示例工程
 

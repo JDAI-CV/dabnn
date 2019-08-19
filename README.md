@@ -12,6 +12,8 @@
 
 Join chat at [Gitter (English)](https://gitter.im/dabnn/dabnn) or QQ Group (Chinese, 1021964010, answer: nndab)
 
+Our ACM MM paper: https://arxiv.org/abs/1908.05858
+
 ## Introduction
 
 Binary neural networks (BNNs) have great potential on edge devices since they replace float operations by efficient bit-wise operations. However, to leverage the efficiency of bit-wise operations, the reimplmentation of convolution layer and also other layers is needed. 
@@ -37,7 +39,7 @@ dabnn_3x3_256                    975123 ns     969810 ns        691     <--- inp
 dabnn_3x3_256_s2                 268310 ns     267712 ns       2618     <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
 dabnn_3x3_512                   1281832 ns    1253921 ns        588     <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
 dabnn_bireal18_imagenet        61920154 ns   61339185 ns         10     <--- Bi-Real Net 18, 56.4% top-1 on ImageNet
-dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- Bi-Real Net 18 with stem module (The network structure is described in detail in our paper https://arxiv.org/abs/1908.05858), 56.4% top-1 on ImageNet
+dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- Bi-Real Net 18 with stem module (The network structure is described in detail in [our paper](https://arxiv.org/abs/1908.05858)), 56.4% top-1 on ImageNet
 ```
 
 The following is the comparison between our dabnn and [Caffe](http://caffe.berkeleyvision.org) (full precision), [TensorFlow Lite](https://www.tensorflow.org/lite) (full precision) and [BMXNet](https://github.com/hpi-xnor/BMXNet) (binary). We surprisingly observe that BMXNet is even slower than the full precision TensorFlow Lite. It suggests that the potential of binary neural networks is far from exploited until our dabnn is published.
@@ -64,13 +66,15 @@ We publish two pretrained binary neural network models based on [Bi-Real Net](ht
 
 * Bi-Real Net 18, 56.4% top-1 on ImageNet, 61.3ms/image on Google Pixel 1 (single thread). [[dabnn](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo)] [[ONNX](https://drive.google.com/uc?export=download&id=1Xp3HB51H6Nhl6e555ieJubVutQake5sR)]
 
-* Bi-Real Net 18 with Stem Module, 56.4% top-1 on ImageNet, 43.2ms/image on Google Pixel 1 (single thread). The detailed network structure is described our paper https://arxiv.org/abs/1908.05858. [[dabnn](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t)] [[ONNX](https://drive.google.com/uc?export=download&id=1zu48CFptAGZ91IDCBPJSPM0bxDuPm9HS)]
+* Bi-Real Net 18 with Stem Module, 56.4% top-1 on ImageNet, 43.2ms/image on Google Pixel 1 (single thread). The detailed network structure is described in [our paper](https://arxiv.org/abs/1908.05858). [[dabnn](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t)] [[ONNX](https://drive.google.com/uc?export=download&id=1zu48CFptAGZ91IDCBPJSPM0bxDuPm9HS)]
 
 ## Implementation Details
 
 * The Implementation of Binary Convolutions: [docs/bconv.md](docs/bconv.md)
 
 * Model Conversion: [docs/onnx2bnn.md](docs/onnx2bnn.md)
+
+For more details please read [our ACM MM paper](https://arxiv.org/abs/1908.05858).
 
 ## Example project
 
