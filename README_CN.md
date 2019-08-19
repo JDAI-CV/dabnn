@@ -39,7 +39,7 @@ dabnn_3x3_256                    975123 ns     969810 ns        691     <--- inp
 dabnn_3x3_256_s2                 268310 ns     267712 ns       2618     <--- input: 14*14*256, kernel: 256*3*3*256, output: 7*7*256, padding: 1, stride: 2
 dabnn_3x3_512                   1281832 ns    1253921 ns        588     <--- input:  7* 7*512, kernel: 512*3*3*512, output:  7* 7*512, padding: 1
 dabnn_bireal18_imagenet        61920154 ns   61339185 ns         10     <--- Bi-Real Net 18, ImageNet top-1 为 56.4%
-dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带有 stem 模块的 Bi-Real Net 18 (将在论文中描述), ImageNet top-1 为 56.4%
+dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带有 stem 模块的 Bi-Real Net 18 (在我们的 paper https://arxiv.org/abs/1908.05858 中有描述), ImageNet top-1 为 56.4%
 ```
 
 在 Google Pixel 1 上与 [Caffe](http://caffe.berkeleyvision.org)（全精度）, [TensorFlow Lite](https://www.tensorflow.org/lite)（全精度）和 [BMXNet](https://github.com/hpi-xnor/BMXNet)（二值）的对比如下。我们很惊讶的发现现有的二值 inference 框架 BMXNet 甚至比全精度的 TensorFlow Lite 还要慢，这表明，直到 dabnn 推出之前，二值网络的潜力都远远没有被挖掘出来。
@@ -66,7 +66,7 @@ dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带
 
 * Bi-Real Net 18, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 61.8ms/image （单线程）。[[dabnn](https://drive.google.com/uc?export=download&id=1Oau5CtFR9nWXmlBBU47Jg5ypMiIEMtvo)] [[ONNX](https://drive.google.com/uc?export=download&id=1Xp3HB51H6Nhl6e555ieJubVutQake5sR)]
 
-* Bi-Real Net 18 with Stem Module, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image （单线程）。详细的网络结构将在论文中描述。 [[dabnn](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t)] [[ONNX](https://drive.google.com/uc?export=download&id=1zu48CFptAGZ91IDCBPJSPM0bxDuPm9HS)]
+* Bi-Real Net 18 with Stem Module, ImageNet top-1 为 56.4%, 在 Google Pixel 1 上的速度为 43.2ms/image （单线程）。详细的网络结构在我们的 paper https://arxiv.org/abs/1908.05858 中有描述。 [[dabnn](https://drive.google.com/uc?export=download&id=1ArsirMdbtJ9lvHSjc1hkQ7dIXDKh-D1t)] [[ONNX](https://drive.google.com/uc?export=download&id=1zu48CFptAGZ91IDCBPJSPM0bxDuPm9HS)]
 
 ## 技术细节
 
@@ -78,6 +78,17 @@ dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带
 
 Android app demo: https://github.com/JDAI-CV/dabnn-example
 
-## 开源许可
+## 开源许可和引用
 
 [BSD 3 Clause](LICENSE)
+
+如果使用了 dabnn，可以按如下格式引用：
+
+```
+@misc{zhang2019dabnn,
+  Author = {Jianhao Zhang and Yingwei Pan and Ting Yao and He Zhao and Tao Mei},
+  Title = {daBNN: A Super Fast Inference Framework for Binary Neural Networks on ARM devices},
+  Year = {2019},
+  Eprint = {arXiv:1908.05858},
+}
+```
