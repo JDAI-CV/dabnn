@@ -1,9 +1,0 @@
-steps:
-- script: python -m twine upload dist/* --verbose
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-  displayName: Upload wheel to PyPI
-  workingDirectory: tools/onnx2bnn/python/
-  env:
-    TWINE_USERNAME: $(twineUsername)
-    TWINE_PASSWORD: $(twinePassword)
-

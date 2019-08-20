@@ -51,29 +51,24 @@ jobs:
   steps:
   - checkout: self
     submodules: true
-  - template: template_onnx2bnn_build_python_all_version.yml
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: '.setuptools-cmake-build\tools\onnx2bnn\Release\'
-      contents: 'onnx2bnn.exe'
-      targetFolder: $(Build.ArtifactStagingDirectory)
+  - bash: ci/build_onnx2bnn.sh
+    displayName: Build
   - template: template_onnx2bnn_publish_artifacts.yml
   - template: template_onnx2bnn_github_release.yml
-  - template: template_onnx2bnn_upload_to_pypi.yml
 - job: macOS
   pool:
       vmImage: 'macOS-10.14'
   steps:
   - checkout: self
     submodules: true
-  - template: template_onnx2bnn_build_python_all_version.yml
-  - script: 'cp .setuptools-cmake-build/tools/onnx2bnn/onnx2bnn .setuptools-cmake-build/tools/onnx2bnn/onnx2bnn-macos'
+  - bash: ci/build_onnx2bnn.sh
+    displayName: Build
+  - script: 'cp build_onnx2bnn/tools/onnx2bnn/onnx2bnn build_onnx2bnn/tools/onnx2bnn/onnx2bnn-macos'
     displayName: 'Rename onnx2bnn'
   - task: CopyFiles@2
     inputs:
-      sourceFolder: '.setuptools-cmake-build/tools/onnx2bnn'
+      sourceFolder: 'build_onnx2bnn/tools/onnx2bnn'
       contents: 'onnx2bnn-macos'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - template: template_onnx2bnn_publish_artifacts.yml
   - template: template_onnx2bnn_github_release.yml
-  - template: template_onnx2bnn_upload_to_pypi.yml
