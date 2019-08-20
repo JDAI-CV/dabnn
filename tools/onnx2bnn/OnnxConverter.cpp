@@ -172,7 +172,7 @@ std::vector<OnnxConverter::BTensor> OnnxConverter::split(
     return outputs;
 }
 
-void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
+std::vector<std::string> OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
                             const std::string &filepath,
                             const OnnxConverter::Level level) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -236,6 +236,7 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
         inputs.push_back(flat_input);
     }
 
+    vector<string> binary_conv_outputs;
     vector<string> skipped_act;
     bool has_reshape = false;
     for (const auto &node : model_proto_.graph().node()) {
@@ -271,6 +272,9 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
 
             auto ori_weight_name = m(node.input(1));
             const bool binary_conv = (node.domain() == "dabnn");
+            if (binary_conv) {
+                binary_conv_outputs.push_back(node.output(0));
+            }
             AddConv(m(node.input(0)), strides, pads, dilations, group,
                     ori_weight_name, bias_name, m(node.output(0)), binary_conv);
             VLOG(5) << "Converting Conv completed";
@@ -487,6 +491,8 @@ void OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
     ofs.write(reinterpret_cast<char *>(builder_.GetBufferPointer()),
               builder_.GetSize());
     ofs.close();
+
+    return binary_conv_outputs;
 }
 
 void OnnxConverter::CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,

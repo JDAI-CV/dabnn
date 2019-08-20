@@ -19,7 +19,7 @@ void usage(const std::string &filename) {
     std::cout << "Usage:" << std::endl;
     std::cout << "  " << filename
               << " onnx_model output_filename [ --strict | --moderate | "
-                 "--aggressive ]"
+                 "--aggressive ] [--verbose]"
               << std::endl;
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
@@ -63,7 +63,8 @@ int main(int argc, char **argv) {
         return -1;
     }
     for (const auto flag : cmdl.flags()) {
-        if (flag != "strict" && flag != "moderate" && flag != "aggressive") {
+        if (flag != "strict" && flag != "moderate" && flag != "aggressive" &&
+            flag != "verbose") {
             std::cout << "Invalid flag: " << flag << std::endl;
             usage(cmdl[0]);
             return -2;
@@ -80,6 +81,10 @@ int main(int argc, char **argv) {
         opt_level = bnn::OnnxConverter::Level::kAggressive;
     }
 
+    if (cmdl["verbose"]) {
+        FLAGS_v = 5;
+    }
+
     ONNX_NAMESPACE::ModelProto model_proto;
     {
         std::ifstream ifs(cmdl[1], std::ios::in | std::ios::binary);
@@ -88,7 +93,15 @@ int main(int argc, char **argv) {
     }
 
     bnn::OnnxConverter converter;
-    converter.Convert(model_proto, cmdl[2], opt_level);
+    const auto binary_conv_outputs =
+        converter.Convert(model_proto, cmdl[2], opt_level);
+
+    LOG(INFO) << "Conversion completed! Found " << binary_conv_outputs.size()
+              << " binary convolutions. Add --verbose to get what they are.";
+    VLOG(5) << "The outputs name of binary convolutions are: ";
+    for (const auto &x : binary_conv_outputs) {
+        VLOG(5) << x;
+    }
 
     google::protobuf::ShutdownProtobufLibrary();
     return 0;

@@ -153,7 +153,7 @@ class OnnxConverter {
         kModerate,
         kAggressive,
     };
-    void Convert(const ONNX_NAMESPACE::ModelProto &model,
+    std::vector<std::string> Convert(const ONNX_NAMESPACE::ModelProto &model,
                  const std::string &filepath,
                  const Level level=Level::kModerate);
 };
