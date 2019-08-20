@@ -32,7 +32,7 @@ jobs:
   - bash: brew install watch gnu-sed
     displayName: Install watch and gnu-sed
   - bash: ci/build_dabnn.sh
-    displayName: Build
+    displayName: Build dabnn
   - bash: ci/start_android_emulator.sh
     displayName: Start Android Emulator
   - template: template_dabnn_run_test.yml
@@ -49,7 +49,7 @@ jobs:
   - bash: brew install watch gnu-sed
     displayName: Install watch and gnu-sed
   - bash: ci/build_dabnn_v7.sh
-    displayName: Build
+    displayName: Build dabnn
   - bash: ci/start_android_emulator_v7.sh
     displayName: Start Android Emulator
   - template: template_dabnn_run_test.yml
