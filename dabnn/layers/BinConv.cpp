@@ -152,10 +152,13 @@ void BinConv::forward_impl() const {
         // pack_mat(*input_mat, *binarized_mat);
         const auto N = input_mat->n;
         const auto HWC = input_mat->h * input_mat->w * input_mat->elem_c;
+        PNT(HWC, input_mat->h, input_mat->w, input_mat->elem_c);
         auto *bptr = binarized_mat->point<uint64_t>(0, 0, 0);
         FORZ(n, N) {
             FORZS(i, HWC, 128) {
                 const size_t eff_bits = std::max<size_t>(HWC - i, 128);
+                // PNT(eff_bits, std::min<size_t>(eff_bits, 64),
+                //     std::min<size_t>(std::max<size_t>(0, eff_bits - 64), 64));
                 auto *fptr = ((float *) input_mat->data) + n * HWC + i;
                 pack_64_bitset(fptr, bptr++,
                                std::min<size_t>(eff_bits, 64));
