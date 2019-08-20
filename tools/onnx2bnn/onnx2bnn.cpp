@@ -16,23 +16,45 @@ using std::string;
 using std::vector;
 
 void usage(const std::string &filename) {
+    std::cout << "Usage:" << std::endl;
+    std::cout << "  " << filename
+              << " onnx_model output_filename [ --strict | --moderate | "
+                 "--aggressive ]"
+              << std::endl;
+    std::cout << std::endl;
+    std::cout << "Options:" << std::endl;
     std::cout
-        << "Usage: " << filename
-        << " onnx_model output_filename [--optimize strict|moderate|aggressive]"
+        << "  --aggressive    The default optimization level. In this level, "
+           "onnx2bnn will mark all convolutions with binary (+1/-1) weights as "
+           "binary convolutions. It is for the existing BNN models, which may "
+           "not use the correct padding value. Note: The output of the "
+           "generated dabnn model is different from that of the ONNX model "
+           "since the padding value is 0 instead of -1."
         << std::endl;
-    std::cout << "Example: " << filename
+    std::cout << "  --moderate      This level is for our \"standard\" "
+                 "implementation -- A Conv operator with binary weight and "
+                 "following a -1 Pad operator."
+              << std::endl;
+    std::cout
+        << "  --strict        In this level, onnx2bnn only recognizes the "
+           "following natural and correct \"pattern\" of binary convolutions: "
+           "A Conv operator, whose input is got from a Sign op and a Pad op "
+           "(the order doesn't matter), and weight is got from a Sign op."
+        << std::endl;
+    std::cout << std::endl;
+    std::cout << "Example:" << std::endl;
+    std::cout << "  " << filename
               << " model.onnx model.dab (The optimization leval will be "
                  "\"aggressive\")"
               << std::endl;
-    std::cout << "Example: " << filename
-              << " model.onnx model.dab --optimize strict (The optimization "
+    std::cout << "  " << filename
+              << " model.onnx model.dab --strict (The optimization "
                  "level will be \"strict\")"
               << std::endl;
 }
 
 int main(int argc, char **argv) {
     argh::parser cmdl;
-    cmdl.add_param("optimize");
     cmdl.parse(argc, argv);
     google::InitGoogleLogging(cmdl[0].c_str());
     FLAGS_alsologtostderr = true;
@@ -40,28 +62,22 @@ int main(int argc, char **argv) {
         usage(cmdl[0]);
         return -1;
     }
-    // flags like 'onnx2bnn --strict' is not supported now
     for (const auto flag : cmdl.flags()) {
-        std::cout << "Invalid flag: " << flag << std::endl;
-        usage(cmdl[0]);
-        return -2;
+        if (flag != "strict" && flag != "moderate" && flag != "aggressive") {
+            std::cout << "Invalid flag: " << flag << std::endl;
+            usage(cmdl[0]);
+            return -2;
+        }
     }
 
-    const std::string opt_level_str =
-        cmdl("optimize").str().empty() ? "aggressive" : cmdl("optimize").str();
-
-    bnn::OnnxConverter::Level opt_level;
-    if (opt_level_str == "strict") {
+    bnn::OnnxConverter::Level opt_level =
+        bnn::OnnxConverter::Level::kAggressive;
+    if (cmdl["strict"]) {
         opt_level = bnn::OnnxConverter::Level::kStrict;
-    } else if (opt_level_str == "moderate") {
+    } else if (cmdl["moderate"]) {
         opt_level = bnn::OnnxConverter::Level::kModerate;
-    } else if (opt_level_str == "aggressive") {
+    } else if (cmdl["aggressive"]) {
         opt_level = bnn::OnnxConverter::Level::kAggressive;
-    } else {
-        std::cout << "Invalid optimization level: " << opt_level_str
-                  << std::endl;
-        usage(cmdl[0]);
-        return -3;
     }
 
     ONNX_NAMESPACE::ModelProto model_proto;
