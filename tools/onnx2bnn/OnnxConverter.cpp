@@ -172,9 +172,10 @@ std::vector<OnnxConverter::BTensor> OnnxConverter::split(
     return outputs;
 }
 
-std::vector<std::string> OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto &model_proto,
-                            const std::string &filepath,
-                            const OnnxConverter::Level level) {
+std::vector<std::string> OnnxConverter::Convert(
+    const ONNX_NAMESPACE::ModelProto &model_proto, const std::string &filepath,
+    const OnnxConverter::Level level,
+    const std::vector<std::string> &expected_binary_conv_outputs) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     // We recognize binary convolutions in our custom ONNX optimizers.
@@ -271,7 +272,12 @@ std::vector<std::string> OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto
             }
 
             auto ori_weight_name = m(node.input(1));
-            const bool binary_conv = (node.domain() == "dabnn");
+            const bool binary_conv =
+                (node.domain() == "dabnn") ||
+                (std::find(expected_binary_conv_outputs.begin(),
+                           expected_binary_conv_outputs.end(),
+                           node.output(0)) !=
+                 expected_binary_conv_outputs.end());
             if (binary_conv) {
                 binary_conv_outputs.push_back(node.output(0));
             }
@@ -476,6 +482,17 @@ std::vector<std::string> OnnxConverter::Convert(const ONNX_NAMESPACE::ModelProto
             throw std::invalid_argument("Unsupported operator " + op);
         }
     }
+
+    for (const auto &expected : expected_binary_conv_outputs) {
+        if (std::find(binary_conv_outputs.begin(), binary_conv_outputs.end(),
+                      expected) == binary_conv_outputs.end()) {
+            throw std::invalid_argument(
+                expected +
+                " is in the list file but not in the ONNX model, please check "
+                "your list file");
+        }
+    }
+
     auto flat_layers = builder_.CreateVector(layers_);
     auto flat_inputs = builder_.CreateVector(inputs);
     auto flat_tensors = builder_.CreateVector(tensors_);

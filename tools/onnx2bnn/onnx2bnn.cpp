@@ -19,7 +19,7 @@ void usage(const std::string &filename) {
     std::cout << "Usage:" << std::endl;
     std::cout << "  " << filename
               << " onnx_model output_filename [ --strict | --moderate | "
-                 "--aggressive ] [--verbose]"
+                 "--aggressive ] [--binary-list] [--verbose]"
               << std::endl;
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
@@ -41,6 +41,11 @@ void usage(const std::string &filename) {
            "A Conv operator, whose input is got from a Sign op and a Pad op "
            "(the order doesn't matter), and weight is got from a Sign op."
         << std::endl;
+    std::cout
+        << "  --binary-list   A text file containing the **output "
+           "names** of some convolutions, which will be treated as binary "
+           "convlutions unconditionally. It is mainly for benchmark purpose."
+        << std::endl;
     std::cout << std::endl;
     std::cout << "Example:" << std::endl;
     std::cout << "  " << filename
@@ -55,6 +60,7 @@ void usage(const std::string &filename) {
 
 int main(int argc, char **argv) {
     argh::parser cmdl;
+    cmdl.add_param("--binary-list");
     cmdl.parse(argc, argv);
     google::InitGoogleLogging(cmdl[0].c_str());
     FLAGS_alsologtostderr = true;
@@ -85,6 +91,18 @@ int main(int argc, char **argv) {
         FLAGS_v = 5;
     }
 
+    const auto binary_list_filepath = cmdl("binary-list").str();
+    vector<string> expected_binary_conv_outputs;
+    if (!binary_list_filepath.empty()) {
+        std::ifstream ifs(binary_list_filepath);
+        if (ifs.is_open()) {
+            string binary_conv_output;
+            while (ifs >> binary_conv_output) {
+                expected_binary_conv_outputs.push_back(binary_conv_output);
+            }
+        }
+    }
+
     ONNX_NAMESPACE::ModelProto model_proto;
     {
         std::ifstream ifs(cmdl[1], std::ios::in | std::ios::binary);
@@ -93,8 +111,8 @@ int main(int argc, char **argv) {
     }
 
     bnn::OnnxConverter converter;
-    const auto binary_conv_outputs =
-        converter.Convert(model_proto, cmdl[2], opt_level);
+    const auto binary_conv_outputs = converter.Convert(
+        model_proto, cmdl[2], opt_level, expected_binary_conv_outputs);
 
     LOG(INFO) << "Conversion completed! Found " << binary_conv_outputs.size()
               << " binary convolutions. Add --verbose to get what they are.";
