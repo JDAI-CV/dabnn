@@ -27,6 +27,7 @@
 
 namespace bnn {
 inline void pack_64(const float *float_ptr, void *binary_ptr, size_t size) {
+    BNN_ASSERT(size % 64 == 0, "");
     uint64_t *u64_bptr = static_cast<uint64_t *>(binary_ptr);
     FORZS(_, size, 64) {
         pack_64_bitfield(float_ptr, u64_bptr);
