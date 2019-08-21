@@ -12,7 +12,7 @@
 
 namespace bnn {
 
-int align_to(int a, int b) { return (a + (b - 1) / b) * b; }
+int align_to(int a, int b) { return ((a + (b - 1)) / b) * b; }
 
 BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
                  css output, int pad_h, int pad_w, int stride_h, int stride_w)
