@@ -120,16 +120,6 @@ void BinConv::forward_impl() const {
             bconv_3x3(*padded_mat, *weight_mat, *output_mat, stride_h);
         } else if (gemm_compatible()) {
             output_mat->fill<float>(0.f);
-            // pack_mat_64(*input_mat, *binarized_mat);
-            // bnn::im2col(*binarized_mat, weight_mat->h, weight_mat->w,
-            //                            pad_h, pad_w, stride_h, stride_w, 1,
-            //                            1, *col_mat);
-
-            // const auto len = output_mat->h * output_mat->w * weight_mat->h *
-            //                  weight_mat->w * input_mat->elem_c;
-            // Mat temp(1, 1, len, bnn::DataType::Float);
-            // im2col(*input_mat, weight_mat->h, weight_mat->w, pad_h, pad_w,
-            // stride_h, stride_w, 1, 1, temp); pack_mat(temp, *col_mat);
 
             bnn::fused_binarize_im2col(*input_mat, weight_mat->h, weight_mat->w,
                                        pad_h, pad_w, stride_h, stride_w, 1, 1,
