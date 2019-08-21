@@ -15,6 +15,7 @@ target_link_libraries(onnx2bnn
     glog::glog
     onnx
     protobuf::libprotobuf
+    flatbuffers
     )
 target_include_directories(onnx2bnn
     PUBLIC

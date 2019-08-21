@@ -42,6 +42,9 @@ include(cmake/system.cmake)
 include(cmake/glog.cmake)
 configure_glog()
 
+include(cmake/flatbuffers.cmake)
+configure_flatbuffers()
+
 add_compile_options("-DEIGEN_MPL2_ONLY")
 if (${BNN_NET_BENCHMARK})
     add_compile_options("-DBNN_BENCHMARK")
