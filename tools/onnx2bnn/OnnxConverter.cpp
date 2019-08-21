@@ -51,7 +51,7 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
         flatbnn::CreateLayer(builder_, flatbnn::LayerType::BinConv2D, 0, param);
     const auto flat_tensor = flatbnn::CreateTensorDirect(
         builder_, flatbnn::DataType::Bit, &bin_weight.data, nullptr,
-        &bin_weight.shape, weight_name.c_str());
+        &bin_weight.shape, weight_name.c_str(), bin_weight.align_hwc_to_128);
     tensors_.push_back(flat_tensor);
     layers_.push_back(layer);
 }
@@ -123,27 +123,36 @@ OnnxConverter::BTensor OnnxConverter::bitpack(OnnxConverter::FTensor ftensor) {
                   "bitpack requires bin_t is 64 bit");
 
     const auto N = Shaper::kn(ftensor.shape);
+    const auto C = Shaper::kc(ftensor.shape);
     const auto HWC = Shaper::total(ftensor.shape) / N;
 
     vector<bin_t> packed_data;
     bin_t tmp;
 
-    FORZ(n, N) {
-        FORZS(i, HWC, 128) {
-            const size_t eff_bits = std::min<size_t>(HWC - i, 128);
-            pack_64_bitset(&ftensor.data[n * HWC + i], &tmp,
-                           std::min<size_t>(eff_bits, 64));
-            packed_data.push_back(tmp);
-            pack_64_bitset(
-                &ftensor.data[n * HWC + i + 64], &tmp,
-                std::min<size_t>(std::max<size_t>(0, eff_bits - 64), 64));
+    Shape shape = {ftensor.shape[0], ftensor.shape[1], ftensor.shape[2],
+                   ftensor.shape[3]};
+    bool align_hwc_to_128 = (C != 64);
+    if (align_hwc_to_128) {
+        FORZ(n, N) {
+            FORZS(i, HWC, 128) {
+                const size_t eff_bits = std::min<size_t>(HWC - i, 128);
+                pack_64_bitset(&ftensor.data[n * HWC + i], &tmp,
+                               std::min<size_t>(eff_bits, 64));
+                packed_data.push_back(tmp);
+                pack_64_bitset(
+                    &ftensor.data[n * HWC + i + 64], &tmp,
+                    std::min<size_t>(std::max<size_t>(0, eff_bits - 64), 64));
+                packed_data.push_back(tmp);
+            }
+        }
+    } else {
+        FORZS(i, Shaper::total(ftensor.shape), 64) {
+            pack_64_bitset(&ftensor.data[i], &tmp);
             packed_data.push_back(tmp);
         }
     }
 
-    Shape shape = {ftensor.shape[0], ftensor.shape[1], ftensor.shape[2],
-                   ftensor.shape[3]};
-    return {packed_data, shape};
+    return {packed_data, shape, align_hwc_to_128};
 }
 
 std::vector<OnnxConverter::BTensor> OnnxConverter::split(
@@ -208,7 +217,7 @@ std::vector<std::string> OnnxConverter::Convert(
                     : tensor.float_data().data();
             auto data_vec = vector<float>(ptr, ptr + Product(shape));
 
-            onnx_float_tensors_[tensor.name()] = {data_vec, shape};
+            onnx_float_tensors_[tensor.name()] = {data_vec, shape, false};
         }
         operands_.push_back(tensor.name());
     }

@@ -78,7 +78,6 @@ BinConv::BinConv(NetCP net, const std::string &name, css input, css weight,
 
 bool BinConv::direct_conv_compatible() const {
 #ifdef __aarch64__
-    return false;
     if (weight_mat->h == 3 && weight_mat->w == 3 && input_mat->elem_c == 64 &&
         stride_h == stride_w) {
         return true;

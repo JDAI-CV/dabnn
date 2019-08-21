@@ -22,6 +22,10 @@ class OnnxConverter {
     struct Tensor {
         std::vector<T> data;
         Shaper::Shape shape;
+        bool align_hwc_to_128 = false;
+        Tensor() = default;
+        Tensor(const std::vector<T> &data, const Shaper::Shape &shape, const bool align_hwc_to_128):
+            data(data), shape(shape), align_hwc_to_128(align_hwc_to_128) {}
         inline T get(const std::vector<Shaper::len_t> &x) {
             auto step = get_shape_for_accessing_element();
             for (int i = shape.size() - 2; i >= 0; i--) {
