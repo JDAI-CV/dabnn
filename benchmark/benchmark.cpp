@@ -14,8 +14,8 @@
 #include <dabnn/net.h>
 
 static void BM_pack_mat_64_small(benchmark::State &state) {
-    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
-    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
+    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, false);
+    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, false);
     for (auto _ : state) {
         pack_mat_64(a, b);
     }
@@ -23,8 +23,8 @@ static void BM_pack_mat_64_small(benchmark::State &state) {
 
 #ifdef __aarch64__
 static void BM_pack_mat_128_small(benchmark::State &state) {
-    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
-    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
+    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, false);
+    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, false);
     for (auto _ : state) {
         pack_mat_128(a, b);
     }
