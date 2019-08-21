@@ -130,7 +130,7 @@ OnnxConverter::BTensor OnnxConverter::bitpack(OnnxConverter::FTensor ftensor) {
 
     FORZ(n, N) {
         FORZS(i, HWC, 128) {
-            const size_t eff_bits = std::max<size_t>(HWC - i, 128);
+            const size_t eff_bits = std::min<size_t>(HWC - i, 128);
             pack_64_bitset(&ftensor.data[n * HWC + i], &tmp,
                            std::min<size_t>(eff_bits, 64));
             packed_data.push_back(tmp);

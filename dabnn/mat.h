@@ -267,8 +267,9 @@ inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
     }
     if (data_num != 0) {
         data_num_ = data_num;
-        BNN_ASSERT(data_num_ > static_cast<size_t>(n * w * h * c), "data_num_ ",
-                   data_num_, " shoule be larger than n * w * h * c, ", n, ", ", w,
+        BNN_ASSERT(data_num_ >= static_cast<size_t>(n * w * h * c),
+                   "data_num_ ", data_num_,
+                   " should be not smaller than n * w * h * c, ", n, ", ", w,
                    ", ", h, ", ", c);
     }
     elemsize = data_type == DataType::Float ? sizeof(float) : sizeof(uint64_t);

@@ -85,7 +85,7 @@ inline void fused_binarize_im2col(const Mat &im, const int kernel_h,
             // len: the number of elements in one column
             const size_t len = (buf_ptr - buf) / im.elemsize;
             const size_t len_aligned_128 = (len + 127) / 128 * 128;
-            BNN_ASSERT(len == len_aligned_128, "");
+            // BNN_ASSERT(len == len_aligned_128, "");
             // pad the buffer so that its length aligns to 128
             memset(buf_ptr, 0, (len_aligned_128 - len) * im.elemsize);
 

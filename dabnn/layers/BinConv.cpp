@@ -107,7 +107,7 @@ bool BinConv::direct_conv_compatible() const {
 
 bool BinConv::gemm_compatible() const {
 #ifdef __ARM_NEON
-    return weight_mat->h * weight_mat->w * weight_mat->c % 2 == 0;
+    return true;
 #else
     return false;
 #endif

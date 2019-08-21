@@ -16,7 +16,7 @@ inline void pack_64_bitset(const float *fptr, uint64_t *buf,
      * In this case, we need pad the tensor to make the
      * channel aligned with 128.
      */
-    BNN_ASSERT(eff_bits == 64, eff_bits);
+    // BNN_ASSERT(eff_bits == 64, eff_bits);
     const size_t UNIT_LEN = 64;
     BNN_ASSERT(eff_bits <= UNIT_LEN, "The eff_bits ", eff_bits,
                " must be smaller than UNIT_LEN ", UNIT_LEN);
