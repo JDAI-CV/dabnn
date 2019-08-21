@@ -106,7 +106,15 @@ bool BinConv::direct_conv_compatible() const {
 
 bool BinConv::gemm_compatible() const {
 #ifdef __ARM_NEON
+#ifdef __aarch64__
     return true;
+#else
+    // If weight_mat->c == 1 (weight_mat has 64 channels), we use bconv_64
+    // in aarch64 for the fastest speed, however, bconv_64 is not implemented
+    // in armv7
+    // TODO: Implement bconv_64 for armv7
+    return weight_mat->c != 1;
+#endif
 #else
     return false;
 #endif
