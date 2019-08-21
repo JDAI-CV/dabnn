@@ -20,10 +20,8 @@ The details is in https://github.com/JDAI-CV/dabnn/blob/master/tools/onnx2bnn/On
 
 There are some notes for model conversion.
 
-1. **The number of input channels of binary convs must be 64 or a multiple of 128 for now.**
+1. Binary convolutions are custom operations in training frameworks (e.g., TensorFlow, PyTorch), so the implementations are various. Unfortunately, the most existing implementations of binary convs are not correct. For example, they always pad 0 to their input, while the input should only be +1 or -1. The developers of dabnn provide [a standard implementation of binary convs in PyTorch](https://gist.github.com/daquexian/7db1e7f1e0a92ab13ac1ad028233a9eb). We advise trainers of BNNs to use this implementation, or implement binary convs in their own training frameworks according to this implementation.
 
-2. Binary convolutions are custom operations in training frameworks (e.g., TensorFlow, PyTorch), so the implementations are various. Unfortunately, the most existing implementations of binary convs are not correct. For example, they always pad 0 to their input, while the input should only be +1 or -1. The developers of dabnn provide [a standard implementation of binary convs in PyTorch](https://gist.github.com/daquexian/7db1e7f1e0a92ab13ac1ad028233a9eb). We advise trainers of BNNs to use this implementation, or implement binary convs in their own training frameworks according to this implementation.
+2. onnx2bnn has multiple recognizing levels. It can even recognize the incorrect binary convs described above (the result will be incorrect though). Please check out [this documentation](https://github.com/JDAI-CV/dabnn/wiki/Train,-export-and-convert-a-dabnn-model) for details.
 
-3. onnx2bnn has multiple recognizing levels. It can even recognize the incorrect binary convs described above (the result will be incorrect though). Please check out [this documentation](https://github.com/JDAI-CV/dabnn/wiki/Train,-export-and-convert-a-dabnn-model) for details.
-
-4. `group` is not supported for now.
+3. `group` is not supported for now.
