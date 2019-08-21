@@ -53,6 +53,12 @@ jobs:
     submodules: true
   - bash: ci/build_onnx2bnn.sh
     displayName: Build
+  - bash: ls build_onnx2bnn
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: 'build_onnx2bnn\tools\onnx2bnn\Debug\'
+      contents: 'onnx2bnn.exe'
+      targetFolder: $(Build.ArtifactStagingDirectory)
   - template: template_onnx2bnn_publish_artifacts.yml
   - template: template_onnx2bnn_github_release.yml
 - job: macOS
