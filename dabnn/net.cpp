@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <common/flatbuffers_helper.h>
+#include <common/macros.h>
 #include <dabnn/bitpack.h>
 #include <dabnn/layers/Add.h>
 #include <dabnn/layers/Affine.h>
@@ -26,9 +27,6 @@ using std::string;
 using std::vector;
 
 namespace bnn {
-string get_bin_imm_name(string name) { return name + "_bin"; }
-
-string get_pad_imm_name(string name) { return "pad_for_" + name + "_cal"; }
 
 void Net::read(const std::string &path) {
     auto fd = open(path.c_str(), O_RDONLY);
@@ -54,6 +52,9 @@ void Net::read_impl(const void *ptr) {
 
 void Net::prepare() {
     BNN_ASSERT(!(strict && !run_fconv), "fconv must be run in strict mode");
+    BNN_ASSERT(model_->version() == BNN_LATEST_MODEL_VERSION,
+               "The model version should be ", BNN_LATEST_MODEL_VERSION,
+               ", got ", model_->version(), " instead.");
     for (const auto &tensor : *model_->inputs()) {
         Shaper::Shape shape(tensor->shape()->begin(), tensor->shape()->end());
         const auto name = tensor->name()->str();
@@ -78,29 +79,32 @@ void Net::prepare() {
 
             shaper.AddShape(name, shape);
 
+            const auto len = tensor->bin_data()->size();
 #ifdef __aarch64__
+            // TODO: Move it to binconv.cpp
+            // 1. More correct
+            // 2. Don't need to maintain the the same shape
             if (Shaper::c(shape) % 128 == 0) {
-                // Re-arrange the bit order
-                const auto len = shaper.total(shape);
+                // Re-arrange the bit order for the optmized bit-packing
                 const auto tmp = std::make_shared<Mat>(
                     shape[0], shape[1], shape[2], shape[3],
                     bnn::DataType::Float, false);
                 auto *float_data = static_cast<float *>(tmp->data);
-                FORZ(i, len / 64) {
+                FORZ(i, len) {
                     std::bitset<64> bs(*(data + i));
                     FORZ(j, 64) { float_data[i * 64 + j] = bs[j] ? 1 : -1; }
                 }
 
-                add_mat(name, std::make_shared<Mat>(shape[0], shape[1],
-                                                    shape[2], shape[3],
-                                                    bnn::DataType::Bit, false));
-                pack_mat_128(*tmp, *mat_map_[name]);
+                add_mat(name, std::make_shared<Mat>(
+                                  shape[0], shape[1], shape[2], shape[3],
+                                  bnn::DataType::Bit, len, false));
+                pack_mat(*tmp, *mat_map_[name]);
             } else {
 #endif  // __aarch64__
                 add_mat(name, std::make_shared<Mat>(
                                   shape[0], shape[1], shape[2], shape[3],
                                   const_cast<uint64_t *>(data),
-                                  bnn::DataType::Bit, false));
+                                  bnn::DataType::Bit, len, false));
 #ifdef __aarch64__
             }
 #endif  // __aarch64__
@@ -163,17 +167,9 @@ void Net::prepare() {
 
                 break;
             }
-            case flatbnn::LayerType::Binarize: {
-                ADD_LAYER_WITH_DATA_TYPE(binarize, Binarize, DataType::Bit,
-                                         input, output);
-                layers.push_back(std::make_shared<Binarize>(get_weak(), name,
-                                                            input, output));
-                break;
-            }
             case flatbnn::LayerType::BinConv2D: {
-                ADD_LAYER_WITH_DATA_TYPE(bin_conv2d, Conv, DataType::Float,
-                                         input, strides, dilations, pads,
-                                         weight, output);
+                ADD_LAYER(bin_conv2d, Conv, input, strides, dilations, pads,
+                          weight, output);
                 BNN_ASSERT(pads.size() == 2 ||
                                (pads.size() == 4 && pads[0] == pads[2] &&
                                 pads[1] == pads[3]),

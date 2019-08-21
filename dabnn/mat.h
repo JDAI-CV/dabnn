@@ -47,6 +47,8 @@ class Mat {
     // Conv weight or multi-batch blob
     Mat(int n, int w, int h, int c, DataType data_type,
         bool require_align = true);
+    Mat(int n, int w, int h, int c, DataType data_type, size_t data_num,
+        bool require_align = true);
     // external vec
     Mat(int w, void *data, DataType data_type);
     // external image
@@ -56,6 +58,8 @@ class Mat {
     // external dim
     Mat(int n, int w, int h, int c, void *data, DataType data_type,
         bool require_align = true);
+    Mat(int n, int w, int h, int c, void *data, DataType data_type,
+        size_t data_num, bool require_align = true);
 
     Mat subMat(int w1, int w2, int h1, int h2);
     // release
@@ -145,6 +149,8 @@ class Mat {
 
     DataType data_type;
 
+    size_t data_num_ = 0;
+
     std::string name;
 };
 
@@ -165,6 +171,9 @@ inline Mat::Mat(int _w, DataType data_type)
 
 inline Mat::Mat(int _w, int _h, DataType data_type)
     : data(nullptr), dims(0), data_type(data_type) {
+    if (data_type == DataType::Bit) {
+        _h /= 64;
+    }
     create(_w, _h, data_type);
 }
 
@@ -179,7 +188,14 @@ inline Mat::Mat(int _w, int _h, int _c, DataType data_type, std::string name)
 
 inline Mat::Mat(int _n, int _w, int _h, int _c, DataType data_type,
                 bool require_align)
+    : Mat(_n, _w, _h, _c, data_type, 0, require_align) {}
+
+inline Mat::Mat(int _n, int _w, int _h, int _c, DataType data_type,
+                size_t data_num, bool require_align)
     : data(nullptr), dims(0), data_type(data_type) {
+    if (data_num != 0) {
+        data_num_ = data_num;
+    }
     elem_c = _c;
     if (data_type == DataType::Bit) {
         _c /= 64;
@@ -236,6 +252,10 @@ inline Mat::Mat(int _w, int _h, int _c, void *_data, DataType data_type)
 
 inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
                 bool require_align)
+    : Mat(_n, _w, _h, _c, _data, data_type, 0, require_align) {}
+
+inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
+                size_t data_num, bool require_align)
     : data(_data), dims(4), data_type(data_type) {
     n = _n;
     w = _w;
@@ -244,6 +264,13 @@ inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
     elem_c = _c;
     if (data_type == DataType::Bit) {
         c /= 64;
+    }
+    if (data_num != 0) {
+        data_num_ = data_num;
+        BNN_ASSERT(data_num_ >= static_cast<size_t>(n * w * h * c),
+                   "data_num_ ", data_num_,
+                   " should be not smaller than n * w * h * c, ", n, ", ", w,
+                   ", ", h, ", ", c);
     }
     elemsize = data_type == DataType::Float ? sizeof(float) : sizeof(uint64_t);
     BNN_ASSERT(c > 0, c);
@@ -575,7 +602,13 @@ inline void Mat::release() {
 
 inline bool Mat::empty() const { return data == nullptr || total() == 0; }
 
-inline size_t Mat::total() const { return n * h * w * c; }
+inline size_t Mat::total() const {
+    if (data_num_ != 0) {
+        return data_num_;
+    } else {
+        return n * h * w * c;
+    }
+}
 
 template <typename T>
 inline const T *Mat::point(int _n, int _h, int _w) const {

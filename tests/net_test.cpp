@@ -55,14 +55,14 @@ TEST(net, bireal18imagenet) {
 
     const std::string blob_name = "188";
     {
-        auto net1 = bnn::Net::create();
-        net1->read("/data/local/tmp/model_imagenet.dab");
-        net1->optimize = true;
-        net1->run(input);
-        const auto blob1 = net1->get_blob(blob_name);
-        ASSERT_NEAR((*blob1)[0], -0.9431, 1e-4);
-        ASSERT_NEAR((*blob1)[1], -1.2626, 1e-4);
-        ASSERT_NEAR((*blob1)[2], -5.1064, 1e-4);
+        auto net = bnn::Net::create();
+        net->read("/data/local/tmp/model_imagenet.dab");
+        net->optimize = true;
+        net->run(input);
+        const auto blob = net->get_blob(blob_name);
+        ASSERT_NEAR((*blob)[0], -0.9431, 1e-4);
+        ASSERT_NEAR((*blob)[1], -1.2626, 1e-4);
+        ASSERT_NEAR((*blob)[2], -5.1064, 1e-4);
     }
 }
 
@@ -95,13 +95,13 @@ TEST(net, bireal18imagenetstem) {
 
     const std::string blob_name = "216";
     {
-        auto net1 = bnn::Net::create();
-        net1->read("/data/local/tmp/model_imagenet_stem.dab");
-        net1->optimize = true;
-        net1->run(input);
-        const auto &blob1 = net1->get_blob(blob_name);
-        ASSERT_NEAR((*blob1)[0], 1.9842, 1e-4);
-        ASSERT_NEAR((*blob1)[1], 3.4204, 1e-4);
-        ASSERT_NEAR((*blob1)[2], -3.2586, 1e-4);
+        auto net = bnn::Net::create();
+        net->read("/data/local/tmp/model_imagenet_stem.dab");
+        net->optimize = true;
+        net->run(input);
+        const auto &blob = net->get_blob(blob_name);
+        ASSERT_NEAR((*blob)[0], 1.9842, 1e-4);
+        ASSERT_NEAR((*blob)[1], 3.4204, 1e-4);
+        ASSERT_NEAR((*blob)[2], -3.2586, 1e-4);
     }
 }

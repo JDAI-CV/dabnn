@@ -15,6 +15,7 @@
 #include <common/common_bitpack.h>
 #include <common/flatbuffers_helper.h>
 #include <common/helper.h>
+#include <common/macros.h>
 #include <glog/logging.h>
 #include <onnx/onnx_pb.h>
 #include <onnx/optimizer/optimize.h>
@@ -42,26 +43,15 @@ void OnnxConverter::AddBinConv(const std::string &input_name,
                                const std::string &weight_name,
                                const std::string &output_name,
                                BTensor bin_weight) {
-    css bin_name = input_name + "_bin";
-
-    {
-        const auto param = flatbnn::CreateBinarizeDirect(
-            builder_, input_name.c_str(), bin_name.c_str());
-        const auto layer =
-            flatbnn::CreateLayer(builder_, flatbnn::LayerType::Binarize, 0, 0,
-                                 0, 0, 0, 0, 0, 0, 0, 0, param);
-        layers_.push_back(layer);
-    }
-
     BNN_ASSERT(group == 1, "Group != 1 is not supported");
     const auto param = flatbnn::CreateBinConv2DDirect(
-        builder_, bin_name.c_str(), weight_name.c_str(), nullptr, &pads,
+        builder_, input_name.c_str(), weight_name.c_str(), nullptr, &pads,
         &strides, &dilations, output_name.c_str());
     const auto layer =
         flatbnn::CreateLayer(builder_, flatbnn::LayerType::BinConv2D, 0, param);
     const auto flat_tensor = flatbnn::CreateTensorDirect(
         builder_, flatbnn::DataType::Bit, &bin_weight.data, nullptr,
-        &bin_weight.shape, weight_name.c_str());
+        &bin_weight.shape, weight_name.c_str(), bin_weight.align_hwc_to_128);
     tensors_.push_back(flat_tensor);
     layers_.push_back(layer);
 }
@@ -124,26 +114,45 @@ void OnnxConverter::AddConv(const string &input_name,
 
 /*
  * Bitpack a bnn tensor, input_channels should be the last dimension
+ * The data size of the packed tensor may be different from
+ * Shaper::total(tensor.shape) / 64, since every HWC will be padded
+ * so that they are aligned to 128.
  */
 OnnxConverter::BTensor OnnxConverter::bitpack(OnnxConverter::FTensor ftensor) {
     static_assert(std::is_same<bin_t, uint64_t>::value,
                   "bitpack requires bin_t is 64 bit");
 
-    auto c = Shaper::kc(ftensor.shape);
-
-    BNN_ASSERT(c % 64 == 0, ftensor.shape);
+    const auto N = Shaper::kn(ftensor.shape);
+    const auto C = Shaper::kc(ftensor.shape);
+    const auto HWC = Shaper::total(ftensor.shape) / N;
 
     vector<bin_t> packed_data;
     bin_t tmp;
 
-    FORZS(i, Shaper::total(ftensor.shape), 64) {
-        pack_64_bitset(&ftensor.data[i], &tmp);
-        packed_data.push_back(tmp);
-    }
-
     Shape shape = {ftensor.shape[0], ftensor.shape[1], ftensor.shape[2],
                    ftensor.shape[3]};
-    return {packed_data, shape};
+    bool align_hwc_to_128 = (C != 64);
+    if (align_hwc_to_128) {
+        FORZ(n, N) {
+            FORZS(i, HWC, 128) {
+                const size_t eff_bits = std::min<size_t>(HWC - i, 128);
+                pack_64_bitset(&ftensor.data[n * HWC + i], &tmp,
+                               std::min<size_t>(eff_bits, 64));
+                packed_data.push_back(tmp);
+                pack_64_bitset(
+                    &ftensor.data[n * HWC + i + 64], &tmp,
+                    std::min<size_t>(std::max<size_t>(0, eff_bits - 64), 64));
+                packed_data.push_back(tmp);
+            }
+        }
+    } else {
+        FORZS(i, Shaper::total(ftensor.shape), 64) {
+            pack_64_bitset(&ftensor.data[i], &tmp);
+            packed_data.push_back(tmp);
+        }
+    }
+
+    return {packed_data, shape, align_hwc_to_128};
 }
 
 std::vector<OnnxConverter::BTensor> OnnxConverter::split(
@@ -208,7 +217,7 @@ std::vector<std::string> OnnxConverter::Convert(
                     : tensor.float_data().data();
             auto data_vec = vector<float>(ptr, ptr + Product(shape));
 
-            onnx_float_tensors_[tensor.name()] = {data_vec, shape};
+            onnx_float_tensors_[tensor.name()] = {data_vec, shape, false};
         }
         operands_.push_back(tensor.name());
     }
@@ -497,7 +506,8 @@ std::vector<std::string> OnnxConverter::Convert(
     auto flat_inputs = builder_.CreateVector(inputs);
     auto flat_tensors = builder_.CreateVector(tensors_);
     auto flat_model =
-        flatbnn::CreateModel(builder_, flat_layers, flat_tensors, flat_inputs);
+        flatbnn::CreateModel(builder_, flat_layers, flat_tensors, flat_inputs,
+                             BNN_LATEST_MODEL_VERSION);
 
     builder_.Finish(flat_model);
 

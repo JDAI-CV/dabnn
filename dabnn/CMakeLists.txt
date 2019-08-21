@@ -43,6 +43,7 @@ target_include_directories(dabnn
     )
 target_link_libraries(dabnn
     glog::glog
+    flatbuffers
     )
 
 if (${BNN_BUILD_JNI})

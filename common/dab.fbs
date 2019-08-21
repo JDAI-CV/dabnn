@@ -10,6 +10,7 @@ table Tensor {
     float32_data: [float32];
     shape: [uint32];
     name: string;
+    align_hwc_to_128: bool;
 }
 
 table Input {

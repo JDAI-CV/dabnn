@@ -6,6 +6,6 @@
 #include <dabnn/net.h>
 
 namespace bnn {
-void Binarize::forward_impl() const { ::pack_mat(*input_mat, *output_mat); }
+void Binarize::forward_impl() const { pack_mat(*input_mat, *output_mat); }
 
 }  // namespace bnn

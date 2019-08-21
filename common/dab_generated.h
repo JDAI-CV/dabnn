@@ -67,7 +67,8 @@ inline const char * const *EnumNamesDataType() {
 }
 
 inline const char *EnumNameDataType(DataType e) {
-  const size_t index = static_cast<int>(e);
+  if (e < DataType::Float32 || e > DataType::Bit) return "";
+  const size_t index = static_cast<size_t>(e);
   return EnumNamesDataType()[index];
 }
 
@@ -129,17 +130,19 @@ inline const char * const *EnumNamesLayerType() {
 }
 
 inline const char *EnumNameLayerType(LayerType e) {
-  const size_t index = static_cast<int>(e);
+  if (e < LayerType::FpConv2D || e > LayerType::Shuffle) return "";
+  const size_t index = static_cast<size_t>(e);
   return EnumNamesLayerType()[index];
 }
 
 struct Tensor FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_DATA_TYPE = 4,
     VT_BIN_DATA = 6,
     VT_FLOAT32_DATA = 8,
     VT_SHAPE = 10,
-    VT_NAME = 12
+    VT_NAME = 12,
+    VT_ALIGN_HWC_TO_128 = 14
   };
   DataType data_type() const {
     return static_cast<DataType>(GetField<int8_t>(VT_DATA_TYPE, 0));
@@ -156,6 +159,9 @@ struct Tensor FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *name() const {
     return GetPointer<const flatbuffers::String *>(VT_NAME);
   }
+  bool align_hwc_to_128() const {
+    return GetField<uint8_t>(VT_ALIGN_HWC_TO_128, 0) != 0;
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int8_t>(verifier, VT_DATA_TYPE) &&
@@ -167,6 +173,7 @@ struct Tensor FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyVector(shape()) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
+           VerifyField<uint8_t>(verifier, VT_ALIGN_HWC_TO_128) &&
            verifier.EndTable();
   }
 };
@@ -189,6 +196,9 @@ struct TensorBuilder {
   void add_name(flatbuffers::Offset<flatbuffers::String> name) {
     fbb_.AddOffset(Tensor::VT_NAME, name);
   }
+  void add_align_hwc_to_128(bool align_hwc_to_128) {
+    fbb_.AddElement<uint8_t>(Tensor::VT_ALIGN_HWC_TO_128, static_cast<uint8_t>(align_hwc_to_128), 0);
+  }
   explicit TensorBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -207,12 +217,14 @@ inline flatbuffers::Offset<Tensor> CreateTensor(
     flatbuffers::Offset<flatbuffers::Vector<uint64_t>> bin_data = 0,
     flatbuffers::Offset<flatbuffers::Vector<float>> float32_data = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint32_t>> shape = 0,
-    flatbuffers::Offset<flatbuffers::String> name = 0) {
+    flatbuffers::Offset<flatbuffers::String> name = 0,
+    bool align_hwc_to_128 = false) {
   TensorBuilder builder_(_fbb);
   builder_.add_name(name);
   builder_.add_shape(shape);
   builder_.add_float32_data(float32_data);
   builder_.add_bin_data(bin_data);
+  builder_.add_align_hwc_to_128(align_hwc_to_128);
   builder_.add_data_type(data_type);
   return builder_.Finish();
 }
@@ -223,18 +235,24 @@ inline flatbuffers::Offset<Tensor> CreateTensorDirect(
     const std::vector<uint64_t> *bin_data = nullptr,
     const std::vector<float> *float32_data = nullptr,
     const std::vector<uint32_t> *shape = nullptr,
-    const char *name = nullptr) {
+    const char *name = nullptr,
+    bool align_hwc_to_128 = false) {
+  auto bin_data__ = bin_data ? _fbb.CreateVector<uint64_t>(*bin_data) : 0;
+  auto float32_data__ = float32_data ? _fbb.CreateVector<float>(*float32_data) : 0;
+  auto shape__ = shape ? _fbb.CreateVector<uint32_t>(*shape) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
   return flatbnn::CreateTensor(
       _fbb,
       data_type,
-      bin_data ? _fbb.CreateVector<uint64_t>(*bin_data) : 0,
-      float32_data ? _fbb.CreateVector<float>(*float32_data) : 0,
-      shape ? _fbb.CreateVector<uint32_t>(*shape) : 0,
-      name ? _fbb.CreateString(name) : 0);
+      bin_data__,
+      float32_data__,
+      shape__,
+      name__,
+      align_hwc_to_128);
 }
 
 struct Input FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SHAPE = 4,
     VT_NAME = 6
   };
@@ -289,14 +307,16 @@ inline flatbuffers::Offset<Input> CreateInputDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<uint32_t> *shape = nullptr,
     const char *name = nullptr) {
+  auto shape__ = shape ? _fbb.CreateVector<uint32_t>(*shape) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
   return flatbnn::CreateInput(
       _fbb,
-      shape ? _fbb.CreateVector<uint32_t>(*shape) : 0,
-      name ? _fbb.CreateString(name) : 0);
+      shape__,
+      name__);
 }
 
 struct Binarize FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_OUTPUT = 6
   };
@@ -351,14 +371,16 @@ inline flatbuffers::Offset<Binarize> CreateBinarizeDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *input = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateBinarize(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      output__);
 }
 
 struct BinConv2D FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_WEIGHT = 6,
     VT_BIAS = 8,
@@ -476,19 +498,26 @@ inline flatbuffers::Offset<BinConv2D> CreateBinConv2DDirect(
     const std::vector<int32_t> *strides = nullptr,
     const std::vector<int32_t> *dilations = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto weight__ = weight ? _fbb.CreateString(weight) : 0;
+  auto bias__ = bias ? _fbb.CreateString(bias) : 0;
+  auto pads__ = pads ? _fbb.CreateVector<int32_t>(*pads) : 0;
+  auto strides__ = strides ? _fbb.CreateVector<int32_t>(*strides) : 0;
+  auto dilations__ = dilations ? _fbb.CreateVector<int32_t>(*dilations) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateBinConv2D(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      weight ? _fbb.CreateString(weight) : 0,
-      bias ? _fbb.CreateString(bias) : 0,
-      pads ? _fbb.CreateVector<int32_t>(*pads) : 0,
-      strides ? _fbb.CreateVector<int32_t>(*strides) : 0,
-      dilations ? _fbb.CreateVector<int32_t>(*dilations) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      weight__,
+      bias__,
+      pads__,
+      strides__,
+      dilations__,
+      output__);
 }
 
 struct FpConv2D FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_WEIGHT = 6,
     VT_BIAS = 8,
@@ -606,19 +635,26 @@ inline flatbuffers::Offset<FpConv2D> CreateFpConv2DDirect(
     const std::vector<int32_t> *strides = nullptr,
     const std::vector<int32_t> *dilations = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto weight__ = weight ? _fbb.CreateString(weight) : 0;
+  auto bias__ = bias ? _fbb.CreateString(bias) : 0;
+  auto pads__ = pads ? _fbb.CreateVector<int32_t>(*pads) : 0;
+  auto strides__ = strides ? _fbb.CreateVector<int32_t>(*strides) : 0;
+  auto dilations__ = dilations ? _fbb.CreateVector<int32_t>(*dilations) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateFpConv2D(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      weight ? _fbb.CreateString(weight) : 0,
-      bias ? _fbb.CreateString(bias) : 0,
-      pads ? _fbb.CreateVector<int32_t>(*pads) : 0,
-      strides ? _fbb.CreateVector<int32_t>(*strides) : 0,
-      dilations ? _fbb.CreateVector<int32_t>(*dilations) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      weight__,
+      bias__,
+      pads__,
+      strides__,
+      dilations__,
+      output__);
 }
 
 struct AvePool FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_KERNEL_SHAPE = 6,
     VT_PADS = 8,
@@ -712,17 +748,22 @@ inline flatbuffers::Offset<AvePool> CreateAvePoolDirect(
     const std::vector<int32_t> *pads = nullptr,
     const std::vector<int32_t> *strides = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto kernel_shape__ = kernel_shape ? _fbb.CreateVector<int32_t>(*kernel_shape) : 0;
+  auto pads__ = pads ? _fbb.CreateVector<int32_t>(*pads) : 0;
+  auto strides__ = strides ? _fbb.CreateVector<int32_t>(*strides) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateAvePool(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      kernel_shape ? _fbb.CreateVector<int32_t>(*kernel_shape) : 0,
-      pads ? _fbb.CreateVector<int32_t>(*pads) : 0,
-      strides ? _fbb.CreateVector<int32_t>(*strides) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      kernel_shape__,
+      pads__,
+      strides__,
+      output__);
 }
 
 struct MaxPool FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_KERNEL_SHAPE = 6,
     VT_PADS = 8,
@@ -816,17 +857,22 @@ inline flatbuffers::Offset<MaxPool> CreateMaxPoolDirect(
     const std::vector<int32_t> *pads = nullptr,
     const std::vector<int32_t> *strides = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto kernel_shape__ = kernel_shape ? _fbb.CreateVector<int32_t>(*kernel_shape) : 0;
+  auto pads__ = pads ? _fbb.CreateVector<int32_t>(*pads) : 0;
+  auto strides__ = strides ? _fbb.CreateVector<int32_t>(*strides) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateMaxPool(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      kernel_shape ? _fbb.CreateVector<int32_t>(*kernel_shape) : 0,
-      pads ? _fbb.CreateVector<int32_t>(*pads) : 0,
-      strides ? _fbb.CreateVector<int32_t>(*strides) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      kernel_shape__,
+      pads__,
+      strides__,
+      output__);
 }
 
 struct Relu FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_OUTPUT = 6
   };
@@ -881,14 +927,16 @@ inline flatbuffers::Offset<Relu> CreateReluDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *input = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateRelu(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      output__);
 }
 
 struct Softmax FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_OUTPUT = 6
   };
@@ -943,14 +991,16 @@ inline flatbuffers::Offset<Softmax> CreateSoftmaxDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *input = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateSoftmax(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      output__);
 }
 
 struct FC FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_WEIGHT = 6,
     VT_BIAS = 8,
@@ -1029,16 +1079,20 @@ inline flatbuffers::Offset<FC> CreateFCDirect(
     const char *weight = nullptr,
     const char *bias = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto weight__ = weight ? _fbb.CreateString(weight) : 0;
+  auto bias__ = bias ? _fbb.CreateString(bias) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateFC(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      weight ? _fbb.CreateString(weight) : 0,
-      bias ? _fbb.CreateString(bias) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      weight__,
+      bias__,
+      output__);
 }
 
 struct Add FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT1 = 4,
     VT_INPUT2 = 6,
     VT_OUTPUT = 8
@@ -1105,15 +1159,18 @@ inline flatbuffers::Offset<Add> CreateAddDirect(
     const char *input1 = nullptr,
     const char *input2 = nullptr,
     const char *output = nullptr) {
+  auto input1__ = input1 ? _fbb.CreateString(input1) : 0;
+  auto input2__ = input2 ? _fbb.CreateString(input2) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateAdd(
       _fbb,
-      input1 ? _fbb.CreateString(input1) : 0,
-      input2 ? _fbb.CreateString(input2) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input1__,
+      input2__,
+      output__);
 }
 
 struct Concat FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUTS = 4,
     VT_AXIS = 6,
     VT_OUTPUT = 8
@@ -1180,15 +1237,17 @@ inline flatbuffers::Offset<Concat> CreateConcatDirect(
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *inputs = nullptr,
     int32_t axis = 0,
     const char *output = nullptr) {
+  auto inputs__ = inputs ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*inputs) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateConcat(
       _fbb,
-      inputs ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*inputs) : 0,
+      inputs__,
       axis,
-      output ? _fbb.CreateString(output) : 0);
+      output__);
 }
 
 struct Shuffle FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_OUTPUT = 6
   };
@@ -1243,14 +1302,16 @@ inline flatbuffers::Offset<Shuffle> CreateShuffleDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *input = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateShuffle(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      output__);
 }
 
 struct Split FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_OUTPUTS = 6
   };
@@ -1306,14 +1367,16 @@ inline flatbuffers::Offset<Split> CreateSplitDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *input = nullptr,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *outputs = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto outputs__ = outputs ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*outputs) : 0;
   return flatbnn::CreateSplit(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      outputs ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*outputs) : 0);
+      input__,
+      outputs__);
 }
 
 struct Affine FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_INPUT = 4,
     VT_A = 6,
     VT_B = 8,
@@ -1392,16 +1455,20 @@ inline flatbuffers::Offset<Affine> CreateAffineDirect(
     const char *a = nullptr,
     const char *b = nullptr,
     const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto a__ = a ? _fbb.CreateString(a) : 0;
+  auto b__ = b ? _fbb.CreateString(b) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
   return flatbnn::CreateAffine(
       _fbb,
-      input ? _fbb.CreateString(input) : 0,
-      a ? _fbb.CreateString(a) : 0,
-      b ? _fbb.CreateString(b) : 0,
-      output ? _fbb.CreateString(output) : 0);
+      input__,
+      a__,
+      b__,
+      output__);
 }
 
 struct Layer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_TYPE = 4,
     VT_FP_CONV2D_PARAM = 6,
     VT_BIN_CONV2D_PARAM = 8,
@@ -1611,6 +1678,7 @@ inline flatbuffers::Offset<Layer> CreateLayerDirect(
     flatbuffers::Offset<Split> split_param = 0,
     flatbuffers::Offset<Shuffle> shuffle_param = 0,
     const char *name = nullptr) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
   return flatbnn::CreateLayer(
       _fbb,
       type,
@@ -1627,11 +1695,11 @@ inline flatbuffers::Offset<Layer> CreateLayerDirect(
       binarize_param,
       split_param,
       shuffle_param,
-      name ? _fbb.CreateString(name) : 0);
+      name__);
 }
 
 struct Model FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_LAYERS = 4,
     VT_INITIALIZERS = 6,
     VT_INPUTS = 8,
@@ -1712,11 +1780,14 @@ inline flatbuffers::Offset<Model> CreateModelDirect(
     const std::vector<flatbuffers::Offset<Tensor>> *initializers = nullptr,
     const std::vector<flatbuffers::Offset<Input>> *inputs = nullptr,
     uint32_t version = 0) {
+  auto layers__ = layers ? _fbb.CreateVector<flatbuffers::Offset<Layer>>(*layers) : 0;
+  auto initializers__ = initializers ? _fbb.CreateVector<flatbuffers::Offset<Tensor>>(*initializers) : 0;
+  auto inputs__ = inputs ? _fbb.CreateVector<flatbuffers::Offset<Input>>(*inputs) : 0;
   return flatbnn::CreateModel(
       _fbb,
-      layers ? _fbb.CreateVector<flatbuffers::Offset<Layer>>(*layers) : 0,
-      initializers ? _fbb.CreateVector<flatbuffers::Offset<Tensor>>(*initializers) : 0,
-      inputs ? _fbb.CreateVector<flatbuffers::Offset<Input>>(*inputs) : 0,
+      layers__,
+      initializers__,
+      inputs__,
       version);
 }
 
