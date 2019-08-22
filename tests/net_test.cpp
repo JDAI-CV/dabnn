@@ -34,15 +34,15 @@ TEST(net, bireal18imagenet_comparison) {
     std::shared_ptr<bnn::Mat> blob1, blob2;
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet.dab");
         net->optimize = false;
+        net->read("/data/local/tmp/model_imagenet.dab");
         net->run(input);
         blob1 = net->get_blob(blob_name);
     }
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet.dab");
         net->optimize = true;
+        net->read("/data/local/tmp/model_imagenet.dab");
         net->run(input);
         blob2 = net->get_blob(blob_name);
     }
@@ -56,8 +56,8 @@ TEST(net, bireal18imagenet) {
     const std::string blob_name = "188";
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet.dab");
         net->optimize = true;
+        net->read("/data/local/tmp/model_imagenet.dab");
         net->run(input);
         const auto blob = net->get_blob(blob_name);
         ASSERT_NEAR((*blob)[0], -0.9431, 1e-4);
@@ -96,8 +96,8 @@ TEST(net, bireal18imagenetstem) {
     const std::string blob_name = "216";
     {
         auto net = bnn::Net::create();
-        net->read("/data/local/tmp/model_imagenet_stem.dab");
         net->optimize = true;
+        net->read("/data/local/tmp/model_imagenet_stem.dab");
         net->run(input);
         const auto &blob = net->get_blob(blob_name);
         ASSERT_NEAR((*blob)[0], 1.9842, 1e-4);
