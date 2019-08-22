@@ -531,11 +531,6 @@ inline void Mat::create(int _w, int _h, int _c, DataType _data_type) {
     h = _h;
     c = _c;
 
-    if (w * c != 1 && w * c * elemsize % 16 != 0) {
-        LOG(FATAL) << "Not align, w: " << w << ", c: " << c
-                   << ", elemsize: " << elemsize;
-        throw std::invalid_argument("Not align!");
-    }
     hstep = ncnn::alignSize(w * c * elemsize, 16) / elemsize;
 
     if (total() > 0) {
@@ -565,11 +560,6 @@ inline void Mat::create(int _n, int _w, int _h, int _c, DataType _data_type,
     if (h != 0) dims++;
     if (c != 0) dims++;
 
-    if (require_align && w * c != 1 && w * c * elemsize % 16 != 0) {
-        LOG(FATAL) << "Not align, w: " << w << ", c: " << c
-                   << ", elemsize: " << elemsize;
-        throw std::invalid_argument("Not align!");
-    }
     if (require_align) {
         hstep = ncnn::alignSize(w * c * elemsize, 16) / elemsize;
     } else {
@@ -614,24 +604,28 @@ inline size_t Mat::total() const {
 
 template <typename T>
 inline const T *Mat::point(int _n, int _h, int _w) const {
+    BNN_ASSERT(w * c == 1 || w * c * elemsize % 16 == 0, "");
     BNN_ASSERT((_n == 0 && _h == 0 && _w == 0) || hstep > 0, hstep);
     return (T *)data + _n * h * hstep + _h * hstep + _w * c;
 }
 
 template <typename T>
 inline const T *Mat::point(int _h, int _w) const {
+    BNN_ASSERT(w * c == 1 || w * c * elemsize % 16 == 0, "");
     BNN_ASSERT((_h == 0 && _w == 0) || hstep > 0, hstep);
     return (T *)data + _h * hstep + _w * c;
 }
 
 template <typename T>
 inline T *Mat::point(int _n, int _h, int _w) {
+    BNN_ASSERT(w * c == 1 || w * c * elemsize % 16 == 0, "");
     BNN_ASSERT((_n == 0 && _h == 0 && _w == 0) || hstep > 0, hstep);
     return (T *)data + _n * h * hstep + _h * hstep + _w * c;
 }
 
 template <typename T>
 inline T *Mat::point(int _h, int _w) {
+    BNN_ASSERT(w * c == 1 || w * c * elemsize % 16 == 0, "");
     BNN_ASSERT((_h == 0 && _w == 0) || hstep > 0, hstep);
     return (T *)data + _h * hstep + _w * c;
 }
