@@ -273,7 +273,6 @@ inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
                    ", ", h, ", ", c);
     }
     elemsize = data_type == DataType::Float ? sizeof(float) : sizeof(uint64_t);
-    BNN_ASSERT(c > 0, c);
     std::stringstream ss;
     ss << "Not align, w: " << w << ", c: " << c << ", elemsize: " << elemsize;
     BNN_ASSERT(!require_align || w * c == 1 || w * c * elemsize % 16 == 0,
@@ -283,7 +282,10 @@ inline Mat::Mat(int _n, int _w, int _h, int _c, void *_data, DataType data_type,
     } else {
         hstep = w * c;
     }
-    BNN_ASSERT(hstep > 0, hstep);
+    if (data_num == 0) {
+        BNN_ASSERT(c > 0, c);
+        BNN_ASSERT(hstep > 0, hstep);
+    }
 
     external_memory = true;
 }
