@@ -1,0 +1,6 @@
+# It is a configuration file for [project_manager.vim](https://github.com/daquexian/project_manager.vim)
+name binary-nn
+type cpp
+build_dir build_main_x86
+cmake_options -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DBNN_BUILD_TEST=OFF -DBNN_BUILD_BENCHMARK=OFF -DBNN_BUILD_MAIN_LIB=ON
+target run
