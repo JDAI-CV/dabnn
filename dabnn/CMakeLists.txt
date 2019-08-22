@@ -43,7 +43,7 @@ target_include_directories(dabnn
     )
 target_include_directories(dabnn
     SYSTEM
-    PRIVATE
+    PUBLIC
     ${PROJECT_SOURCE_DIR}/third_party/eigen
     )
 target_link_libraries(dabnn
