@@ -26,8 +26,15 @@ class BinConv : public Layer {
     virtual std::string to_str() const;
 
    private:
+    enum Method {
+        DIRECT_CONV = 0,
+        BGEMM,
+        BCONV_NAIVE,
+        BGEMM_NAIVE
+    };
     bool direct_conv_compatible() const;
     bool gemm_compatible() const;
+    Method method() const;
 };
 }  // namespace bnn
 
