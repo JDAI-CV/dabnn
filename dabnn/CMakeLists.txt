@@ -41,6 +41,11 @@ target_include_directories(dabnn
     ${CMAKE_CURRENT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}
     )
+target_include_directories(dabnn
+    SYSTEM
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/third_party/eigen
+    )
 target_link_libraries(dabnn
     glog::glog
     flatbuffers
