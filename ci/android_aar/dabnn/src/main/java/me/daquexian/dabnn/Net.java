@@ -6,7 +6,7 @@ import android.content.res.AssetManager;
 
 public class Net {
     static {
-        System.loadLibrary("dabnn_jni");
+        System.loadLibrary("dabnn-jni");
     }
     public Net() {
         initHandle();
