@@ -568,7 +568,7 @@ void OnnxConverter::CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
                                                             coeff_a_data[i];
                 }
                 if (node2.input_size() == 2) {
-                    const auto &bias = onnx_float_tensors_[node2.input(2)];
+                    const auto &bias = onnx_float_tensors_[node2.input(1)];
                     
                     FORZ(i, coeff_b_data.size()) {
                         coeff_b_data[i] += coeff_a_data[i] * bias.data[i];
