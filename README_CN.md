@@ -82,6 +82,15 @@ dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带
 
 Android app demo: https://github.com/JDAI-CV/dabnn-example
 
+## 使用了 dabnn 的相关工作
+
+这两篇二值网络方向的相关工作引用了 dabnn 并使用 dabnn 测试二值网络在真实设备上的速度：
+
+* [IR-Net: Forward and Backward Information Retention for Highly Accurate Binary Neural Networks](https://arxiv.org/abs/1909.10788)
+
+* [Balanced Binary Neural Networks with Gated Residual](https://arxiv.org/abs/1909.12117)
+
+
 ## 开源许可和引用
 
 [BSD 3 Clause](LICENSE)
