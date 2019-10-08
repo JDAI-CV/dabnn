@@ -80,6 +80,14 @@ For more details please read [our ACM MM paper](https://arxiv.org/abs/1908.05858
 
 Android app demo: https://github.com/JDAI-CV/dabnn-example
 
+## Related works using dabnn
+
+The following two papers use dabnn to measure the latency of their binary networks on real devices:
+
+[IR-Net: Forward and Backward Information Retention for Highly Accurate Binary Neural Networks](https://arxiv.org/abs/1909.10788)
+
+[Balanced Binary Neural Networks with Gated Residual](https://arxiv.org/abs/1909.12117)
+
 ## License and Citation
 
 [BSD 3 Clause](LICENSE)
