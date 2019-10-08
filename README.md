@@ -84,9 +84,9 @@ Android app demo: https://github.com/JDAI-CV/dabnn-example
 
 The following two papers use dabnn to measure the latency of their binary networks on real devices:
 
-[IR-Net: Forward and Backward Information Retention for Highly Accurate Binary Neural Networks](https://arxiv.org/abs/1909.10788)
+* [IR-Net: Forward and Backward Information Retention for Highly Accurate Binary Neural Networks](https://arxiv.org/abs/1909.10788)
 
-[Balanced Binary Neural Networks with Gated Residual](https://arxiv.org/abs/1909.12117)
+* [Balanced Binary Neural Networks with Gated Residual](https://arxiv.org/abs/1909.12117)
 
 ## License and Citation
 

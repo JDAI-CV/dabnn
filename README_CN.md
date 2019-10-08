@@ -86,9 +86,9 @@ Android app demo: https://github.com/JDAI-CV/dabnn-example
 
 这两篇二值网络方向的相关工作引用了 dabnn 并使用 dabnn 测试二值网络在真实设备上的速度：
 
-[IR-Net: Forward and Backward Information Retention for Highly Accurate Binary Neural Networks](https://arxiv.org/abs/1909.10788)
+* [IR-Net: Forward and Backward Information Retention for Highly Accurate Binary Neural Networks](https://arxiv.org/abs/1909.10788)
 
-[Balanced Binary Neural Networks with Gated Residual](https://arxiv.org/abs/1909.12117)
+* [Balanced Binary Neural Networks with Gated Residual](https://arxiv.org/abs/1909.12117)
 
 
 ## 开源许可和引用
