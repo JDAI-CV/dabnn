@@ -31,6 +31,8 @@ add_library(dabnn
     layers/Shuffle.h
     layers/Split.cpp
     layers/Split.h
+    layers/PRelu.cpp
+    layers/PRelu.h
     layer.h
     layer.cpp
     ${PROJECT_SOURCE_DIR}/common/Shaper.cpp

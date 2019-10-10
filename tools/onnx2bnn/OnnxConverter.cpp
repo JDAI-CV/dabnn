@@ -298,7 +298,8 @@ std::vector<std::string> OnnxConverter::Convert(
                     }
                 }
                 if (!precede_bn) {
-                    throw std::invalid_argument("Binary convolutions should precede BatchNorm");
+                    throw std::invalid_argument(
+                        "Binary convolutions should precede BatchNorm");
                 }
             }
             AddConv(m(node.input(0)), strides, pads, dilations, group,
@@ -354,6 +355,34 @@ std::vector<std::string> OnnxConverter::Convert(
             }
             layers_.push_back(layer);
             VLOG(5) << "Converting Pool completed";
+        } else if (op == "PRelu") {
+            VLOG(5) << "Start converting Relu";
+            auto input_name = m(node.input(0));
+            auto slope_name = m(node.input(1));
+            const auto onnx_slope_tensor = onnx_float_tensors_.at(slope_name);
+            BNN_ASSERT(shaper_[input_name].size() == 4,
+                       "PRelu only support 4-d tensor input for now");
+            const auto slope_shape = onnx_slope_tensor.shape;
+            BNN_ASSERT(
+                (slope_shape.size() == 3 && slope_shape[1] == 1 &&
+                 slope_shape[2] == 1) ||
+                    onnx_slope_tensor.data == {1},
+                "PRelu only support scalr slope or per-channel slope for now");
+            const Shape flat_slope_shape{slope_shape[0]};
+            auto flat_slope_tensor = flatbnn::CreateTensorDirect(
+                builder_, flatbnn::DataType::Float32, nullptr,
+                &onnx_slope_tensor.data, &flat_slope_shape, slope_name.c_str());
+            tensors_.push_back(flat_slope_tensor);
+            auto output_name = m(node.output(0));
+            shaper_.Relu(input_name, output_name);
+            auto param = flatbnn::CreatePReluDirect(
+                builder_, input_name.c_str(), slope_name.c_str(),
+                output_name.c_str());
+            auto layer =
+                flatbnn::CreateLayer(builder_, flatbnn::LayerType::PRelu, 0, 0,
+                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, param);
+            layers_.push_back(layer);
+            VLOG(5) << "Converting Relu completed";
         } else if (op == "Relu") {
             VLOG(5) << "Start converting Relu";
             auto input_name = m(node.input(0));
@@ -569,7 +598,7 @@ void OnnxConverter::CalculateCoeff(const ONNX_NAMESPACE::NodeProto &node,
                 }
                 if (node2.input_size() == 3) {
                     const auto &bias = onnx_float_tensors_[node2.input(2)];
-                    
+
                     FORZ(i, coeff_b_data.size()) {
                         coeff_b_data[i] += coeff_a_data[i] * bias.data[i];
                     }
