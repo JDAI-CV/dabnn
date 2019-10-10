@@ -20,7 +20,10 @@ void Relu::forward_impl() const {
     }
 #else
     float *ptr = static_cast<float *>(*data_mat);
-    FORZ(i, data_mat->total()) { *ptr = std::max(*ptr, 0.f); }
+    FORZ(i, data_mat->total()) {
+        *ptr = std::max(*ptr, 0.f);
+        ptr++;
+    }
 #endif  // __ARM_NEON
 }
 }  // namespace bnn
