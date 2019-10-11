@@ -150,6 +150,8 @@ inline std::string layer_type_to_str(flatbnn::LayerType type) {
             return "split";
         case flatbnn::LayerType::Shuffle:
             return "shuffle";
+        case flatbnn::LayerType::PRelu:
+            return "prelu";
         default:
             BNN_ASSERT(false, "Missing type in this function");
     }

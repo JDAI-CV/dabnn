@@ -356,7 +356,7 @@ std::vector<std::string> OnnxConverter::Convert(
             layers_.push_back(layer);
             VLOG(5) << "Converting Pool completed";
         } else if (op == "PRelu") {
-            VLOG(5) << "Start converting Relu";
+            VLOG(5) << "Start converting PRelu";
             auto input_name = m(node.input(0));
             auto slope_name = m(node.input(1));
             const auto onnx_slope_tensor = onnx_float_tensors_.at(slope_name);
@@ -366,7 +366,7 @@ std::vector<std::string> OnnxConverter::Convert(
             BNN_ASSERT(
                 (slope_shape.size() == 3 && slope_shape[1] == 1 &&
                  slope_shape[2] == 1) ||
-                    onnx_slope_tensor.data == {1},
+                    onnx_slope_tensor.data == std::vector<float>{1},
                 "PRelu only support scalr slope or per-channel slope for now");
             const Shape flat_slope_shape{slope_shape[0]};
             auto flat_slope_tensor = flatbnn::CreateTensorDirect(
@@ -382,7 +382,7 @@ std::vector<std::string> OnnxConverter::Convert(
                 flatbnn::CreateLayer(builder_, flatbnn::LayerType::PRelu, 0, 0,
                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, param);
             layers_.push_back(layer);
-            VLOG(5) << "Converting Relu completed";
+            VLOG(5) << "Converting PRelu completed";
         } else if (op == "Relu") {
             VLOG(5) << "Start converting Relu";
             auto input_name = m(node.input(0));

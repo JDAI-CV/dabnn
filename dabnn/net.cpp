@@ -22,6 +22,7 @@
 #include <dabnn/layers/Relu.h>
 #include <dabnn/layers/Shuffle.h>
 #include <dabnn/layers/Split.h>
+#include <dabnn/layers/PRelu.h>
 
 using std::string;
 using std::vector;
@@ -251,6 +252,12 @@ void Net::prepare() {
                 ADD_INPLACE_LAYER(shuffle, Shuffle, input, output);
                 layers.push_back(
                     std::make_shared<Shuffle>(get_weak(), name, input));
+                break;
+            }
+            case flatbnn::LayerType::PRelu: {
+                ADD_INPLACE_LAYER(prelu, Eltwise, input, slope, output);
+                layers.push_back(
+                    std::make_shared<PRelu>(get_weak(), name, input, slope));
                 break;
             }
             default: {

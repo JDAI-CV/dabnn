@@ -11,8 +11,8 @@ class PRelu : public Layer {
     MatCP data_mat;
     MatCP slope_mat;
 
-    PRelu(NetCP net, const std::string &name, css data)
-        : Layer(net, name, "PRelu"), data_mat(mat(data)) {}
+    PRelu(NetCP net, const std::string &name, css data, css slope)
+        : Layer(net, name, "PRelu"), data_mat(mat(data)), slope_mat(mat(slope)) {}
     virtual void forward_impl() const;
 };
 }  // namespace bnn
