@@ -38,6 +38,8 @@ struct Split;
 
 struct Affine;
 
+struct PRelu;
+
 struct Layer;
 
 struct Model;
@@ -86,11 +88,12 @@ enum class LayerType : int8_t {
   Binarize = 10,
   Split = 11,
   Shuffle = 12,
+  PRelu = 13,
   MIN = FpConv2D,
-  MAX = Shuffle
+  MAX = PRelu
 };
 
-inline const LayerType (&EnumValuesLayerType())[13] {
+inline const LayerType (&EnumValuesLayerType())[14] {
   static const LayerType values[] = {
     LayerType::FpConv2D,
     LayerType::AvePool,
@@ -104,7 +107,8 @@ inline const LayerType (&EnumValuesLayerType())[13] {
     LayerType::Affine,
     LayerType::Binarize,
     LayerType::Split,
-    LayerType::Shuffle
+    LayerType::Shuffle,
+    LayerType::PRelu
   };
   return values;
 }
@@ -124,13 +128,14 @@ inline const char * const *EnumNamesLayerType() {
     "Binarize",
     "Split",
     "Shuffle",
+    "PRelu",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameLayerType(LayerType e) {
-  if (e < LayerType::FpConv2D || e > LayerType::Shuffle) return "";
+  if (e < LayerType::FpConv2D || e > LayerType::PRelu) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesLayerType()[index];
 }
@@ -1467,6 +1472,84 @@ inline flatbuffers::Offset<Affine> CreateAffineDirect(
       output__);
 }
 
+struct PRelu FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_INPUT = 4,
+    VT_SLOPE = 6,
+    VT_OUTPUT = 8
+  };
+  const flatbuffers::String *input() const {
+    return GetPointer<const flatbuffers::String *>(VT_INPUT);
+  }
+  const flatbuffers::String *slope() const {
+    return GetPointer<const flatbuffers::String *>(VT_SLOPE);
+  }
+  const flatbuffers::String *output() const {
+    return GetPointer<const flatbuffers::String *>(VT_OUTPUT);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_INPUT) &&
+           verifier.VerifyString(input()) &&
+           VerifyOffset(verifier, VT_SLOPE) &&
+           verifier.VerifyString(slope()) &&
+           VerifyOffset(verifier, VT_OUTPUT) &&
+           verifier.VerifyString(output()) &&
+           verifier.EndTable();
+  }
+};
+
+struct PReluBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_input(flatbuffers::Offset<flatbuffers::String> input) {
+    fbb_.AddOffset(PRelu::VT_INPUT, input);
+  }
+  void add_slope(flatbuffers::Offset<flatbuffers::String> slope) {
+    fbb_.AddOffset(PRelu::VT_SLOPE, slope);
+  }
+  void add_output(flatbuffers::Offset<flatbuffers::String> output) {
+    fbb_.AddOffset(PRelu::VT_OUTPUT, output);
+  }
+  explicit PReluBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  PReluBuilder &operator=(const PReluBuilder &);
+  flatbuffers::Offset<PRelu> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<PRelu>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<PRelu> CreatePRelu(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> input = 0,
+    flatbuffers::Offset<flatbuffers::String> slope = 0,
+    flatbuffers::Offset<flatbuffers::String> output = 0) {
+  PReluBuilder builder_(_fbb);
+  builder_.add_output(output);
+  builder_.add_slope(slope);
+  builder_.add_input(input);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<PRelu> CreatePReluDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *input = nullptr,
+    const char *slope = nullptr,
+    const char *output = nullptr) {
+  auto input__ = input ? _fbb.CreateString(input) : 0;
+  auto slope__ = slope ? _fbb.CreateString(slope) : 0;
+  auto output__ = output ? _fbb.CreateString(output) : 0;
+  return flatbnn::CreatePRelu(
+      _fbb,
+      input__,
+      slope__,
+      output__);
+}
+
 struct Layer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_TYPE = 4,
@@ -1483,7 +1566,8 @@ struct Layer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_BINARIZE_PARAM = 26,
     VT_SPLIT_PARAM = 28,
     VT_SHUFFLE_PARAM = 30,
-    VT_NAME = 32
+    VT_NAME = 32,
+    VT_PRELU_PARAM = 34
   };
   LayerType type() const {
     return static_cast<LayerType>(GetField<int8_t>(VT_TYPE, 0));
@@ -1530,6 +1614,9 @@ struct Layer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *name() const {
     return GetPointer<const flatbuffers::String *>(VT_NAME);
   }
+  const PRelu *prelu_param() const {
+    return GetPointer<const PRelu *>(VT_PRELU_PARAM);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int8_t>(verifier, VT_TYPE) &&
@@ -1561,6 +1648,8 @@ struct Layer FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyTable(shuffle_param()) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_PRELU_PARAM) &&
+           verifier.VerifyTable(prelu_param()) &&
            verifier.EndTable();
   }
 };
@@ -1613,6 +1702,9 @@ struct LayerBuilder {
   void add_name(flatbuffers::Offset<flatbuffers::String> name) {
     fbb_.AddOffset(Layer::VT_NAME, name);
   }
+  void add_prelu_param(flatbuffers::Offset<PRelu> prelu_param) {
+    fbb_.AddOffset(Layer::VT_PRELU_PARAM, prelu_param);
+  }
   explicit LayerBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1641,8 +1733,10 @@ inline flatbuffers::Offset<Layer> CreateLayer(
     flatbuffers::Offset<Binarize> binarize_param = 0,
     flatbuffers::Offset<Split> split_param = 0,
     flatbuffers::Offset<Shuffle> shuffle_param = 0,
-    flatbuffers::Offset<flatbuffers::String> name = 0) {
+    flatbuffers::Offset<flatbuffers::String> name = 0,
+    flatbuffers::Offset<PRelu> prelu_param = 0) {
   LayerBuilder builder_(_fbb);
+  builder_.add_prelu_param(prelu_param);
   builder_.add_name(name);
   builder_.add_shuffle_param(shuffle_param);
   builder_.add_split_param(split_param);
@@ -1677,7 +1771,8 @@ inline flatbuffers::Offset<Layer> CreateLayerDirect(
     flatbuffers::Offset<Binarize> binarize_param = 0,
     flatbuffers::Offset<Split> split_param = 0,
     flatbuffers::Offset<Shuffle> shuffle_param = 0,
-    const char *name = nullptr) {
+    const char *name = nullptr,
+    flatbuffers::Offset<PRelu> prelu_param = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return flatbnn::CreateLayer(
       _fbb,
@@ -1695,7 +1790,8 @@ inline flatbuffers::Offset<Layer> CreateLayerDirect(
       binarize_param,
       split_param,
       shuffle_param,
-      name__);
+      name__,
+      prelu_param);
 }
 
 struct Model FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
