@@ -17,10 +17,11 @@ using std::vector;
 
 void usage(const std::string &filename) {
     std::cout << "Usage:" << std::endl;
-    std::cout << "  " << filename
-              << " onnx_model output_filename [ --strict | --moderate | "
-                 "--aggressive ] [--binary-list] [--verbose]"
-              << std::endl;
+    std::cout
+        << "  " << filename
+        << " onnx_model output_filename [ --strict | --moderate | "
+           "--aggressive ] [--binary-list binary_list_filename] [--verbose]"
+        << std::endl;
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout
