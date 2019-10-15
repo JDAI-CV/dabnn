@@ -58,7 +58,7 @@ dabnn_bireal18_imagenet_stem   43294019 ns   41401923 ns         14     <--- 带
 
 我们提供模型转换工具 onnx2bnn 将 ONNX 模型转换为 dabnn 格式的模型。在 [GitHub Releases](https://github.com/JDAI-CV/dabnn/releases) 里有各个平台的 onnx2bnn 预编译二进制文件，可以直接下载运行。Linux 用户我们提供的是 AppImage 格式的二进制文件，AppImage 的使用方法和其它相关信息请参考 https://appimage.org/。
 
-注意：因为二值卷积是一种自定义操作，所以 ONNX 模型是否与 dabnn 兼容极大程度上依赖于训练代码中二值卷积的实现，在 [wiki](https://github.com/JDAI-CV/dabnn/wiki/Train,-export-and-convert-a-dabnn-model) 中有详细的进一步描述。
+注意：因为二值卷积是一种自定义操作，所以 ONNX 模型是否与 dabnn 兼容极大程度上依赖于训练代码中二值卷积的实现，请仔细阅读[相关文档](/docs/model_conversion.md)。
 
 转换完成后得到的 dabnn 模型就可以在 ARM 设备（例如手机和嵌入式设备）上使用。对 Android 开发者我们已经把 Android AAR 包上传到了 [jcenter](https://bintray.com/daquexian566/maven/dabnn/_latestVersion)，使用方法请看[示例工程](https://github.com/JDAI-CV/dabnn-example)。
 
