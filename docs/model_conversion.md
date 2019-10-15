@@ -1,4 +1,26 @@
-### Train and export a dabnn-compatible ONNX model
+## If you want to benchmark an existing full-precision network structure
+
+If you just want to benchmark the latency of a BNN instead of deploying it, you can determine which convolutions in the input ONNX model are binary by passing "--binary-list filename" command-line argument. Each line of the file is the **output name** of a convolution.
+
+For example, you have a full-precision model named "model.onnx". In the model, you want three convolutions, whose outputs are "34", "36", "55" respectively, to be binary convolutions, and test how fast the model with three binary convolutions will be. In this case, you should first create a text file with
+
+> 34
+>
+> 36
+>
+> 55
+
+After creating the text file (Let's assume the file is named "my_binary_convs"), you can convert the model by
+
+```bash
+./onnx2bnn model.onnx model.dab --binary-list my_binary_convs
+```
+
+Once the command finishes, you will get a BNN model named model.dab.
+
+## If you want to train and export a dabnn-compatible ONNX model
+
+If you want to train and deploy a BNN on real device, the following instructions are what you needed.
 
 Binary convolutions are not supported natively by training frameworks (e.g., TensorFlow, PyTorch, MXNet). To implement correct and dabnn-compatible binary convolutions by self, there is something needed attention:
 
@@ -7,8 +29,6 @@ Binary convolutions are not supported natively by training frameworks (e.g., Ten
 2. PyTorch doesn't support export ONNX sign operator until PyTorch 1.2.
 
 Therefore, we provide a ["standard" PyTorch implementation](https://gist.github.com/daquexian/7db1e7f1e0a92ab13ac1ad028233a9eb) which is compatible with dabnn and produces a correct result. The implementations TensorFlow, MXNet and other training frameworks should be similar. 
-
-### Convert ONNX to dabnn
 
 #### How does dabnn recognize binary convolutions in ONNX model
 
@@ -19,19 +39,3 @@ The converter `onnx2bnn` has three mode in terms of how it recognizes binary con
 * Strict. In this mode, onnx2bnn only recognizes the following natural and correct "pattern" of binary convolutions: A Conv operator, whose input is got from a Sign op and a Pad op (the order doesn't matter), and weight is got from a Sign op.
 
 For now "Aggressive" is the default mode. To enable moderate or strict mode, pass "--moderate" or "--strict" command-line argument to onnx2bnn.
-
-#### Set binary convolutions manually
-
-For quick benchmarking, you can determine which convolutions are binary ones manually by passing "--binary-list filename" command-line argument. Each line of the file is the **output name** of a convolution, which will be treated as a binary convolution.
-
-For example, you have a model named `model.onnx`, and you want three convolutions, whose outputs are "34", "36", "55" respectively, to be binary convolutions. To converting this model, you should create a text file with
-
-> 34
-> 36
-> 55
-
-Let's assume the text file is named "my_binary_convs", you can convert the model by
-
-```bash
-./onnx2bnn model.onnx model.dab --binary-list my_binary_convs
-```
