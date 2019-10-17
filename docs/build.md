@@ -7,7 +7,7 @@ We use CMake build system like most C++ projects.
 Clone dabnn recursively
 
 ```bash
-git clone --recursively https://github.com/JDAI-CV/dabnn
+git clone --recursive https://github.com/JDAI-CV/dabnn
 ```
 
 ### Build dabnn
