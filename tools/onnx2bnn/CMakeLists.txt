@@ -14,9 +14,21 @@ add_library(onnx2bnn
 target_link_libraries(onnx2bnn
     glog::glog
     onnx
-    protobuf::libprotobuf
     flatbuffers
     )
+if (CMAKE_VERSION VERSION_LESS "3.9.0")
+    target_link_libraries(onnx2bnn
+        # ${PROTOBUF_LIBRARIES} and ${PROTOBUF_INCLUDE_DIRS} is for cmake 3.5
+        ${PROTOBUF_LIBRARIES} ${Protobuf_LIBRARIES})
+    target_include_directories(onnx2bnn
+        PUBLIC
+        ${PROTOBUF_INCLUDE_DIRS} ${Protobuf_INCLUDE_DIRS})
+else()
+    target_link_libraries(onnx2bnn
+        protobuf::libprotobuf
+        )
+endif()
+
 target_include_directories(onnx2bnn
     PUBLIC
     ${PROJECT_SOURCE_DIR}
