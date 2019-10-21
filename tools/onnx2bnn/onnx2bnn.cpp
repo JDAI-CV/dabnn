@@ -19,32 +19,46 @@ void usage(const std::string &filename) {
     std::cout << "Usage:" << std::endl;
     std::cout << "  " << filename
               << " onnx_model output_filename [ --strict | --moderate | "
-                 "--aggressive ] [--binary-list] [--verbose]"
+                 "--aggressive ] [--binary-convs list] [--binary-convs-file "
+                 "filename] [--exclude-first-last] [--verbose]"
               << std::endl;
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout
-        << "  --aggressive    The default optimization level. In this level, "
+        << "  --aggressive          The default optimization level. In this "
+           "level, "
            "onnx2bnn will mark all convolutions with binary (+1/-1) weights as "
            "binary convolutions. It is for the existing BNN models, which may "
            "not use the correct padding value. Note: The output of the "
            "generated dabnn model is different from that of the ONNX model "
            "since the padding value is 0 instead of -1."
         << std::endl;
-    std::cout << "  --moderate      This level is for our \"standard\" "
+    std::cout << "  --moderate            This level is for our \"standard\" "
                  "implementation -- A Conv operator with binary weight and "
                  "following a -1 Pad operator."
               << std::endl;
     std::cout
-        << "  --strict        In this level, onnx2bnn only recognizes the "
+        << "  --strict              In this level, onnx2bnn only recognizes "
+           "the "
            "following natural and correct \"pattern\" of binary convolutions: "
            "A Conv operator, whose input is got from a Sign op and a Pad op "
            "(the order doesn't matter), and weight is got from a Sign op."
         << std::endl;
     std::cout
-        << "  --binary-list   A text file containing the **output "
+        << "  --binary-convs-file   A text file containing the **output "
            "names** of some convolutions, which will be treated as binary "
            "convlutions unconditionally. It is mainly for benchmark purpose."
+        << std::endl;
+    std::cout
+        << "  --binary-convs        A ','-sperated list (for example, "
+           "\"4,5,10\") containing the **output "
+           "names** of some convolutions, which will be treated as binary "
+           "convlutions unconditionally. It is mainly for benchmark purpose."
+        << std::endl;
+    std::cout
+        << "  --exclude-first-last  Set all convolutions except the first and "
+           "last convolution as binary convoslutions regardless of what they "
+           "actually are. It is mainly for benchmark purpose."
         << std::endl;
     std::cout << std::endl;
     std::cout << "Example:" << std::endl;
@@ -58,9 +72,22 @@ void usage(const std::string &filename) {
               << std::endl;
 }
 
+vector<string> split(string s, string delimiter) {
+    vector<string> parts;
+    size_t pos = 0;
+    std::string token;
+    while ((pos = s.find(delimiter)) != std::string::npos) {
+        token = s.substr(0, pos);
+        std::cout << token << std::endl;
+        s.erase(0, pos + delimiter.length());
+    }
+    parts.push_back(s);
+    return parts;
+}
+
 int main(int argc, char **argv) {
     argh::parser cmdl;
-    cmdl.add_param("--binary-list");
+    cmdl.add_params({"--binary-convs", "--binary-convs-file"});
     cmdl.parse(argc, argv);
     google::InitGoogleLogging(cmdl[0].c_str());
     FLAGS_alsologtostderr = true;
@@ -70,11 +97,27 @@ int main(int argc, char **argv) {
     }
     for (const auto flag : cmdl.flags()) {
         if (flag != "strict" && flag != "moderate" && flag != "aggressive" &&
-            flag != "verbose") {
+            flag != "verbose" && flag != "exclude-first-last") {
             std::cout << "Invalid flag: " << flag << std::endl;
             usage(cmdl[0]);
             return -2;
         }
+    }
+    int manual_binary_list = 0;
+    if (cmdl["binary-convs"]) {
+        manual_binary_list++;
+    }
+    if (cmdl["binary-convs-file"]) {
+        manual_binary_list++;
+    }
+    if (cmdl["exclude-first-last"]) {
+        manual_binary_list++;
+    }
+    if (manual_binary_list > 1) {
+        std::cerr << "--binary--convs, --binary-convs-list and "
+                     "--exclude-first-last are mutually exclusive"
+                  << std::endl;
+        return -2;
     }
 
     bnn::OnnxConverter::Level opt_level =
@@ -91,8 +134,8 @@ int main(int argc, char **argv) {
         FLAGS_v = 5;
     }
 
-    const auto binary_list_filepath = cmdl("binary-list").str();
     vector<string> expected_binary_conv_outputs;
+    const auto binary_list_filepath = cmdl("binary-convs-file").str();
     if (!binary_list_filepath.empty()) {
         std::ifstream ifs(binary_list_filepath);
         if (ifs.is_open()) {
@@ -102,12 +145,35 @@ int main(int argc, char **argv) {
             }
         }
     }
+    const auto binary_convs_str = cmdl("binary-convs").str();
+    if (!binary_convs_str.empty()) {
+        expected_binary_conv_outputs = split(binary_convs_str, ",");
+    }
+    bool exclude_first_last = false;
+    if (cmdl["exclude-first-last"]) {
+        exclude_first_last = true;
+    }
 
     ONNX_NAMESPACE::ModelProto model_proto;
     {
         std::ifstream ifs(cmdl[1], std::ios::in | std::ios::binary);
         model_proto.ParseFromIstream(&ifs);
         ifs.close();
+    }
+    if (exclude_first_last) {
+        vector<ONNX_NAMESPACE::NodeProto> binary_node_candidates;
+        for (const auto &node : model_proto.graph().node()) {
+            if (node.op_type() == "Conv" || node.op_type() == "Gemm") {
+                binary_node_candidates.push_back(node);
+            }
+        }
+        for (size_t i = 0; i < binary_node_candidates.size(); i++) {
+            if (i == 0 || i == binary_node_candidates.size() - 1) {
+                continue;
+            }
+            expected_binary_conv_outputs.push_back(
+                binary_node_candidates[i].output(0));
+        }
     }
 
     bnn::OnnxConverter converter;
