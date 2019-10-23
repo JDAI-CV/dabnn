@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     FLAGS_alsologtostderr = true;
     // FLAGS_logbuflevel = -1;
 
-    float *input = new float[3 * 224 * 224];
+    float input[3 * 224 * 224];
     FORZ(i, 3 * 224 * 224) { input[i] = 1; }
 
     auto net1 = bnn::Net::create();

@@ -239,9 +239,9 @@ std::vector<std::string> OnnxConverter::Convert(
                     "The input of graph doesn't have dim_value");
             }
         }
-        Shape nnapi_shape{shape[0], shape[2], shape[3], shape[1]};
-        shaper_.AddShape(input.name(), nnapi_shape);
-        auto flat_input = flatbnn::CreateInputDirect(builder_, &nnapi_shape,
+        Shape nhwc_shape{shape[0], shape[2], shape[3], shape[1]};
+        shaper_.AddShape(input.name(), nhwc_shape);
+        auto flat_input = flatbnn::CreateInputDirect(builder_, &nhwc_shape,
                                                      input.name().c_str());
         inputs.push_back(flat_input);
     }
@@ -459,9 +459,6 @@ std::vector<std::string> OnnxConverter::Convert(
             auto input_name = m(node.input(0));
             auto output_name = m(node.output(0));
             shaper_.Softmax(input_name, output_name);
-            // simply ignore attribute "axis", because nnapi softmax didn't has
-            // this attr, and we will check the equality of the two ops in
-            // DaqReader.cpp
             auto param = flatbnn::CreateSoftmaxDirect(
                 builder_, input_name.c_str(), output_name.c_str());
             auto layer = flatbnn::CreateLayer(
