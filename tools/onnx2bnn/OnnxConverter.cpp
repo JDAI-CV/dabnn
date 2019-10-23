@@ -193,6 +193,7 @@ std::vector<std::string> OnnxConverter::Convert(
     // for details.
     vector<string> optimizers{"eliminate_nop_pad",
                               "extract_constant_to_initializer",
+                              "dabnn_convert_gemm_with_reshape_or_flatten_to_conv_and_reshape",
                               "dabnn_bconv_strict"};
     if (level == Level::kModerate || level == Level::kAggressive) {
         optimizers.push_back("dabnn_bconv_moderate");
