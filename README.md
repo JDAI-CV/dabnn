@@ -8,6 +8,8 @@
 
 *Enjoy binary neural networks on mobile!*
 
+Gitter: [dabnn/dabnn](https://gitter.im/dabnn/dabnn), QQ group (Chinese)：1021964010, answer: nndab
+
 [[English](README.md)] [[Chinese/中文](README_CN.md)]
 
 Our ACM MM paper: https://arxiv.org/abs/1908.05858
