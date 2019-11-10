@@ -193,6 +193,7 @@ std::vector<std::string> OnnxConverter::Convert(
     // for details.
     vector<string> optimizers{
         "eliminate_nop_pad", "extract_constant_to_initializer",
+        "dabnn_eliminate_dropout",
         "dabnn_convert_gemm_with_reshape_or_flatten_to_conv_and_reshape",
         "dabnn_bconv_strict"};
     if (level == Level::kModerate || level == Level::kAggressive) {
@@ -510,11 +511,6 @@ std::vector<std::string> OnnxConverter::Convert(
                                      0, 0, 0, 0, 0, 0, param);
             layers_.push_back(layer);
             VLOG(5) << "Converting Concat completed";
-        } else if (op == "Dropout") {
-            VLOG(5) << "Start converting Dropout";
-            // Dropout does nothing, so the output is the same as the input
-            name_map_[node.output(0)] = m(node.input(0));
-            VLOG(5) << "Converting Dropout completed";
         } else if (op == "Reshape") {
             VLOG(5) << "Start converting Reshape";
             has_reshape = true;
