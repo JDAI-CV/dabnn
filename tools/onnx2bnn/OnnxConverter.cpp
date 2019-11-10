@@ -239,7 +239,7 @@ std::vector<std::string> OnnxConverter::Convert(
                 shape.push_back(1);
                 continue;
             }
-            const auto &dim = dims[i];
+            const auto &dim = dims.Get(i);
             if (dim.value_case() ==
                 ONNX_NAMESPACE::TensorShapeProto_Dimension::kDimValue) {
                 shape.push_back(static_cast<uint32_t>(dim.dim_value()));
