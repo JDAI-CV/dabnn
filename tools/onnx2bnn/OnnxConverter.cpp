@@ -191,10 +191,10 @@ std::vector<std::string> OnnxConverter::Convert(
     // Please check out "dabnn_*" pases in
     // https://github.com/daquexian/onnx/blob/optimizer_for_bnn/onnx/optimizer/passes
     // for details.
-    vector<string> optimizers{"eliminate_nop_pad",
-                              "extract_constant_to_initializer",
-                              "dabnn_convert_gemm_with_reshape_or_flatten_to_conv_and_reshape",
-                              "dabnn_bconv_strict"};
+    vector<string> optimizers{
+        "eliminate_nop_pad", "extract_constant_to_initializer",
+        "dabnn_convert_gemm_with_reshape_or_flatten_to_conv_and_reshape",
+        "dabnn_bconv_strict"};
     if (level == Level::kModerate || level == Level::kAggressive) {
         optimizers.push_back("dabnn_bconv_moderate");
     }
@@ -231,13 +231,23 @@ std::vector<std::string> OnnxConverter::Convert(
         }
 
         Shape shape;
-        for (const auto &dim : input.type().tensor_type().shape().dim()) {
+        const auto &dims = input.type().tensor_type().shape().dim();
+        FORZ(i, dims.size()) {
+            if (i == 0) {
+                // We ignore the value of batch dimension since dabnn doesn't
+                // support batch input
+                shape.push_back(1);
+                continue;
+            }
+            const auto &dim = dims[i];
             if (dim.value_case() ==
                 ONNX_NAMESPACE::TensorShapeProto_Dimension::kDimValue) {
                 shape.push_back(static_cast<uint32_t>(dim.dim_value()));
             } else {
                 throw std::invalid_argument(
-                    "The input of graph doesn't have dim_value");
+                    "Dim " + std::to_string(i) + " of input \"" + input.name() +
+                    "\" is not static, please re-export your ONNX model with "
+                    "static input shape");
             }
         }
         Shape nhwc_shape{shape[0], shape[2], shape[3], shape[1]};
@@ -248,7 +258,6 @@ std::vector<std::string> OnnxConverter::Convert(
     }
 
     vector<string> binary_conv_outputs;
-    vector<string> skipped_act;
     bool has_reshape = false;
     for (const auto &node : model_proto_.graph().node()) {
         if (has_reshape) {
