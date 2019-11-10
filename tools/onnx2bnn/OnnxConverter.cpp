@@ -260,12 +260,14 @@ std::vector<std::string> OnnxConverter::Convert(
     vector<string> binary_conv_outputs;
     bool has_reshape = false;
     for (const auto &node : model_proto_.graph().node()) {
-        if (has_reshape) {
-            throw std::invalid_argument(
-                "Reshape can only be the last layer for now");
-        }
         NodeAttrHelper helper(node);
         const auto &op = node.op_type();
+        if (has_reshape && op != "Gemm") {
+            throw std::invalid_argument(
+                "Reshape can only be the last layer or precede a gemm layer "
+                "for now");
+        }
+        has_reshape = false;
         VLOG(5) << "Node " << node.name();
         if (op == "Conv") {
             VLOG(5) << "Start converting Conv";
