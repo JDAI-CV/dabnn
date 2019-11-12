@@ -1,13 +1,14 @@
 // Copyright 2019 JD.com Inc. JD AI
 
+#include <common/StrKeyMap.h>
+#include <common/argh.h>
+#include <glog/logging.h>
+
 #include <fstream>
 #include <map>
 #include <numeric>
 #include <string>
 
-#include <common/StrKeyMap.h>
-#include <common/argh.h>
-#include <glog/logging.h>
 #include "NodeAttrHelper.h"
 #include "OnnxConverter.h"
 #include "common/log_helper.h"
@@ -143,6 +144,10 @@ int main(int argc, char **argv) {
             while (ifs >> binary_conv_output) {
                 expected_binary_conv_outputs.push_back(binary_conv_output);
             }
+        } else {
+            std::cerr << "Cannot open file \"" + binary_list_filepath + "\""
+                      << std::endl;
+            return -1;
         }
     }
     const auto binary_convs_str = cmdl("binary-convs").str();
@@ -156,8 +161,17 @@ int main(int argc, char **argv) {
 
     ONNX_NAMESPACE::ModelProto model_proto;
     {
-        std::ifstream ifs(cmdl[1], std::ios::in | std::ios::binary);
-        model_proto.ParseFromIstream(&ifs);
+        const auto model_filepath = cmdl[1];
+        std::ifstream ifs(model_filepath, std::ios::in | std::ios::binary);
+        if (ifs.fail()) {
+            std::cerr << "The file \"" + model_filepath + "\" doesn't exist"
+                      << std::endl;
+            return -1;
+        } else if (!model_proto.ParseFromIstream(&ifs)) {
+            std::cerr << "Failed to parse file \"" + model_filepath + "\""
+                      << std::endl;
+            return -2;
+        }
         ifs.close();
     }
     if (exclude_first_last) {
